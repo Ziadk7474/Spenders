@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Al Madhi — Purchase Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+--navy: #1a2744; --blue: #2563b0; --blue2: #3b7dd8; --sky: #e8f0fe;
+--white: #ffffff; --grey0: #f4f6fb; --grey1: #e8ecf4; --grey2: #c8d2e8;
+--grey3: #8898b8; --dark: #1e2533; --green: #16a34a; --greenlt: #dcfce7;
+--red: #dc2626; --redlt: #fee2e2; --amber: #d97706; --amberlt: #fef3c7;
+--border: #dde3f0; --shadow: 0 1px 3px rgba(26,39,68,.08),0 4px 16px rgba(26,39,68,.06);
+--shadow2: 0 2px 8px rgba(26,39,68,.12),0 8px 32px rgba(26,39,68,.08);
+--radius: 8px; --font: 'DM Sans',sans-serif; --mono: 'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--grey0);color:var(--dark);font-size:14px;min-height:100vh}
+
+/* ── TOPBAR ── */
+#topbar{background:linear-gradient(90deg,#060f1e 0%,#0d1b2a 35%,#1a2f5c 70%,#1e3a6e 100%);color:#fff;display:flex;align-items:center;height:52px;padding:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+#topbar .brand{display:flex;align-items:center;gap:10px;padding:0 24px;height:100%;background:rgba(255,255,255,.08);border-right:1px solid rgba(255,255,255,.1);min-width:220px}
+#topbar .brand .logo{width:32px;height:32px;background:var(--blue2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;letter-spacing:-1px}
+#topbar .brand .name{font-size:15px;font-weight:700;letter-spacing:.3px}
+#topbar .brand .sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px}
+#topbar nav{display:flex;height:100%}
+#topbar nav button{height:100%;padding:0 20px;background:none;border:none;color:rgba(255,255,255,.75);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;border-right:1px solid rgba(255,255,255,.06);letter-spacing:.2px}
+#topbar nav button:hover{color:#fff;background:rgba(255,255,255,.06)}
+#topbar nav button.active{color:#fff;border-bottom-color:#4fa3f7;background:rgba(255,255,255,.08)}
+#topbar .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:20px}
+#topbar .date-badge{font-size:11px;color:rgba(255,255,255,.5);font-family:var(--mono)}
+
+/* ── PAGES ── */
+.page{display:none;padding:24px;max-width:1400px;margin:0 auto}
+.page.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-header h1{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-.3px}
+.page-header p{color:var(--grey3);font-size:13px;margin-top:3px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;letter-spacing:.2px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d55a0}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#14873e}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-ghost{background:var(--white);color:var(--navy);border:1.5px solid var(--border)}.btn-ghost:hover{background:var(--grey0);border-color:var(--grey3)}
+.btn-purple{background:#7c3aed;color:#fff}.btn-purple:hover{background:#6d28d9}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* ── CARDS ── */
+.card{background:var(--white);border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-size:15px;font-weight:700;color:var(--navy)}
+.card-body{padding:20px}
+
+/* ── KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--white);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue)}
+.kpi.green::before{background:var(--green)}.kpi.red::before{background:var(--red)}
+.kpi.amber::before{background:var(--amber)}.kpi.purple::before{background:#7c3aed}
+.kpi-icon{font-size:24px;margin-bottom:10px}
+.kpi-label{font-size:11px;font-weight:600;color:var(--grey3);text-transform:uppercase;letter-spacing:.7px}
+.kpi-value{font-size:22px;font-weight:700;color:var(--navy);margin-top:4px;letter-spacing:-.5px;line-height:1.2}
+.kpi-sub{font-size:11px;color:var(--grey3);margin-top:4px}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;background:var(--white)}
+thead th{background:linear-gradient(135deg,#0d1b2a 0%,#1a3a6b 50%,#2563b0 100%);color:#fff;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:12px 14px;text-align:left;white-space:nowrap;border-bottom:2px solid #4fa3f7}
+thead th:first-child{border-radius:11px 0 0 0}thead th:last-child{border-radius:0 11px 0 0}
+tbody tr{border-bottom:1px solid var(--grey1);transition:background .1s}
+tbody tr:last-child{border-bottom:none}tbody tr:hover{background:var(--sky)}
+tbody td{padding:10px 14px;font-size:13px;color:var(--dark)}
+tbody td.mono{font-family:var(--mono);font-size:12px}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.badge-out{background:var(--redlt);color:var(--red)}.badge-paid{background:var(--greenlt);color:var(--green)}.badge-part{background:var(--amberlt);color:var(--amber)}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.form-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:12px;font-weight:600;color:var(--grey3);text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font);font-size:13px;color:var(--dark);background:var(--white);transition:border .15s,box-shadow .15s;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(37,99,176,.12)}
+.form-group input.calc-field{background:var(--sky);border-color:var(--blue2);font-weight:700;color:var(--blue);font-family:var(--mono)}
+.form-group input.balance-field{background:var(--redlt);border-color:#fca5a5;font-weight:700;color:var(--red);font-family:var(--mono)}
+.form-group input.balance-zero{background:var(--greenlt);border-color:#86efac;font-weight:700;color:var(--green);font-family:var(--mono)}
+.section-divider{background:var(--grey0);border-radius:8px;padding:10px 14px;margin:20px 0 16px;font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;border-left:3px solid var(--blue)}
+.form-actions{display:flex;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* ── MULTI-LINE ITEMS TABLE ── */
+.items-table-wrap{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:4px}
+.items-table{width:100%;border-collapse:collapse}
+.items-table thead th{background:linear-gradient(135deg,#0d1b2a,#2563b0);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:9px 10px;border:none}
+.items-table thead th:first-child{border-radius:0}.items-table thead th:last-child{border-radius:0}
+.items-table tbody tr{border-bottom:1px solid var(--grey1)}
+.items-table tbody tr:last-child{border-bottom:none}
+.items-table tbody td{padding:6px 6px}
+.items-table tbody td input,.items-table tbody td select{width:100%;padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:13px;color:var(--dark);background:var(--white);outline:none;transition:border .15s}
+.items-table tbody td input:focus,.items-table tbody td select:focus{border-color:var(--blue2);box-shadow:0 0 0 2px rgba(37,99,176,.1)}
+.items-table tbody td input.row-total{background:var(--sky);color:var(--blue);font-family:var(--mono);font-weight:700}
+.items-table tfoot td{padding:10px 10px;border-top:2px solid var(--blue2);background:var(--sky);font-weight:700;font-family:var(--mono);color:var(--navy);font-size:13px}
+.add-row-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;background:var(--sky);border:1.5px dashed var(--blue2);color:var(--blue);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:8px}
+.add-row-btn:hover{background:var(--blue);color:#fff;border-style:solid}
+.del-row-btn{width:28px;height:28px;border-radius:6px;border:none;background:var(--redlt);color:var(--red);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.del-row-btn:hover{background:var(--red);color:#fff}
+
+/* ── SEARCH PANEL ── */
+.search-panel{background:var(--white);border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:20px}
+.search-panel h3{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+
+/* ── STATEMENT ── */
+.statement-header{background:var(--white);border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
+.stmt-top{background:linear-gradient(135deg,#060f1e 0%,#0d1b2a 40%,#2563b0 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}
+.stmt-top .company{font-size:20px;font-weight:700}
+.stmt-top .company small{display:block;font-size:12px;color:rgba(255,255,255,.6);font-weight:400;margin-top:2px}
+.stmt-top .meta{text-align:right;font-size:13px}
+.stmt-top .meta strong{font-size:18px;font-weight:700;color:#fbbf24}
+.stmt-body{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0}
+.stmt-cell{padding:14px 24px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stmt-cell:last-child{border-right:none}
+.stmt-cell label{font-size:10px;font-weight:700;color:var(--grey3);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px}
+.stmt-cell .val{font-size:15px;font-weight:700;color:var(--navy);font-family:var(--mono)}
+.stmt-cell .val.red{color:var(--red)}.stmt-cell .val.green{color:var(--green)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--white);border-radius:14px;box-shadow:var(--shadow2);width:100%;max-width:900px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-header{background:linear-gradient(135deg,#0d1b2a 0%,#1a3a6b 60%,#2563b0 100%);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.modal-header h2{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;top:70px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--shadow2);display:flex;align-items:center;gap:8px;animation:slideIn .2s ease;max-width:360px}
+.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px}
+.tab-btn{padding:10px 20px;background:none;border:none;font-family:var(--font);font-size:13px;font-weight:600;color:var(--grey3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* ── SYNC STATUS ── */
+#sync-pill.live{background:rgba(21,128,61,.15)!important;border-color:rgba(74,222,128,.3)!important;color:#4ade80!important}
+#sync-pill.live #sync-dot{background:#4ade80!important;animation:pulse 2s infinite}
+#sync-pill.syncing{background:rgba(180,83,9,.15)!important;border-color:rgba(251,191,36,.3)!important;color:#fbbf24!important}
+#sync-pill.syncing #sync-dot{background:#fbbf24!important;animation:spin .6s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TOGGLE SWITCH ── */
+.total-toggle-switch{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
+.total-toggle-switch input{opacity:0;width:0;height:0}
+.total-toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--blue2);border-radius:20px;transition:.2s}
+.total-toggle-slider::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s}
+.total-toggle-switch input:checked+.total-toggle-slider{background:var(--amber)}
+.total-toggle-switch input:checked+.total-toggle-slider::before{transform:translateX(16px)}
+
+/* ── MANAGE MODAL ── */
+.manage-modal-wrap{position:fixed;inset:0;z-index:199;display:flex;align-items:center;justify-content:center;padding:16px;pointer-events:none}
+.manage-modal-card{background:#fff;border-radius:16px;width:100%;max-width:780px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.3);pointer-events:all;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.manage-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:linear-gradient(135deg,#1a2744 0%,#2563b0 100%);border-radius:16px 16px 0 0;flex-shrink:0}
+.manage-hdr h2{font-size:16px;font-weight:700;color:#fff;margin:0}
+.manage-close-btn{width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;line-height:1}
+.manage-close-btn:hover{background:rgba(255,255,255,.3)}
+.manage-body{padding:20px 24px;overflow-y:auto;flex:1}
+.manage-tabs{display:flex;gap:0;border-bottom:2px solid #e8ecf4;margin-bottom:20px}
+.manage-tab{padding:9px 20px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:#8898b8;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s}
+.manage-tab.active{color:#2563b0;border-bottom-color:#2563b0}
+.manage-pane{display:none}.manage-pane.active{display:block}
+.manage-add-row{display:flex;gap:10px;margin-bottom:16px}
+.manage-add-row input{flex:1;padding:10px 14px;border:1.5px solid #dde3f0;border-radius:8px;font-family:inherit;font-size:13px;color:#1e2533;outline:none;transition:.15s}
+.manage-add-row input:focus{border-color:#2563b0;box-shadow:0 0 0 3px rgba(37,99,176,.1)}
+.manage-list{display:flex;flex-direction:column;gap:6px}
+.manage-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f4f6fb;border-radius:8px;border:1px solid #e8ecf4;transition:.15s}
+.manage-item:hover{background:#e8f0fe;border-color:#c5d0e8}
+.manage-item-name{font-size:13px;font-weight:500;color:#1e2533}
+.manage-item-del{width:26px;height:26px;border-radius:6px;border:none;background:none;color:#dc2626;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.manage-item-del:hover{background:#fee2e2}
+.manage-empty{text-align:center;padding:32px;color:#8898b8;font-size:13px;font-style:italic}
+.manage-built-in{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#f9fafc;border-radius:8px;border:1px solid #e8ecf4}
+.manage-built-in-name{font-size:12px;color:#8898b8}
+.manage-built-in-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:#e8f0fe;color:#2563b0;font-weight:600}
+.manage-section-title{font-size:11px;font-weight:700;color:#8898b8;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+.manage-ftr{padding:14px 24px;border-top:1px solid #e8ecf4;display:flex;justify-content:flex-end;flex-shrink:0}
+
+/* ── BOTTOM NAV ── */
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:linear-gradient(180deg,#0d1b2a 0%,#060f1e 100%);border-top:1px solid rgba(255,255,255,.12);padding:6px 0 max(8px,env(safe-area-inset-bottom));box-shadow:0 -4px 24px rgba(0,0,0,.35)}
+#bottom-nav .bnav-items{display:flex;justify-content:space-around;align-items:flex-end;padding:0 4px}
+#bottom-nav .bnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,.45);font-family:var(--font);font-size:9px;font-weight:600;letter-spacing:.3px;padding:4px 2px;min-width:56px;cursor:pointer;border-radius:12px;transition:color .15s;-webkit-tap-highlight-color:transparent;user-select:none}
+#bottom-nav .bnav-btn .bnav-icon{font-size:21px;line-height:1;transition:transform .15s}
+#bottom-nav .bnav-btn.active{color:#fff}
+#bottom-nav .bnav-btn.active .bnav-icon{transform:translateY(-1px)}
+#bottom-nav .bnav-btn.active .bnav-label{color:#4fa3f7}
+.bnav-label{transition:color .15s}
+#bottom-nav .bnav-btn.bnav-add{color:#fff}
+#bottom-nav .bnav-btn.bnav-add .bnav-icon-wrap{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#2563b0,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 16px rgba(37,99,176,.65);margin-bottom:2px;transition:transform .15s,box-shadow .15s}
+
+/* ── MISC ── */
+.text-right{text-align:right}.text-center{text-align:center}.fw-700{font-weight:700}
+.color-red{color:var(--red)}.color-green{color:var(--green)}.color-blue{color:var(--blue)}
+.mt-16{margin-top:16px}.empty-state{text-align:center;padding:60px 20px;color:var(--grey3)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}.empty-state p{font-size:14px}
+.records-count{font-size:12px;color:var(--grey3);font-weight:500}
+.hint-text{font-size:11px;color:var(--grey3);margin-top:3px}
+
+/* ── PRINT ── */
+@media print {
+  /* Hide everything except the statement */
+  #topbar, .search-panel, .form-actions, .btn, .no-print, #bottom-nav,
+  .page-header, #search-empty, #search-count, #print-stmt-btn { display:none!important; }
+
+  /* Reset body/page */
+  @page { size: A4 portrait; margin: 10mm 12mm 10mm 12mm; }
+  html, body { background: white !important; margin: 0; padding: 0; font-size: 11px; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Only show the search page & statement area */
+  .page { display: none !important; padding: 0; max-width: 100%; }
+  #page-search { display: block !important; padding: 0; }
+  #statement-area { display: block !important; }
+
+  /* Statement heading */
+  .print-stmt-heading {
+    display: block !important;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a2744;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #2563b0;
+  }
+
+  /* Statement header card */
+  .statement-header { margin-bottom: 8px; border-radius: 6px; overflow: hidden; page-break-inside: avoid; }
+  .stmt-top { padding: 10px 16px !important; }
+  .stmt-top .company { font-size: 15px !important; }
+  .stmt-top .company small { font-size: 10px !important; }
+  .stmt-top .meta strong { font-size: 14px !important; }
+  .stmt-top .meta { font-size: 10px !important; }
+  .stmt-cell { padding: 8px 14px !important; }
+  .stmt-cell .val { font-size: 12px !important; }
+  .stmt-cell label { font-size: 9px !important; }
+
+  /* Table — no scroll, fit to page */
+  .tbl-wrap { overflow: visible !important; box-shadow: none !important; border: 1px solid #ccc !important; border-radius: 4px; }
+  table { width: 100% !important; font-size: 10px !important; }
+  thead th { padding: 7px 8px !important; font-size: 9px !important; letter-spacing: .3px !important; }
+  tbody td { padding: 6px 8px !important; font-size: 10px !important; }
+  tbody td.mono { font-size: 9px !important; }
+
+  /* Footer summary strip */
+  #statement-area > div:last-child {
+    padding: 8px 12px !important;
+    font-size: 10px !important;
+    gap: 20px !important;
+    page-break-inside: avoid;
+  }
+  #stmt-footer-purch, #stmt-footer-paid, #stmt-footer-bal { font-size: 12px !important; }
+  #stmt-aging { font-size: 9px !important; }
+
+  /* Badges */
+  .badge { font-size: 8px !important; padding: 2px 6px !important; }
+
+  /* No page break inside rows */
+  tbody tr { page-break-inside: avoid; }
+}
+
+/* ── TABLET ── */
+@media(max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  body{padding-bottom:76px}
+  #topbar{height:52px}
+  #topbar .brand{min-width:unset;flex:1;padding:0 14px;border-right:none;height:52px}
+  #topbar .brand .name{font-size:14px}
+  #topbar nav{display:none}
+  #bottom-nav{display:block}
+  #toast-container{top:auto;bottom:84px;right:10px;left:10px}
+  .toast{max-width:100%}
+  .page{padding:12px 12px 20px}
+  .page-header{flex-direction:column;gap:8px;margin-bottom:14px}
+  .page-header h1{font-size:18px}
+  .page-header>div:last-child{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+  .page-header .btn{flex:1;justify-content:center}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+  .kpi{padding:12px 14px}
+  .kpi-value{font-size:17px}
+  .form-grid{grid-template-columns:1fr}
+  .form-grid-4{grid-template-columns:1fr 1fr}
+  .form-group input,.form-group select{padding:11px 12px;font-size:15px;min-height:46px}
+  .form-actions{flex-wrap:wrap;gap:10px}
+  .form-actions .btn{flex:1 1 calc(50% - 5px);justify-content:center}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .stmt-top{flex-direction:column;gap:10px;padding:14px 16px}
+  .stmt-body{grid-template-columns:1fr 1fr}
+  .stmt-cell:nth-child(even){border-right:none}
+  .modal-overlay{padding:0;align-items:flex-end;background:rgba(0,0,0,.55)}
+  .modal{border-radius:20px 20px 0 0;max-height:93vh}
+  .modal-header{border-radius:20px 20px 0 0}
+  .manage-modal-wrap{align-items:flex-end;padding:0}
+  .manage-modal-card{border-radius:20px 20px 0 0;max-height:90vh}
+  .manage-hdr{border-radius:20px 20px 0 0}
+  .items-table thead th{font-size:9px;padding:7px 5px}
+  .items-table tbody td input,.items-table tbody td select{font-size:12px;padding:6px 7px}
+}
+@media(max-width:400px){
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi-value{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="brand">
+    <div class="logo">AM</div>
+    <div><div class="name">Al Madhi</div><div class="sub">Purchase Management</div></div>
+  </div>
+  <nav>
+    <button class="active" onclick="showPage('dashboard')">📊 Dashboard</button>
+    <button onclick="showPage('entry')">➕ New Entry</button>
+    <button onclick="showPage('records')">📋 All Records</button>
+    <button onclick="showPage('search')">🔍 Search & Statement</button>
+    <button onclick="showPage('payments')">💳 Payments</button>
+    <button onclick="showPage('parties')">👥 Party Summary</button>
+    <button onclick="openManageModal()" style="background:rgba(124,58,237,.15);color:#c4b5fd;border-bottom-color:#7c3aed">⚙️ Manage Lists</button>
+  </nav>
+  <div class="topbar-right">
+    <div id="sync-pill" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);font-size:10px;font-weight:600;color:#f87171;transition:all .3s;white-space:nowrap">
+      <span id="sync-dot" style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0"></span>
+      <span id="sync-label">Connecting…</span>
+    </div>
+    <span class="date-badge" id="live-date"></span>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav">
+  <div class="bnav-items">
+    <button class="bnav-btn active" onclick="showPage('dashboard')" id="bnav-dashboard"><span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span></button>
+    <button class="bnav-btn" onclick="showPage('records')" id="bnav-records"><span class="bnav-icon">📋</span><span class="bnav-label">Records</span></button>
+    <button class="bnav-btn bnav-add" onclick="showPage('entry')" id="bnav-entry"><span class="bnav-icon-wrap">➕</span><span class="bnav-label">New Entry</span></button>
+    <button class="bnav-btn" onclick="showPage('payments')" id="bnav-payments"><span class="bnav-icon">💳</span><span class="bnav-label">Payments</span></button>
+    <button class="bnav-btn" onclick="showPage('parties')" id="bnav-parties"><span class="bnav-icon">👥</span><span class="bnav-label">Parties</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PAGE: DASHBOARD -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div><h1>Dashboard</h1><p>Overview of all purchase activity and outstanding balances</p></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="showPage('entry')">➕ New Entry</button>
+      <button class="btn btn-primary" onclick="showPage('search')">🔍 Search</button>
+    </div>
+  </div>
+  <div class="kpi-grid" id="kpi-grid"></div>
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-header"><h2>Party Outstanding Balances</h2><span class="records-count" id="party-count"></span></div>
+      <div style="overflow:auto;max-height:420px">
+        <table id="dash-party-table">
+          <thead><tr><th>#</th><th>Party Name</th><th>Purchases</th><th>Paid</th><th>Outstanding</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h2>Monthly Purchase Trend</h2></div>
+      <div class="card-body" id="monthly-chart"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PAGE: NEW ENTRY -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-entry">
+  <div class="page-header">
+    <div><h1>New Purchase Entry</h1><p>Enter purchase invoice details below</p></div>
+  </div>
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#0d1b2a 0%,#2563b0 100%)">
+      <h2 style="color:#fff">📄 Purchase Invoice</h2>
+      <span style="color:rgba(255,255,255,.6);font-size:12px" id="entry-inv-display">INV-XXXX</span>
+    </div>
+    <div class="card-body">
+      <!-- Invoice Info -->
+      <div class="section-divider">Invoice Information</div>
+      <div class="form-grid-4">
+        <div class="form-group"><label>Invoice No.</label><input type="text" id="e-invno" placeholder="INV-0001"></div>
+        <div class="form-group"><label>Date *</label><input type="date" id="e-date"></div>
+        <div class="form-group"><label>Party Name (Vendor) *</label>
+          <div style="display:flex;gap:6px">
+            <select id="e-party" style="flex:1"><option value="">— Select Party —</option></select>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="openManageModal('party')" style="flex-shrink:0;padding:0 10px;font-size:18px">+</button>
+          </div>
+        </div>
+        <div class="form-group"><label>Vehicle No.</label><input type="text" id="e-vehicle" placeholder="e.g. 32766"></div>
+      </div>
+
+      <!-- Line Items -->
+      <div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Purchase Line Items</span>
+        <span style="font-size:11px;color:var(--grey3);text-transform:none;font-weight:400;letter-spacing:0">Add up to 10 items per invoice</span>
+      </div>
+      <div class="items-table-wrap">
+        <table class="items-table">
+          <thead><tr>
+            <th style="width:32%">Description</th>
+            <th style="width:12%">Quantity</th>
+            <th style="width:10%">Unit</th>
+            <th style="width:13%">Unit Price (AED)</th>
+            <th style="width:15%">Total (AED)</th>
+            <th style="width:10%">Custom Total</th>
+            <th style="width:8%">Del</th>
+          </tr></thead>
+          <tbody id="line-items-body"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" style="text-align:right;font-size:12px;color:var(--grey3);font-weight:600;letter-spacing:.4px;text-transform:uppercase">INVOICE TOTAL</td>
+              <td id="invoice-grand-total" style="color:var(--blue)">AED 0.00</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <button class="add-row-btn" onclick="addLineItem()">＋ Add Another Item</button>
+
+      <!-- Payment Info -->
+      <div class="section-divider">Payment Information (Optional)</div>
+      <div class="form-grid-4">
+        <div class="form-group"><label>Amount Paid (AED)</label><input type="number" id="e-paid" placeholder="0.00" min="0" oninput="calcInvoiceBalance()"></div>
+        <div class="form-group"><label>Balance Due (AED)</label><input type="text" id="e-balance" class="balance-field" readonly placeholder="Auto-calculated"><span class="hint-text">= Total − Paid</span></div>
+        <div class="form-group"><label>Paid By</label>
+          <select id="e-paidby"><option value="">— Select —</option><option>ZIAD</option><option>ZULFIQAR</option><option>OTHER</option></select>
+        </div>
+        <div class="form-group"><label>Payment Method</label>
+          <select id="e-method"><option value="">— Select —</option></select>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div class="form-group"><label>Payment Date</label><input type="date" id="e-paydate"></div>
+        <div class="form-group" style="grid-column:span 2"><label>Notes / Memo</label><input type="text" id="e-notes" placeholder="Optional notes"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-success" onclick="saveEntry()" style="min-width:160px">✔ Save Invoice</button>
+        <button class="btn btn-ghost" onclick="clearEntry()">✖ Clear Form</button>
+        <button class="btn btn-primary" onclick="viewParty()" style="margin-left:auto">🔍 View Party Records</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PAGE: ALL RECORDS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-records">
+  <div class="page-header">
+    <div><h1>All Purchase Records</h1><p id="records-subtitle">All transactions</p></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="window.print()">🖨 Print</button>
+      <button class="btn btn-success" onclick="showPage('entry')">➕ New Entry</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-body" style="padding:14px 20px">
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div class="form-group" style="flex:0 0 200px"><label>Filter by Party</label><select id="rec-party-filter" onchange="filterRecords()"><option value="">All Parties</option></select></div>
+        <div class="form-group" style="flex:0 0 160px"><label>From Date</label><input type="date" id="rec-date-from" onchange="filterRecords()"></div>
+        <div class="form-group" style="flex:0 0 160px"><label>To Date</label><input type="date" id="rec-date-to" onchange="filterRecords()"></div>
+        <div class="form-group" style="flex:1 1 200px"><label>Search Keyword</label><input type="text" id="rec-keyword" placeholder="Party, description, invoice..." oninput="filterRecords()"></div>
+        <button class="btn btn-ghost" onclick="clearRecordFilters()">✖ Clear</button>
+        <span class="records-count" id="rec-count" style="align-self:center;margin-left:auto"></span>
+      </div>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table id="all-records-table">
+      <thead><tr><th>#</th><th>Date</th><th>Inv No</th><th>Party Name</th><th>Description</th><th>Qty</th><th>Unit</th><th>Price</th><th>Amount (AED)</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PAGE: SEARCH & STATEMENT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-search">
+  <div class="page-header">
+    <div><h1>Search & Statement of Account</h1><p>Search records and view party statements</p></div>
+    <button class="btn btn-purple" onclick="window.print()" id="print-stmt-btn" style="display:none">🖨 Print Statement</button>
+  </div>
+  <div class="search-panel">
+    <h3>🔎 Search Filters</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:12px">
+      <div class="form-group"><label>Party Name</label><select id="s-party"><option value="">All Parties</option></select></div>
+      <div class="form-group"><label>Invoice No.</label><input type="text" id="s-inv" placeholder="e.g. INV-0015"></div>
+      <div class="form-group"><label>Vehicle No.</label><input type="text" id="s-vehicle" placeholder="e.g. 32766"></div>
+      <div class="form-group"><label>Date From</label><input type="date" id="s-from"></div>
+      <div class="form-group"><label>Date To</label><input type="date" id="s-to"></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:12px;align-items:flex-end">
+      <div class="form-group" style="flex:1"><label>Keyword</label><input type="text" id="s-keyword" placeholder="Type any keyword..."></div>
+      <div class="form-group"><label>Description</label><select id="s-desc"><option value="">All</option></select></div>
+      <button class="btn btn-primary" style="min-width:130px" onclick="runSearch()">▶ Run Search</button>
+      <button class="btn btn-ghost" onclick="clearSearch()">✖ Clear</button>
+    </div>
+  </div>
+
+  <!-- Statement area -->
+  <div id="statement-area" style="display:none">
+    <!-- Print-only heading (hidden on screen) -->
+    <div class="print-stmt-heading" style="display:none">Statement of Account</div>
+    <!-- Summary header -->
+    <div class="statement-header">
+      <div class="stmt-top">
+        <div class="company">
+          <span style="font-size:22px;font-weight:800;letter-spacing:.5px;background:linear-gradient(90deg,#f59e0b,#ef4444,#8b5cf6,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Al Madhi Carpentry</span>
+          <small>Al Sajaa Ind. Area, Sharjah — Statement of Account</small>
+        </div>
+        <div class="meta">
+          <div style="font-size:12px;opacity:.7">Statement Date</div>
+          <div id="stmt-date" style="font-size:15px;font-weight:600"></div>
+          <div style="margin-top:8px;font-size:11px;opacity:.7">Amount Due</div>
+          <strong id="stmt-due"></strong>
+        </div>
+      </div>
+      <div class="stmt-body">
+        <div class="stmt-cell"><label>Party / Vendor</label><div class="val" id="stmt-party-name">—</div></div>
+        <div class="stmt-cell"><label>Total Purchased</label><div class="val" id="stmt-total-purch">—</div></div>
+        <div class="stmt-cell"><label>Total Paid</label><div class="val green" id="stmt-total-paid">—</div></div>
+        <div class="stmt-cell"><label>Outstanding Balance</label><div class="val red" id="stmt-balance">—</div></div>
+      </div>
+    </div>
+    <!-- Results count -->
+    <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <span class="records-count" id="search-count"></span>
+    </div>
+    <!-- Single combined transactions table -->
+    <div class="tbl-wrap">
+      <table id="search-results-table">
+        <thead><tr><th>#</th><th>Date</th><th>Type</th><th>Inv / Ref</th><th>Description</th><th>Amount (AED)</th><th>Payment (AED)</th><th>Balance (AED)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div style="padding:14px 20px;background:var(--grey0);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;display:flex;gap:32px;align-items:center;flex-wrap:wrap">
+      <div><div style="font-size:10px;font-weight:700;color:var(--grey3);text-transform:uppercase;letter-spacing:.6px">Total Purchases</div><div class="fw-700" style="font-family:var(--mono);font-size:15px;margin-top:3px;color:var(--navy)" id="stmt-footer-purch">—</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--grey3);text-transform:uppercase;letter-spacing:.6px">Total Paid</div><div class="fw-700 color-green" style="font-family:var(--mono);font-size:15px;margin-top:3px" id="stmt-footer-paid">—</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--grey3);text-transform:uppercase;letter-spacing:.6px">Outstanding</div><div class="fw-700 color-red" style="font-family:var(--mono);font-size:15px;margin-top:3px" id="stmt-footer-bal">—</div></div>
+      <div style="margin-left:auto"><div style="font-size:10px;font-weight:700;color:var(--grey3);text-transform:uppercase;letter-spacing:.6px">Aging</div><div style="font-size:12px;margin-top:3px" id="stmt-aging">—</div></div>
+    </div>
+  </div>
+  <div id="search-empty" style="display:none" class="empty-state"><div class="icon">🔍</div><p>No records match your search criteria.</p></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PAGE: PAYMENTS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-payments">
+  <div class="page-header">
+    <div><h1>Payments Ledger</h1><p>All payment records received from parties</p></div>
+    <button class="btn btn-success" onclick="openPaymentModal()">➕ Record Payment</button>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px" id="pay-kpis"></div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;align-items:flex-end;flex-wrap:wrap">
+    <div class="form-group" style="flex:0 0 200px"><label>Filter by Party</label><select id="pay-party-filter" onchange="filterPayments()"><option value="">All Parties</option></select></div>
+    <div class="form-group" style="flex:0 0 150px"><label>From</label><input type="date" id="pay-from" onchange="filterPayments()"></div>
+    <div class="form-group" style="flex:0 0 150px"><label>To</label><input type="date" id="pay-to" onchange="filterPayments()"></div>
+    <button class="btn btn-ghost btn-sm" onclick="clearPayFilters()">✖ Clear</button>
+    <span class="records-count" id="pay-count" style="align-self:center;margin-left:auto"></span>
+  </div>
+  <div class="tbl-wrap">
+    <table id="pay-table">
+      <thead><tr><th>#</th><th>Date</th><th>Party</th><th>Paid By</th><th>Method</th><th>Amount (AED)</th><th>Notes</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PAGE: PARTY SUMMARY -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-parties">
+  <div class="page-header"><div><h1>Party Summary</h1><p>Financial summary for each vendor/supplier</p></div></div>
+  <div class="tbl-wrap">
+    <table id="party-summary-table">
+      <thead><tr><th>#</th><th>Party Name</th><th>Total Invoices</th><th>Total Purchased (AED)</th><th>Total Paid (AED)</th><th>Outstanding (AED)</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ PAYMENT MODAL ═══════════════ -->
+<div class="modal-overlay" id="payment-modal" style="display:none">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><h2>💳 Record Payment</h2><button class="modal-close" onclick="closePaymentModal()">×</button></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group"><label>Party Name *</label><select id="pm-party"><option value="">— Select Party —</option></select></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Payment Date *</label><input type="date" id="pm-date"></div>
+          <div class="form-group"><label>Amount (AED) *</label><input type="number" id="pm-amount" placeholder="0.00" min="0" step="0.01"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Paid By</label><select id="pm-paidby"><option value="">— Select —</option><option>ZIAD</option><option>ZULFIQAR</option><option>OTHER</option></select></div>
+          <div class="form-group"><label>Method</label><select id="pm-method"><option>CASH</option><option>CHEQUE</option><option>ACCOUNT TRANSFER</option><option>PAKISTAN</option><option>ONLINE</option></select></div>
+        </div>
+        <div class="form-group"><label>Notes</label><input type="text" id="pm-notes" placeholder="Optional"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePaymentModal()">Cancel</button>
+      <button class="btn btn-success" onclick="savePayment()">✔ Save Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ VIEW RECORD MODAL ═══════════════ -->
+<div class="modal-overlay" id="inv-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header"><h2 id="inv-modal-title">Invoice Detail</h2><button class="modal-close" onclick="document.getElementById('inv-modal').style.display='none'">×</button></div>
+    <div class="modal-body" id="inv-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('inv-modal').style.display='none'">Close</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteRecordFromModal()" style="margin-right:auto">🗑 Delete</button>
+      <button class="btn btn-purple" onclick="window.print()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EDIT PAYMENT MODAL ═══════════════ -->
+<div class="modal-overlay" id="edit-pay-modal" style="display:none">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header" style="background:linear-gradient(135deg,#0d1b2a,#d97706)"><h2>✏️ Edit Payment</h2><button class="modal-close" onclick="document.getElementById('edit-pay-modal').style.display='none'">×</button></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group"><label>Party</label><input type="text" id="ep-party" readonly style="background:var(--grey0)"></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Date</label><input type="date" id="ep-date"></div>
+          <div class="form-group"><label>Amount (AED)</label><input type="number" id="ep-amount" min="0" step="0.01"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Paid By</label><select id="ep-paidby"><option>ZIAD</option><option>ZULFIQAR</option><option>OTHER</option></select></div>
+          <div class="form-group"><label>Method</label><select id="ep-method"><option>CASH</option><option>CHEQUE</option><option>ACCOUNT TRANSFER</option><option>PAKISTAN</option><option>ONLINE</option></select></div>
+        </div>
+        <div class="form-group"><label>Notes</label><input type="text" id="ep-notes"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('edit-pay-modal').style.display='none'">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="deletePayment()" style="margin-right:auto">🗑 Delete</button>
+      <button class="btn btn-success" onclick="saveEditPayment()">✔ Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MANAGE MODAL ═══════════════ -->
+<div id="manage-modal" style="display:none">
+  <div id="manage-overlay-bg" onclick="closeManageModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:198"></div>
+  <div class="manage-modal-wrap">
+    <div class="manage-modal-card">
+      <div class="manage-hdr"><h2>⚙️ Manage Lists</h2><button class="manage-close-btn" onclick="closeManageModal()">×</button></div>
+      <div class="manage-body">
+        <div class="manage-tabs">
+          <button class="manage-tab active" onclick="switchManageTab('party',this)">👤 Parties</button>
+          <button class="manage-tab" onclick="switchManageTab('desc',this)">📝 Descriptions</button>
+          <button class="manage-tab" onclick="switchManageTab('unit',this)">📦 Units</button>
+          <button class="manage-tab" onclick="switchManageTab('method',this)">💳 Methods</button>
+        </div>
+        <div class="manage-pane active" id="pane-party">
+          <div class="manage-add-row"><input type="text" id="mi-party" placeholder="New party name…" onkeydown="if(event.key==='Enter')addManageItem('party')"><button class="btn btn-primary btn-sm" onclick="addManageItem('party')">+ Add</button></div>
+          <div class="manage-section-title">Custom Parties</div><div class="manage-list" id="ml-party"></div>
+          <div class="manage-section-title" style="margin-top:20px">Parties from Records</div><div class="manage-list" id="ml-party-builtin"></div>
+        </div>
+        <div class="manage-pane" id="pane-desc">
+          <div class="manage-add-row"><input type="text" id="mi-desc" placeholder="New description…" onkeydown="if(event.key==='Enter')addManageItem('desc')"><button class="btn btn-primary btn-sm" onclick="addManageItem('desc')">+ Add</button></div>
+          <div class="manage-section-title">Custom Descriptions</div><div class="manage-list" id="ml-desc"></div>
+          <div class="manage-section-title" style="margin-top:20px">Built-in Descriptions</div><div class="manage-list" id="ml-desc-builtin"></div>
+        </div>
+        <div class="manage-pane" id="pane-unit">
+          <div class="manage-add-row"><input type="text" id="mi-unit" placeholder="e.g. TON, BAG…" onkeydown="if(event.key==='Enter')addManageItem('unit')"><button class="btn btn-primary btn-sm" onclick="addManageItem('unit')">+ Add</button></div>
+          <div class="manage-section-title">Custom Units</div><div class="manage-list" id="ml-unit"></div>
+          <div class="manage-section-title" style="margin-top:20px">Built-in Units</div><div class="manage-list" id="ml-unit-builtin"></div>
+        </div>
+        <div class="manage-pane" id="pane-method">
+          <div class="manage-add-row"><input type="text" id="mi-method" placeholder="e.g. BANK TRANSFER…" onkeydown="if(event.key==='Enter')addManageItem('method')"><button class="btn btn-primary btn-sm" onclick="addManageItem('method')">+ Add</button></div>
+          <div class="manage-section-title">Custom Methods</div><div class="manage-list" id="ml-method"></div>
+          <div class="manage-section-title" style="margin-top:20px">Built-in Methods</div><div class="manage-list" id="ml-method-builtin"></div>
+        </div>
+      </div>
+      <div class="manage-ftr"><button class="btn btn-ghost" onclick="closeManageModal()">✓ Done</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- FIREBASE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnkBfzZQN_CzbB9QoZrhhOLb3mABJzxK8",
+  authDomain: "al-madhi-ledger.firebaseapp.com",
+  databaseURL: "https://al-madhi-ledger-default-rtdb.firebaseio.com",
+  projectId: "al-madhi-ledger",
+  storageBucket: "al-madhi-ledger.firebasestorage.app",
+  messagingSenderId: "861977492810",
+  appId: "1:861977492810:web:8c35d0c82c1011317e95b3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._db = db;
+window._fbRef = ref; window._fbSet = set; window._fbOnValue = onValue;
+window._fbPush = push; window._fbUpdate = update; window._fbRemove = remove; window._fbGet = get;
+window._firebaseReady = true;
+window.dispatchEvent(new Event("firebaseReady"));
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA — Firebase is the ONLY source of truth. No localStorage.
+// ═══════════════════════════════════════════════════════════
+let DB = {
+  records: [],
+  payments: [],
+  nextId: 1,
+  nextInv: 1,
+  customParties: [],
+  customDescs: [],
+  customUnits: [],
+  customMethods: [],
+};
+
+const BUILTIN_DESCS    = ['PURCHASE WOOD','PURCHASE WOOD (SMALL WOOD)','PALLET PURCHASE','GUTKA PURCHASE'];
+const BUILTIN_UNITS    = ['KG','PCS','TON','LTR','MTR','BOX','ROLL','SET','BAG','CTN'];
+const BUILTIN_METHODS  = ['CASH','CHEQUE','ACCOUNT TRANSFER','PAKISTAN','ONLINE','CASH PAID','BANK TRANSFER'];
+
+// ── Sync status ──────────────────────────────────────────
+function setSyncStatus(s) {
+  const pill = document.getElementById('sync-pill');
+  const lbl = document.getElementById('sync-label');
+  if(!pill) return;
+  pill.className = s;
+  if(s==='live') lbl.textContent = '🟢 Live';
+  else if(s==='syncing') lbl.textContent = '⟳ Syncing';
+  else lbl.textContent = '⊘ Offline';
+}
+
+// ── Firebase listeners (attach once) ────────────────────
+let _fbListenersAttached = false;
+
+function attachFirebaseListeners() {
+  if(_fbListenersAttached || !window._firebaseReady) return;
+  _fbListenersAttached = true;
+
+  const {_db:db, _fbRef:ref, _fbOnValue:onValue} = window;
+
+  onValue(ref(db,'almadhi/records'), snap => {
+    const data = snap.val();
+    DB.records = data ? Object.values(data) : [];
+    DB.records.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    setSyncStatus('live');
+    refreshCurrentPage();
+    populateAllDropdowns();
+  });
+
+  onValue(ref(db,'almadhi/payments'), snap => {
+    const data = snap.val();
+    DB.payments = data ? Object.values(data) : [];
+    DB.payments.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    refreshCurrentPage();
+    populateAllDropdowns();
+  });
+
+  onValue(ref(db,'almadhi/meta'), snap => {
+    const data = snap.val();
+    if(data) {
+      DB.nextId  = Math.max(DB.nextId,  data.nextId  || 1);
+      DB.nextInv = Math.max(DB.nextInv, data.nextInv || 1);
+    }
+  });
+
+  onValue(ref(db,'almadhi/custom'), snap => {
+    const data = snap.val() || {};
+    DB.customParties = data.parties || [];
+    DB.customDescs   = data.descs   || [];
+    DB.customUnits   = data.units   || [];
+    DB.customMethods = data.methods || [];
+    populateAllDropdowns();
+  });
+}
+
+// ── Firebase write helpers ───────────────────────────────
+async function fbWrite(path, value) {
+  if(!window._firebaseReady) { toast('Firebase not connected', 'error'); return false; }
+  setSyncStatus('syncing');
+  try {
+    await window._fbSet(window._fbRef(window._db, path), value);
+    setSyncStatus('live');
+    return true;
+  } catch(e) {
+    setSyncStatus('');
+    toast('Save failed: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function fbSaveRecord(rec) {
+  return fbWrite('almadhi/records/' + rec.id, rec);
+}
+
+async function fbSaveMeta() {
+  return fbWrite('almadhi/meta', { nextId: DB.nextId, nextInv: DB.nextInv });
+}
+
+async function fbSavePayment(pay) {
+  return fbWrite('almadhi/payments/' + pay.id, pay);
+}
+
+async function fbSaveCustomLists() {
+  return fbWrite('almadhi/custom', {
+    parties: DB.customParties, descs: DB.customDescs,
+    units: DB.customUnits, methods: DB.customMethods
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+const fmt      = n => isNaN(n) ? '0.00' : Number(n).toLocaleString('en-AE',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtShort = n => Number(n).toLocaleString('en-AE',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtDate  = d => { if(!d) return ''; const dt = new Date(d); return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); };
+const today    = () => new Date().toISOString().split('T')[0];
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast-container');
+  const d = document.createElement('div');
+  d.className = `toast ${type}`;
+  d.innerHTML = (type==='success'?'✓':type==='error'?'✗':'ℹ') + ' ' + msg;
+  t.appendChild(d);
+  setTimeout(() => d.remove(), 3500);
+}
+
+function getParties() {
+  return [...new Set([...DB.records.map(r=>r.party).filter(Boolean), ...(DB.customParties||[])])].sort();
+}
+function getDescs()   { return [...new Set([...BUILTIN_DESCS,   ...(DB.customDescs||[])])]; }
+function getUnits()   { return [...new Set([...BUILTIN_UNITS,   ...(DB.customUnits||[])])]; }
+function getMethods() { return [...new Set([...BUILTIN_METHODS, ...(DB.customMethods||[])])]; }
+
+function getPartyPurchased(party) {
+  return DB.records.filter(r=>r.party===party).reduce((s,r)=>s+r.amount,0);
+}
+function getPartyPaid(party, from=null, to=null) {
+  return DB.payments.filter(p=>{
+    if(p.party!==party) return false;
+    if(from && p.date < from) return false;
+    if(to && p.date > to) return false;
+    return true;
+  }).reduce((s,p)=>s+p.amount,0);
+}
+function getPartyBalance(party) { return getPartyPurchased(party) - getPartyPaid(party); }
+
+// Next available ID — always computed from current data to avoid conflicts
+function getNextId() {
+  const maxRec = DB.records.reduce((m,r)=>Math.max(m,r.id||0),0);
+  const maxPay = DB.payments.reduce((m,p)=>Math.max(m,p.id||0),0);
+  return Math.max(DB.nextId, maxRec+1, maxPay+1);
+}
+function getNextInv() {
+  const nums = DB.records.map(r=>{const m=(r.invNo||'').match(/(\d+)$/);return m?parseInt(m[1]):0;});
+  return Math.max(DB.nextInv, ...(nums.length?nums:[0]))+1;
+}
+
+// ═══════════════════════════════════════════════════════════
+// POPULATE DROPDOWNS
+// ═══════════════════════════════════════════════════════════
+function populateAllDropdowns() {
+  const parties = getParties();
+  ['e-party','s-party','rec-party-filter','pay-party-filter','pm-party'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = el.value;
+    while(el.options.length > 1) el.remove(1);
+    parties.forEach(p => { const o=document.createElement('option'); o.value=o.text=p; el.appendChild(o); });
+    if(cur) el.value = cur;
+  });
+
+  const descs = getDescs();
+  ['s-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = el.value;
+    el.innerHTML = '<option value="">All</option>';
+    descs.forEach(d => { const o=document.createElement('option'); o.value=o.text=d; el.appendChild(o); });
+    if(cur) el.value = cur;
+  });
+
+  ['e-method','pm-method'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = el.value;
+    el.innerHTML = '<option value="">— Select —</option>';
+    getMethods().forEach(m => { const o=document.createElement('option'); o.value=o.text=m; el.appendChild(o); });
+    if(cur) el.value = cur;
+  });
+
+  // Also repopulate any selects inside line-item rows
+  document.querySelectorAll('.li-desc').forEach(el => {
+    const cur = el.value;
+    el.innerHTML = '<option value="">— Select —</option>';
+    descs.forEach(d => { const o=document.createElement('option'); o.value=o.text=d; el.appendChild(o); });
+    if(cur) el.value = cur;
+  });
+  document.querySelectorAll('.li-unit').forEach(el => {
+    const cur = el.value;
+    el.innerHTML = '';
+    getUnits().forEach(u => { const o=document.createElement('option'); o.value=o.text=u; el.appendChild(o); });
+    if(cur) el.value = cur;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#topbar nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map = {dashboard:0,entry:1,records:2,search:3,payments:4,parties:5};
+  const btns = document.querySelectorAll('#topbar nav button');
+  if(map[id]!==undefined) btns[map[id]].classList.add('active');
+  const bmap = {dashboard:'bnav-dashboard',entry:'bnav-entry',records:'bnav-records',payments:'bnav-payments',parties:'bnav-parties'};
+  document.querySelectorAll('#bottom-nav .bnav-btn').forEach(b=>b.classList.remove('active'));
+  if(bmap[id]){const bb=document.getElementById(bmap[id]);if(bb)bb.classList.add('active');}
+  if(id==='dashboard') renderDashboard();
+  if(id==='records')   { populateAllDropdowns(); filterRecords(); }
+  if(id==='payments')  renderPayments();
+  if(id==='parties')   renderPartySummary();
+  if(id==='entry')     initEntry();
+  if(id==='search')    populateAllDropdowns();
+}
+
+function refreshCurrentPage() {
+  const active = document.querySelector('.page.active');
+  if(!active) return;
+  const id = active.id.replace('page-','');
+  if(id==='dashboard') renderDashboard();
+  else if(id==='records') filterRecords();
+  else if(id==='payments') renderPayments();
+  else if(id==='parties') renderPartySummary();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function renderDashboard() {
+  const totalPurch = DB.records.reduce((s,r)=>s+r.amount,0);
+  const totalPaid  = DB.payments.reduce((s,p)=>s+p.amount,0);
+  const totalBal   = totalPurch - totalPaid;
+  const parties    = getParties();
+  const cleared    = parties.filter(p => getPartyBalance(p) <= 0).length;
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi"><div class="kpi-icon">📦</div><div class="kpi-label">Total Purchases</div><div class="kpi-value">د.إ ${fmt(totalPurch)}</div><div class="kpi-sub">${DB.records.length} transactions</div></div>
+    <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-label">Amount Paid</div><div class="kpi-value" style="color:var(--green)">د.إ ${fmt(totalPaid)}</div><div class="kpi-sub">${DB.payments.length} payments</div></div>
+    <div class="kpi red"><div class="kpi-icon">⚠️</div><div class="kpi-label">Outstanding</div><div class="kpi-value" style="color:var(--red)">د.إ ${fmt(totalBal)}</div><div class="kpi-sub">${parties.length-cleared} parties pending</div></div>
+    <div class="kpi amber"><div class="kpi-icon">👥</div><div class="kpi-label">Active Parties</div><div class="kpi-value">${parties.length}</div><div class="kpi-sub">${cleared} cleared</div></div>
+    <div class="kpi purple"><div class="kpi-icon">📋</div><div class="kpi-label">Total Invoices</div><div class="kpi-value">${DB.records.length}</div><div class="kpi-sub">All time</div></div>`;
+
+  document.getElementById('party-count').textContent = `${parties.length} parties`;
+  const sorted = parties.sort((a,b) => getPartyBalance(b)-getPartyBalance(a));
+  document.querySelector('#dash-party-table tbody').innerHTML = sorted.map((p,i) => {
+    const purch=getPartyPurchased(p), paid=getPartyPaid(p), bal=purch-paid;
+    const cls = bal<=0?'paid':(bal>50000?'out':'part');
+    return `<tr><td style="color:var(--grey3)">${i+1}</td><td style="font-weight:600;color:var(--navy)">${p}</td><td class="mono">${fmt(purch)}</td><td class="mono" style="color:var(--green)">${fmt(paid)}</td><td class="mono" style="color:${bal<=0?'var(--green)':'var(--red)'};font-weight:700">${fmt(bal)}</td><td><span class="badge badge-${cls}">${bal<=0?'Cleared':bal>50000?'High':'Outstanding'}</span></td></tr>`;
+  }).join('');
+
+  const months = {};
+  DB.records.forEach(r => {
+    const d = new Date(r.date); if(isNaN(d)) return;
+    const key = d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'});
+    months[key] = (months[key]||0) + r.amount;
+  });
+  const maxV = Math.max(...Object.values(months),1);
+  document.getElementById('monthly-chart').innerHTML = `<div style="display:flex;gap:8px;align-items:flex-end;height:180px;padding-bottom:24px">${Object.entries(months).map(([m,v])=>{
+    const h = Math.max(4,(v/maxV)*160);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="font-size:10px;font-family:var(--mono);color:var(--grey3)">${fmtShort(v/1000)}k</div><div title="د.إ ${fmt(v)}" style="width:100%;height:${h}px;background:var(--blue2);border-radius:4px 4px 0 0"></div><div style="font-size:10px;color:var(--grey3);white-space:nowrap;transform:rotate(-30deg);margin-top:4px">${m}</div></div>`;
+  }).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// LINE ITEMS — multi-item invoice
+// ═══════════════════════════════════════════════════════════
+let _lineItemCount = 0;
+
+function addLineItem(prefill) {
+  const tbody = document.getElementById('line-items-body');
+  const rows = tbody.querySelectorAll('tr');
+  if(rows.length >= 10) { toast('Maximum 10 items per invoice', 'error'); return; }
+
+  const id = ++_lineItemCount;
+  const descs = getDescs();
+  const units = getUnits();
+  const descOpts = descs.map(d=>`<option value="${d}" ${prefill && prefill.desc===d?'selected':''}>${d}</option>`).join('');
+  const unitOpts = units.map(u=>`<option value="${u}" ${prefill && prefill.unit===u?'selected':''}>${u}</option>`).join('');
+
+  const tr = document.createElement('tr');
+  tr.dataset.lid = id;
+  tr.innerHTML = `
+    <td><select class="li-desc" onchange="calcRowTotal(${id})"><option value="">— Select —</option>${descOpts}</select></td>
+    <td><input type="number" class="li-qty" placeholder="0" min="0" oninput="calcRowTotal(${id})" value="${prefill?prefill.qty:''}" style="width:100%"></td>
+    <td><select class="li-unit" onchange="calcRowTotal(${id})">${unitOpts}</select></td>
+    <td><input type="number" class="li-price" placeholder="0.00" step="0.01" min="0" oninput="calcRowTotal(${id})" value="${prefill?prefill.price:''}" style="width:100%"></td>
+    <td>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input type="number" class="li-total row-total" placeholder="0.00" step="0.01" oninput="onCustomTotal(${id})" value="${prefill?prefill.total:''}" style="width:100%">
+        <label title="Override total" style="cursor:pointer;font-size:12px;color:var(--amber)" title="Custom total"><input type="checkbox" class="li-custom-check" onchange="toggleRowCustom(${id})" style="width:14px;height:14px"> ✎</label>
+      </div>
+    </td>
+    <td style="text-align:center"><span style="font-size:10px;color:var(--grey3)">Auto</span></td>
+    <td><button class="del-row-btn" onclick="removeLineItem(this)" title="Remove row">×</button></td>`;
+  tbody.appendChild(tr);
+
+  // If prefill, set values
+  if(prefill) {
+    const row = tr;
+    if(prefill.desc) row.querySelector('.li-desc').value = prefill.desc;
+    if(prefill.unit) row.querySelector('.li-unit').value = prefill.unit;
+    calcRowTotal(id);
+  }
+  updateGrandTotal();
+}
+
+function calcRowTotal(id) {
+  const tr = document.querySelector(`tr[data-lid="${id}"]`);
+  if(!tr) return;
+  const check = tr.querySelector('.li-custom-check');
+  if(check && check.checked) return; // custom mode — don't override
+  const qty   = parseFloat(tr.querySelector('.li-qty').value)   || 0;
+  const price = parseFloat(tr.querySelector('.li-price').value) || 0;
+  const total = qty * price;
+  const tEl   = tr.querySelector('.li-total');
+  tEl.value   = total > 0 ? total.toFixed(2) : '';
+  tEl.readOnly = true;
+  tEl.classList.add('row-total');
+  updateGrandTotal();
+}
+
+function onCustomTotal(id) {
+  updateGrandTotal();
+}
+
+function toggleRowCustom(id) {
+  const tr = document.querySelector(`tr[data-lid="${id}"]`);
+  if(!tr) return;
+  const check = tr.querySelector('.li-custom-check');
+  const tEl   = tr.querySelector('.li-total');
+  const label = tr.cells[5].querySelector('span') || tr.cells[5];
+  if(check.checked) {
+    tEl.readOnly = false;
+    tEl.classList.remove('row-total');
+    tEl.style.borderColor = 'var(--amber)';
+    tEl.style.background  = '#fffbeb';
+    tEl.focus();
+    tr.cells[5].innerHTML = '<span style="font-size:10px;color:var(--amber);font-weight:600">Custom</span>';
+  } else {
+    tEl.readOnly = true;
+    tEl.classList.add('row-total');
+    tEl.style.borderColor = '';
+    tEl.style.background  = '';
+    tr.cells[5].innerHTML = '<span style="font-size:10px;color:var(--grey3)">Auto</span>';
+    calcRowTotal(id);
+  }
+}
+
+function removeLineItem(btn) {
+  const tr = btn.closest('tr');
+  tr.remove();
+  updateGrandTotal();
+}
+
+function updateGrandTotal() {
+  let total = 0;
+  document.querySelectorAll('#line-items-body tr').forEach(tr => {
+    total += parseFloat(tr.querySelector('.li-total').value) || 0;
+  });
+  document.getElementById('invoice-grand-total').textContent = 'AED ' + fmt(total);
+  calcInvoiceBalance();
+}
+
+function calcInvoiceBalance() {
+  let total = 0;
+  document.querySelectorAll('#line-items-body tr').forEach(tr => {
+    total += parseFloat(tr.querySelector('.li-total').value) || 0;
+  });
+  const paid = parseFloat(document.getElementById('e-paid').value) || 0;
+  const bal  = total - paid;
+  const el   = document.getElementById('e-balance');
+  el.value   = total > 0 ? 'د.إ ' + fmt(bal) : '';
+  el.dataset.raw = bal;
+  el.className = bal <= 0 && total > 0 ? 'balance-zero' : 'balance-field';
+}
+
+function getLineItems() {
+  const rows = [];
+  document.querySelectorAll('#line-items-body tr').forEach(tr => {
+    const desc  = tr.querySelector('.li-desc').value;
+    const qty   = parseFloat(tr.querySelector('.li-qty').value) || 0;
+    const unit  = tr.querySelector('.li-unit').value;
+    const price = parseFloat(tr.querySelector('.li-price').value) || 0;
+    const total = parseFloat(tr.querySelector('.li-total').value) || 0;
+    if(desc || qty) rows.push({ desc, qty, unit, price, amount: total });
+  });
+  return rows;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENTRY FORM
+// ═══════════════════════════════════════════════════════════
+function initEntry() {
+  document.getElementById('e-date').value = today();
+  const nextInv = getNextInv();
+  document.getElementById('e-invno').value = 'INV-' + String(nextInv).padStart(4,'0');
+  document.getElementById('entry-inv-display').textContent = 'INV-' + String(nextInv).padStart(4,'0');
+
+  // Add first row if empty
+  if(!document.getElementById('line-items-body').querySelector('tr')) {
+    addLineItem();
+  }
+  populateAllDropdowns();
+}
+
+async function saveEntry() {
+  const party  = document.getElementById('e-party').value;
+  const date   = document.getElementById('e-date').value;
+  const invno  = document.getElementById('e-invno').value;
+
+  if(!party) { toast('Please select a Party Name', 'error'); return; }
+  if(!date)  { toast('Please enter a Date', 'error'); return; }
+
+  const items = getLineItems();
+  if(!items.length) { toast('Add at least one line item', 'error'); return; }
+  const invalidItems = items.filter(i => !i.desc || i.qty <= 0);
+  if(invalidItems.length) { toast('Each item needs a description and quantity > 0', 'error'); return; }
+
+  const totalAmount = items.reduce((s,i) => s+i.amount, 0);
+  if(totalAmount <= 0) { toast('Invoice total must be greater than 0', 'error'); return; }
+
+  const newId  = getNextId();
+  const newInv = getNextInv();
+  DB.nextId    = newId + 1;
+  DB.nextInv   = newInv + 1;
+
+  // Build record — items array for multi-line, amount = sum
+  const rec = {
+    id: newId,
+    date, invNo: invno, party,
+    vehicle: document.getElementById('e-vehicle').value,
+    // For backward compat, keep top-level fields from first item
+    desc:   items[0].desc,
+    qty:    items[0].qty,
+    unit:   items[0].unit,
+    price:  items[0].price,
+    amount: totalAmount,
+    items:  items,  // full line items array
+    notes:  document.getElementById('e-notes').value,
+    createdAt: new Date().toISOString()
+  };
+
+  const ok = await fbSaveRecord(rec);
+  if(!ok) return;
+  await fbSaveMeta();
+
+  const paid = parseFloat(document.getElementById('e-paid').value) || 0;
+  if(paid > 0) {
+    const payId = Date.now();
+    const pay = {
+      id: payId, date: document.getElementById('e-paydate').value || date,
+      party,
+      paidBy: document.getElementById('e-paidby').value,
+      method: document.getElementById('e-method').value,
+      amount: paid,
+      notes: document.getElementById('e-notes').value
+    };
+    await fbSavePayment(pay);
+  }
+
+  // Auto-add party to custom list if new
+  if(!getParties().includes(party)) {
+    if(!DB.customParties.includes(party)) DB.customParties.push(party);
+    await fbSaveCustomLists();
+  }
+
+  toast(`✅ Saved: ${invno} — AED ${fmt(totalAmount)}`, 'success');
+  clearEntry();
+}
+
+function clearEntry() {
+  ['e-vehicle','e-notes','e-paydate','e-paid'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('e-party').value   = '';
+  document.getElementById('e-paidby').value  = '';
+  document.getElementById('e-method').value  = '';
+  document.getElementById('e-balance').value = '';
+  document.getElementById('e-balance').dataset.raw = '0';
+  document.getElementById('e-date').value = today();
+  const nextInv = getNextInv();
+  document.getElementById('e-invno').value = 'INV-' + String(nextInv).padStart(4,'0');
+  document.getElementById('entry-inv-display').textContent = 'INV-' + String(nextInv).padStart(4,'0');
+  document.getElementById('invoice-grand-total').textContent = 'AED 0.00';
+  // Clear line items and add fresh row
+  document.getElementById('line-items-body').innerHTML = '';
+  _lineItemCount = 0;
+  addLineItem();
+}
+
+function viewParty() {
+  const party = document.getElementById('e-party').value;
+  if(!party) { toast('Select a party first', 'error'); return; }
+  document.getElementById('s-party').value = party;
+  showPage('search'); runSearch();
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALL RECORDS
+// ═══════════════════════════════════════════════════════════
+function filterRecords() {
+  const party   = document.getElementById('rec-party-filter').value;
+  const from    = document.getElementById('rec-date-from').value;
+  const to      = document.getElementById('rec-date-to').value;
+  const keyword = document.getElementById('rec-keyword').value.toLowerCase();
+
+  const filtered = DB.records.filter(r => {
+    if(party && r.party !== party) return false;
+    if(from && r.date < from) return false;
+    if(to && r.date > to) return false;
+    if(keyword && ![r.party,r.desc,r.invNo,r.vehicle].some(f => (f||'').toLowerCase().includes(keyword))) return false;
+    return true;
+  }).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  const total = filtered.reduce((s,r)=>s+r.amount,0);
+  document.getElementById('rec-count').textContent = `${filtered.length} records | Total: د.إ ${fmt(total)}`;
+  document.getElementById('records-subtitle').textContent = party ? `Records for ${party}` : `All ${filtered.length} transactions`;
+
+  document.querySelector('#all-records-table tbody').innerHTML = filtered.map((r,i) => {
+    const descLabel = r.items && r.items.length > 1 ? `${r.items[0].desc} +${r.items.length-1} more` : (r.desc||'—');
+    return `<tr onclick="viewRecord(${r.id})" style="cursor:pointer">
+      <td style="color:var(--grey3)">${i+1}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td class="mono"><a href="#" onclick="event.stopPropagation();viewRecord(${r.id})" style="color:var(--blue);text-decoration:none">${r.invNo}</a></td>
+      <td style="font-weight:600;color:var(--navy)">${r.party}</td>
+      <td>${descLabel}</td>
+      <td class="mono">${fmtShort(r.qty)}</td>
+      <td><span style="background:var(--grey1);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">${r.unit}</span></td>
+      <td class="mono">${fmt(r.price)}</td>
+      <td class="mono fw-700">د.إ ${fmt(r.amount)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();viewRecord(${r.id})">👁 View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function clearRecordFilters() {
+  ['rec-party-filter','rec-date-from','rec-date-to','rec-keyword'].forEach(id => { document.getElementById(id).value = ''; });
+  filterRecords();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEARCH & STATEMENT (single clean table — no duplicate)
+// ═══════════════════════════════════════════════════════════
+function runSearch() {
+  const party   = document.getElementById('s-party').value;
+  const inv     = document.getElementById('s-inv').value.toLowerCase();
+  const vehicle = document.getElementById('s-vehicle').value.toLowerCase();
+  const from    = document.getElementById('s-from').value;
+  const to      = document.getElementById('s-to').value;
+  const keyword = document.getElementById('s-keyword').value.toLowerCase();
+  const desc    = document.getElementById('s-desc').value;
+
+  const results = DB.records.filter(r => {
+    if(party && r.party !== party) return false;
+    if(inv && !(r.invNo||'').toLowerCase().includes(inv)) return false;
+    if(vehicle && !(r.vehicle||'').includes(vehicle)) return false;
+    if(from && r.date < from) return false;
+    if(to && r.date > to) return false;
+    if(desc && r.desc !== desc) return false;
+    if(keyword && ![r.party,r.desc,r.invNo,r.vehicle,r.date].some(f => (f||'').toLowerCase().includes(keyword))) return false;
+    return true;
+  }).sort((a,b) => a.date.localeCompare(b.date));
+
+  const area     = document.getElementById('statement-area');
+  const empty    = document.getElementById('search-empty');
+  const printBtn = document.getElementById('print-stmt-btn');
+
+  if(!results.length) {
+    area.style.display='none'; empty.style.display='block'; printBtn.style.display='none'; return;
+  }
+  area.style.display='block'; empty.style.display='none'; printBtn.style.display='flex';
+
+  const totalPurch   = results.reduce((s,r)=>s+r.amount,0);
+  const totalPaidAll = party ? getPartyPaid(party) : 0;
+  const currentBal   = party ? getPartyBalance(party) : totalPurch;
+
+  document.getElementById('stmt-date').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('stmt-due').textContent  = 'د.إ ' + fmt(currentBal);
+  document.getElementById('stmt-party-name').textContent  = party || 'All Parties';
+  document.getElementById('stmt-total-purch').textContent = 'د.إ ' + fmt(totalPurch);
+  document.getElementById('stmt-total-paid').textContent  = 'د.إ ' + fmt(totalPaidAll);
+  document.getElementById('stmt-balance').textContent     = 'د.إ ' + fmt(currentBal);
+
+  // Build unified timeline with purchases + payments
+  let timeline = [];
+  results.forEach(r => timeline.push({ date:r.date, type:'purchase', desc:r.desc||'Purchase', ref:r.invNo, amount:r.amount, payment:0, id:r.id }));
+
+  if(party) {
+    DB.payments.filter(p => {
+      if(p.party !== party) return false;
+      if(from && p.date < from) return false;
+      if(to && p.date > to) return false;
+      return true;
+    }).forEach(p => timeline.push({ date:p.date, type:'payment', desc:`Payment — ${p.method||''} ${p.paidBy?'('+p.paidBy+')':''}`.trim(), ref:'PMT', amount:0, payment:p.amount }));
+  }
+  timeline.sort((a,b) => a.date.localeCompare(b.date));
+
+  let bal = 0;
+  let totalPurchShown = 0, totalPaidShown = 0;
+
+  // Opening balance if date filter applied
+  if(from && party) {
+    const prevPurch = DB.records.filter(r => r.party===party && r.date < from).reduce((s,r)=>s+r.amount,0);
+    const prevPaid  = DB.payments.filter(p => p.party===party && p.date < from).reduce((s,p)=>s+p.amount,0);
+    bal = prevPurch - prevPaid;
+  }
+
+  const rows = [];
+  if(from && party && bal !== 0) {
+    rows.push(`<tr style="background:var(--sky)"><td colspan="2">${fmtDate(from)}</td><td colspan="2"><em style="color:var(--grey3)">Balance Brought Forward</em></td><td>—</td><td></td><td class="mono">—</td><td class="mono"></td><td class="mono fw-700">${fmt(bal)}</td></tr>`);
+  }
+
+  let rowNum = 0;
+  timeline.forEach(t => {
+    rowNum++;
+    bal += t.amount - t.payment;
+    totalPurchShown += t.amount;
+    totalPaidShown  += t.payment;
+    const isPay = t.type === 'payment';
+    rows.push(`<tr style="${isPay?'background:var(--greenlt)':''};cursor:${t.id?'pointer':'default'}" ${t.id?`onclick="viewRecord(${t.id})"`:''}>
+      <td style="color:var(--grey3)">${rowNum}</td>
+      <td>${fmtDate(t.date)}</td>
+      <td><span class="badge ${isPay?'badge-paid':'badge-out'}">${isPay?'Payment':'Purchase'}</span></td>
+      <td class="mono" style="color:var(--grey3)">${t.ref}</td>
+      <td>${t.desc}</td>
+      <td class="mono fw-700" style="color:var(--navy)">${t.amount > 0 ? 'د.إ '+fmt(t.amount) : '—'}</td>
+      <td class="mono fw-700" style="color:var(--green)">${t.payment > 0 ? 'د.إ '+fmt(t.payment) : '—'}</td>
+      <td class="mono fw-700" style="color:${bal>0?'var(--red)':'var(--green)'}">${fmt(bal)}</td>
+    </tr>`);
+  });
+
+  document.getElementById('search-count').textContent = `${results.length} invoices${party?' + '+DB.payments.filter(p=>p.party===party).length+' payments':''} found`;
+  document.querySelector('#search-results-table tbody').innerHTML = rows.join('');
+
+  document.getElementById('stmt-footer-purch').textContent = 'د.إ ' + fmt(totalPurchShown);
+  document.getElementById('stmt-footer-paid').textContent  = 'د.إ ' + fmt(totalPaidShown);
+  document.getElementById('stmt-footer-bal').textContent   = 'د.إ ' + fmt(currentBal);
+
+  // Aging
+  if(party) {
+    const now = new Date();
+    const age = d => Math.floor((now-new Date(d))/86400000);
+    const a0 = results.filter(r=>age(r.date)<=30).reduce((s,r)=>s+r.amount,0);
+    const a30= results.filter(r=>age(r.date)>30&&age(r.date)<=60).reduce((s,r)=>s+r.amount,0);
+    const a60= results.filter(r=>age(r.date)>60&&age(r.date)<=90).reduce((s,r)=>s+r.amount,0);
+    const a90= results.filter(r=>age(r.date)>90).reduce((s,r)=>s+r.amount,0);
+    document.getElementById('stmt-aging').innerHTML =
+      `<span style="color:var(--green)">0-30d: ${fmt(a0)}</span> &nbsp;
+       <span style="color:var(--amber)">31-60d: ${fmt(a30)}</span> &nbsp;
+       <span style="color:var(--red)">61-90d: ${fmt(a60)}</span> &nbsp;
+       <span style="color:#7c3aed">90d+: ${fmt(a90)}</span>`;
+  } else {
+    document.getElementById('stmt-aging').textContent = 'Select a party to see aging';
+  }
+}
+
+function clearSearch() {
+  ['s-party','s-inv','s-vehicle','s-from','s-to','s-keyword','s-desc'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('statement-area').style.display='none';
+  document.getElementById('search-empty').style.display='none';
+  document.getElementById('print-stmt-btn').style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENTS
+// ═══════════════════════════════════════════════════════════
+function renderPayments() {
+  populateAllDropdowns();
+  const totalPaid = DB.payments.reduce((s,p)=>s+p.amount,0);
+  const cashPaid  = DB.payments.filter(p=>p.method==='CASH').reduce((s,p)=>s+p.amount,0);
+  const chqPaid   = DB.payments.filter(p=>p.method==='CHEQUE').reduce((s,p)=>s+p.amount,0);
+  document.getElementById('pay-kpis').innerHTML = `
+    <div class="kpi green"><div class="kpi-icon">💳</div><div class="kpi-label">Total Payments</div><div class="kpi-value" style="color:var(--green)">د.إ ${fmt(totalPaid)}</div><div class="kpi-sub">${DB.payments.length} transactions</div></div>
+    <div class="kpi"><div class="kpi-icon">💵</div><div class="kpi-label">Cash Paid</div><div class="kpi-value">د.إ ${fmt(cashPaid)}</div></div>
+    <div class="kpi purple"><div class="kpi-icon">🏦</div><div class="kpi-label">Cheque / Transfer</div><div class="kpi-value" style="color:#7c3aed">د.إ ${fmt(chqPaid)}</div></div>`;
+  filterPayments();
+}
+
+function filterPayments() {
+  const party = document.getElementById('pay-party-filter').value;
+  const from  = document.getElementById('pay-from').value;
+  const to    = document.getElementById('pay-to').value;
+  const filtered = DB.payments.filter(p => {
+    if(party && p.party !== party) return false;
+    if(from && p.date < from) return false;
+    if(to && p.date > to) return false;
+    return true;
+  }).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  document.getElementById('pay-count').textContent = `${filtered.length} payments | Total: د.إ ${fmt(filtered.reduce((s,p)=>s+p.amount,0))}`;
+  document.querySelector('#pay-table tbody').innerHTML = filtered.map((p,i) =>
+    `<tr>
+      <td style="color:var(--grey3)">${i+1}</td>
+      <td>${fmtDate(p.date)}</td>
+      <td style="font-weight:600;color:var(--navy)">${p.party}</td>
+      <td>${p.paidBy||'—'}</td>
+      <td><span style="background:${p.method==='CASH'?'var(--greenlt)':'var(--sky)'};color:${p.method==='CASH'?'var(--green)':'var(--blue)'};padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600">${p.method||'—'}</span></td>
+      <td class="mono fw-700" style="color:var(--green)">د.إ ${fmt(p.amount)}</td>
+      <td style="color:var(--grey3)">${p.notes||'—'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openEditPayment('${p.id}')">✏️ Edit</button></td>
+    </tr>`).join('');
+}
+
+function clearPayFilters() {
+  ['pay-party-filter','pay-from','pay-to'].forEach(id => document.getElementById(id).value='');
+  filterPayments();
+}
+
+function openPaymentModal() {
+  populateAllDropdowns();
+  document.getElementById('pm-date').value = today();
+  document.getElementById('pm-amount').value = '';
+  document.getElementById('pm-notes').value  = '';
+  document.getElementById('payment-modal').style.display = 'flex';
+}
+function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
+
+async function savePayment() {
+  const party  = document.getElementById('pm-party').value;
+  const date   = document.getElementById('pm-date').value;
+  const amount = parseFloat(document.getElementById('pm-amount').value);
+  if(!party)  { toast('Select a party', 'error'); return; }
+  if(!date)   { toast('Enter payment date', 'error'); return; }
+  if(!amount || amount <= 0) { toast('Enter valid amount', 'error'); return; }
+
+  const pay = {
+    id: Date.now(), date, party,
+    paidBy: document.getElementById('pm-paidby').value,
+    method: document.getElementById('pm-method').value,
+    amount,
+    notes: document.getElementById('pm-notes').value
+  };
+  const ok = await fbSavePayment(pay);
+  if(ok) { closePaymentModal(); toast(`Payment of د.إ ${fmt(amount)} recorded for ${party}`, 'success'); }
+}
+
+let _editPayId = null;
+function openEditPayment(id) {
+  const p = DB.payments.find(x => String(x.id) === String(id));
+  if(!p) return;
+  _editPayId = id;
+  document.getElementById('ep-party').value  = p.party;
+  document.getElementById('ep-date').value   = p.date;
+  document.getElementById('ep-amount').value = p.amount;
+  document.getElementById('ep-paidby').value = p.paidBy||'';
+  document.getElementById('ep-method').value = p.method||'CASH';
+  document.getElementById('ep-notes').value  = p.notes||'';
+  document.getElementById('edit-pay-modal').style.display = 'flex';
+}
+
+async function saveEditPayment() {
+  const p = DB.payments.find(x => String(x.id) === String(_editPayId));
+  if(!p) return;
+  p.date   = document.getElementById('ep-date').value;
+  p.amount = parseFloat(document.getElementById('ep-amount').value)||0;
+  p.paidBy = document.getElementById('ep-paidby').value;
+  p.method = document.getElementById('ep-method').value;
+  p.notes  = document.getElementById('ep-notes').value;
+  const ok = await fbSavePayment(p);
+  if(ok) { document.getElementById('edit-pay-modal').style.display='none'; toast('Payment updated ✓', 'success'); }
+}
+
+async function deletePayment() {
+  if(!confirm('Delete this payment? Cannot be undone.')) return;
+  try { await window._fbRemove(window._fbRef(window._db, 'almadhi/payments/'+_editPayId)); } catch(e){}
+  document.getElementById('edit-pay-modal').style.display='none';
+  toast('Payment deleted', 'error');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PARTY SUMMARY
+// ═══════════════════════════════════════════════════════════
+function renderPartySummary() {
+  const parties = getParties().sort((a,b) => getPartyBalance(b)-getPartyBalance(a));
+  document.querySelector('#party-summary-table tbody').innerHTML = parties.map((p,i) => {
+    const purch=getPartyPurchased(p), paid=getPartyPaid(p), bal=purch-paid;
+    return `<tr>
+      <td style="color:var(--grey3)">${i+1}</td>
+      <td style="font-weight:700;color:var(--navy)">${p}</td>
+      <td class="text-center">${DB.records.filter(r=>r.party===p).length}</td>
+      <td class="mono">د.إ ${fmt(purch)}</td>
+      <td class="mono" style="color:var(--green)">د.إ ${fmt(paid)}</td>
+      <td class="mono fw-700" style="color:${bal<=0?'var(--green)':'var(--red)'}">د.إ ${fmt(bal)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="searchParty('${p}')">📋 Statement</button>
+        <button class="btn btn-primary btn-sm" onclick="openPaymentModal();setTimeout(()=>{document.getElementById('pm-party').value='${p}'},100)" style="margin-left:4px">+ Pay</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function searchParty(party) {
+  document.getElementById('s-party').value = party;
+  showPage('search'); runSearch();
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIEW RECORD MODAL
+// ═══════════════════════════════════════════════════════════
+let _viewingRecordId = null;
+
+function viewRecord(id) {
+  _viewingRecordId = id;
+  const r = DB.records.find(x => x.id === id);
+  if(!r) return;
+
+  const pBal = getPartyBalance(r.party);
+
+  // Build line items display
+  const items = r.items && r.items.length ? r.items : [{ desc:r.desc, qty:r.qty, unit:r.unit, price:r.price, amount:r.amount }];
+  const itemsHtml = items.map(it => `<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:7px 10px">${it.desc}</td>
+    <td style="padding:7px 10px;font-family:var(--mono)">${fmtShort(it.qty)} ${it.unit}</td>
+    <td style="padding:7px 10px;font-family:var(--mono)">${fmt(it.price)}</td>
+    <td style="padding:7px 10px;font-family:var(--mono);font-weight:700;color:var(--blue)">د.إ ${fmt(it.amount)}</td>
+  </tr>`).join('');
+
+  document.getElementById('inv-modal-title').textContent = `Invoice ${r.invNo}`;
+  document.getElementById('inv-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="background:var(--navy);color:#fff;padding:16px 20px;border-radius:8px;margin-bottom:16px">
+          <div style="font-size:11px;opacity:.6;margin-bottom:4px">TAX INVOICE</div>
+          <div style="font-size:20px;font-weight:700;font-family:var(--mono)">${r.invNo}</div>
+          <div style="font-size:13px;opacity:.7;margin-top:4px">${fmtDate(r.date)}</div>
+        </div>
+        <table style="width:100%;font-size:13px;margin-bottom:12px">
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--grey3)">Party</td><td style="padding:8px;font-weight:700;color:var(--navy)">${r.party}</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--grey3)">Vehicle</td><td style="padding:8px;font-family:var(--mono)">${r.vehicle||'—'}</td></tr>
+        </table>
+        <table style="width:100%;font-size:12px;border:1px solid var(--border);border-radius:7px;overflow:hidden">
+          <thead><tr style="background:var(--grey0)"><th style="padding:8px 10px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--grey3)">Description</th><th style="padding:8px 10px;font-size:10px;text-transform:uppercase;color:var(--grey3)">Qty</th><th style="padding:8px 10px;font-size:10px;text-transform:uppercase;color:var(--grey3)">Rate</th><th style="padding:8px 10px;font-size:10px;text-transform:uppercase;color:var(--grey3)">Amount</th></tr></thead>
+          <tbody>${itemsHtml}</tbody>
+          <tfoot><tr style="background:var(--sky)"><td colspan="3" style="padding:10px;font-weight:700;text-align:right">TOTAL</td><td style="padding:10px;font-weight:700;color:var(--blue);font-family:var(--mono);font-size:15px">د.إ ${fmt(r.amount)}</td></tr></tfoot>
+        </table>
+      </div>
+      <div>
+        <div style="background:var(--grey0);border-radius:8px;padding:16px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--grey3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Party Account</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px"><span style="color:var(--grey3)">Total Purchased</span><span class="mono">د.إ ${fmt(getPartyPurchased(r.party))}</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px"><span style="color:var(--grey3)">Total Paid</span><span class="mono color-green">د.إ ${fmt(getPartyPaid(r.party))}</span></div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
+          <div style="display:flex;justify-content:space-between;font-weight:700;background:${pBal>0?'var(--redlt)':'var(--greenlt)'};padding:10px;border-radius:6px">
+            <span>Outstanding</span>
+            <span class="mono" style="color:${pBal>0?'var(--red)':'var(--green)'}">د.إ ${fmt(pBal)}</span>
+          </div>
+        </div>
+        <div style="background:var(--grey0);border-radius:8px;padding:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--grey3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Recent Payments</div>
+          ${DB.payments.filter(p=>p.party===r.party).slice(-5).reverse().map(p =>
+            `<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px">
+              <span style="color:var(--grey3)">${fmtDate(p.date)} — ${p.method}</span>
+              <span class="mono color-green">د.إ ${fmt(p.amount)}</span>
+            </div>`).join('') || '<div style="color:var(--grey3);font-size:12px">No payments yet</div>'}
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('inv-modal').style.display = 'flex';
+}
+
+async function deleteRecordFromModal() {
+  const id = _viewingRecordId;
+  const r = DB.records.find(x => x.id === id);
+  if(!r) return;
+  if(!confirm(`Delete invoice ${r.invNo} for ${r.party}?\n\nThis cannot be undone.`)) return;
+  try { await window._fbRemove(window._fbRef(window._db, 'almadhi/records/'+id)); } catch(e){}
+  document.getElementById('inv-modal').style.display = 'none';
+  toast(`Invoice ${r.invNo} deleted`, 'error');
+}
+
+// ═══════════════════════════════════════════════════════════
+// MANAGE LISTS
+// ═══════════════════════════════════════════════════════════
+let _manageTab = 'party';
+function openManageModal(tab) {
+  _manageTab = tab || 'party';
+  document.getElementById('manage-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  switchManageTab(_manageTab);
+  renderManageLists();
+}
+function closeManageModal() {
+  document.getElementById('manage-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeManageModal(); });
+
+function switchManageTab(tab, btn) {
+  _manageTab = tab;
+  document.querySelectorAll('.manage-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.manage-pane').forEach(p => p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else {
+    const tabs = document.querySelectorAll('.manage-tab');
+    const i = ['party','desc','unit','method'].indexOf(tab);
+    if(i>=0) tabs[i].classList.add('active');
+  }
+  const pane = document.getElementById('pane-'+tab);
+  if(pane) pane.classList.add('active');
+  setTimeout(()=>{ const el=document.getElementById('mi-'+tab); if(el) el.focus(); }, 50);
+}
+
+async function addManageItem(type) {
+  const input = document.getElementById('mi-'+type);
+  const val   = input.value.trim().toUpperCase();
+  if(!val) { input.focus(); return; }
+  if(type==='party')  { if(!DB.customParties.includes(val)) DB.customParties.push(val); }
+  if(type==='desc')   { if(!DB.customDescs.includes(val))   DB.customDescs.push(val); }
+  if(type==='unit')   { if(!DB.customUnits.includes(val))   DB.customUnits.push(val); }
+  if(type==='method') { if(!DB.customMethods.includes(val)) DB.customMethods.push(val); }
+  input.value = '';
+  input.focus();
+  await fbSaveCustomLists();
+  populateAllDropdowns();
+  renderManageLists();
+  toast(val + ' added ✓', 'success');
+}
+
+async function delManageItem(type, val) {
+  if(type==='party')  DB.customParties = DB.customParties.filter(x=>x!==val);
+  if(type==='desc')   DB.customDescs   = DB.customDescs.filter(x=>x!==val);
+  if(type==='unit')   DB.customUnits   = DB.customUnits.filter(x=>x!==val);
+  if(type==='method') DB.customMethods = DB.customMethods.filter(x=>x!==val);
+  await fbSaveCustomLists();
+  populateAllDropdowns();
+  renderManageLists();
+}
+
+function renderManageLists() {
+  const builtinParties = [...new Set(DB.records.map(r=>r.party).filter(Boolean))].sort();
+  const configs = [
+    { type:'party',  custom:DB.customParties,  builtin:builtinParties },
+    { type:'desc',   custom:DB.customDescs,    builtin:BUILTIN_DESCS },
+    { type:'unit',   custom:DB.customUnits,    builtin:BUILTIN_UNITS },
+    { type:'method', custom:DB.customMethods,  builtin:BUILTIN_METHODS },
+  ];
+  configs.forEach(({type,custom,builtin}) => {
+    const cEl = document.getElementById('ml-'+type);
+    if(cEl) cEl.innerHTML = !custom.length
+      ? '<div class="manage-empty">No custom items yet</div>'
+      : custom.map(x=>`<div class="manage-item"><span class="manage-item-name">${x}</span><button class="manage-item-del" onclick="delManageItem('${type}','${x}')">×</button></div>`).join('');
+    const bEl = document.getElementById('ml-'+type+'-builtin');
+    if(bEl) bEl.innerHTML = builtin.map(x=>`<div class="manage-built-in"><span class="manage-built-in-name">${x}</span><span class="manage-built-in-badge">built-in</span></div>`).join('');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════════
+function updateClock() {
+  const el = document.getElementById('live-date');
+  if(el) el.textContent = new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════════════
+// BOOT — Firebase only, no localStorage
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  populateAllDropdowns();
+  renderDashboard();
+
+  if(window._firebaseReady) {
+    attachFirebaseListeners();
+  } else {
+    window.addEventListener('firebaseReady', () => attachFirebaseListeners(), { once: true });
+  }
+
+  // Init entry page defaults
+  document.getElementById('e-date').value = today();
+  addLineItem(); // first empty row
+  populateAllDropdowns();
+});
+</script>
+</body>
+</html>
