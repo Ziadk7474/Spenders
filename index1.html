@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statement Manager — Bilal Ahmed Hardware</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#1a3a5c;--primary-light:#2563a8;--accent:#f0a500;
+  --bg:#eef3f9;--card:#fff;--sidebar:#0d1f35;
+  --sb-text:#8fb8d8;--text:#1a2332;--muted:#5a7a99;
+  --border:#c4d8ed;--rowalt:#f4f8fd;
+  --danger:#d93030;--success:#1a9b6c;
+  --radius:12px;
+  --shadow:0 2px 16px rgba(26,58,92,.09);
+  --shadow-md:0 4px 24px rgba(26,58,92,.13);
+  --shadow-lg:0 8px 48px rgba(26,58,92,.18);
+  /* Statement theme */
+  --st-hbg:#1a3a5c;--st-htx:#fff;
+  --st-acc:#f0a500;--st-atx:#1a2332;
+  --st-thbg:#1a3a5c;--st-thtx:#fff;
+  --st-pbg:#1a3a5c;--st-pamt:#f0a500;
+  --st-fbg:#1a3a5c;--st-ftx:#fff;
+  --st-font:'DM Sans',sans-serif;--st-align:left;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px}
+
+/* SIDEBAR */
+#sb{width:234px;min-height:100vh;background:var(--sidebar);display:flex;flex-direction:column;padding:0 0 20px;position:fixed;left:0;top:0;bottom:0;z-index:200;box-shadow:4px 0 24px rgba(0,0,0,.22)}
+.sb-brand{padding:24px 22px 20px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+.sb-brand-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#fff;line-height:1.35}
+.sb-brand-sub{display:block;font-size:10px;color:var(--sb-text);letter-spacing:1.2px;text-transform:uppercase;margin-top:4px;font-weight:500}
+.sb-sec{font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(143,184,216,.4);padding:13px 22px 4px;font-weight:700}
+.ni{display:flex;align-items:center;gap:11px;padding:10px 22px;color:var(--sb-text);cursor:pointer;font-size:13.5px;font-weight:500;border-left:3px solid transparent;transition:all .17s;user-select:none}
+.ni:hover{background:rgba(255,255,255,.05);color:#e0edf8}
+.ni.active{background:rgba(37,99,168,.22);color:#fff;border-left-color:var(--accent)}
+.ni-ico{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.sb-sep{height:1px;background:rgba(255,255,255,.07);margin:7px 22px}
+.sb-ver{margin-top:auto;padding:14px 22px 0;font-size:10px;color:rgba(143,184,216,.3)}
+
+/* MAIN */
+#main{margin-left:234px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+#tb{background:#fff;border-bottom:1px solid var(--border);padding:11px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(26,58,92,.07)}
+.tb-l{display:flex;align-items:center;gap:12px}
+.tb-title{font-size:16px;font-weight:700;color:var(--primary)}
+.tb-badge{font-size:11px;font-weight:700;background:var(--rowalt);color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:20px}
+.tb-r{display:flex;gap:8px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .17s;font-family:inherit;white-space:nowrap;line-height:1}
+.bp{background:var(--primary-light);color:#fff}.bp:hover{background:#1c4f96}
+.ba{background:var(--accent);color:#1a2332}.ba:hover{background:#d4920a}
+.bg{background:#fff;color:var(--primary);border:1.5px solid var(--border)}.bg:hover{background:var(--rowalt);border-color:var(--primary-light)}
+.bs{background:#e8f9f2;color:var(--success);border:1.5px solid #b3e8d2}.bs:hover{background:#d2f5e8}
+.bd{background:#fff0f0;color:var(--danger);border:1.5px solid #fecaca}.bd:hover{background:#ffe0e0}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px}
+.btn-xs{padding:4px 9px;font-size:11.5px;border-radius:6px}
+
+/* PAGES */
+.page{display:none;padding:24px 28px 40px;animation:pgIn .2s ease}
+.page.active{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)}
+.sec-hd-t{font-size:14px;font-weight:700;color:var(--primary)}
+.pg-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.pg-hd h2{font-size:19px;font-weight:700;color:var(--primary)}
+.pg-hd-a{display:flex;gap:8px;flex-wrap:wrap}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px;margin-bottom:20px}
+.sc{background:var(--card);border-radius:var(--radius);padding:19px 21px;box-shadow:var(--shadow);border-left:4px solid var(--primary-light);transition:box-shadow .2s,transform .2s}
+.sc:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.sc.ca{border-left-color:var(--accent)}.sc.cs{border-left-color:var(--success)}.sc.cd{border-left-color:var(--danger)}
+.sl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.sv{font-size:25px;font-weight:800;color:var(--primary);margin-top:5px;line-height:1}
+.ss{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--rowalt);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:10px 15px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--rowalt)}
+tbody td{padding:10px 15px;font-size:13.5px;vertical-align:middle}
+.mono{font-family:'JetBrains Mono',monospace;font-weight:500}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.4px}
+.bp2{background:#fff4e0;color:#b36a00}.bpd{background:#e5f9f0;color:var(--success)}.bpa{background:#e8f0ff;color:#2563a8}
+
+/* FORMS */
+.fsec{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:16px}
+.fst{font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:13px}
+.fgrp{display:flex;flex-direction:column;gap:5px}
+.fgrp label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.inp{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;color:var(--text);background:#fff;transition:border .17s,box-shadow .17s;width:100%}
+.inp:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(37,99,168,.1)}
+textarea.inp{resize:vertical;min-height:65px}
+
+/* INVOICE TABLE */
+.itw{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.itw thead th{background:var(--primary);color:#fff;font-size:11px;padding:11px 11px;letter-spacing:.7px}
+.itw tbody td{padding:5px 5px}
+.itw .inp{border-radius:7px;font-size:13px;padding:8px 9px}
+.del-btn{background:none;border:none;cursor:pointer;color:#b0c8dc;font-size:15px;padding:4px 8px;border-radius:6px;transition:color .14s,background .14s}
+.del-btn:hover{color:var(--danger);background:#fff0f0}
+
+/* TOTALS */
+.tbox{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
+.ti{max-width:370px;margin-left:auto;display:flex;flex-direction:column;gap:7px}
+.tr2{display:flex;justify-content:space-between;align-items:center;font-size:13.5px}
+.tr2 .lbl{color:var(--muted);font-weight:500}.tr2 .amt{font-family:'JetBrains Mono',monospace;font-weight:600}
+.tsep{border:none;border-top:1.5px solid var(--border);margin:2px 0}
+.tr2.tout .lbl{color:var(--danger);font-weight:700}.tr2.tout .amt{color:var(--danger);font-weight:800;font-size:17px}
+
+/* PAYMENT ROW */
+.psec{margin-bottom:16px}.psec-t{font-size:13.5px;font-weight:700;color:var(--primary);margin-bottom:9px}
+.prow{display:flex;gap:7px;align-items:center;background:var(--card);border-radius:9px;padding:9px 12px;margin-bottom:7px;box-shadow:var(--shadow);border-left:3px solid var(--success)}
+.prow .inp{flex:1;font-size:13px;padding:8px 10px}
+.prow select.inp{flex:0 0 145px}.prow input[type=date].inp{flex:0 0 145px}.prow input[type=number].inp{flex:0 0 135px}
+
+/* COMPANY CARDS */
+.cog{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:14px;margin-top:16px}
+.coc{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:17px 19px;border-top:3px solid var(--primary-light);transition:box-shadow .2s,transform .2s}
+.coc:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.coc h4{font-size:14px;font-weight:700;color:var(--primary);margin-bottom:5px}
+.coc p{font-size:12px;color:var(--muted);margin-bottom:2px;line-height:1.5}
+.coc-a{display:flex;gap:7px;margin-top:12px}
+
+/* MODAL */
+.mov{display:none;position:fixed;inset:0;background:rgba(5,15,30,.6);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.mov.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:26px 28px;width:94%;max-width:570px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.26);animation:mIn .21s ease}
+.modal.wide{max-width:710px}
+@keyframes mIn{from{transform:translateY(22px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mt{font-size:17px;font-weight:700;color:var(--primary);margin-bottom:18px}
+.mf{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}
+
+/* THEME */
+.tg{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
+.tf{display:flex;flex-direction:column;gap:5px}
+.tf label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.tf input[type=color]{width:100%;height:38px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:3px;background:#fff}
+.tpre{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+
+/* PREVIEW */
+#pvw{display:none;margin-top:22px;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg)}
+.pvw-bar{background:#182b3c;padding:10px 18px;display:flex;gap:9px;align-items:center;justify-content:space-between}
+.pvw-lbl{color:rgba(255,255,255,.5);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+#pvw-body{background:#e0e8f0;padding:22px}
+
+/* TOAST */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(50px);background:#0d1f35;color:#fff;padding:12px 22px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);z-index:9999;transition:transform .27s ease,opacity .27s;opacity:0;pointer-events:none;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.ok{background:#0f6644}#toast.err{background:#8b1f1f}
+
+/* ════════════════════════════════════════
+   PRINT STATEMENT
+════════════════════════════════════════ */
+.pstmt{font-family:var(--st-font);background:#fff;width:100%;max-width:850px;margin:0 auto;border:1px solid #d0dde8;border-radius:5px;overflow:hidden}
+
+.ps-hdr{background:var(--st-hbg);color:var(--st-htx);padding:19px 26px;display:flex;justify-content:space-between;align-items:flex-start}
+.ps-hdr-co h1{font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:var(--st-htx);text-align:var(--st-align);line-height:1.25;letter-spacing:.3px}
+.ps-hdr-co .ph-addr{font-size:11.5px;margin-top:5px;opacity:.77}
+.ps-hdr-co .ph-ph{font-size:11px;opacity:.62;margin-top:2px}
+.ps-hdr-meta{text-align:right;min-width:195px}
+.ph-doctype{font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.55;margin-bottom:6px}
+.ph-trn{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--st-acc);letter-spacing:.8px}
+
+.ps-abar{background:var(--st-acc);color:var(--st-atx);text-align:center;padding:5px 20px;font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase}
+
+.ps-info{display:flex;justify-content:space-between;padding:17px 26px;border-bottom:1.5px solid #d5e3f0;gap:18px;flex-wrap:wrap;background:#fff}
+.pi-lbl{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--st-acc);margin-bottom:5px}
+.pi-name{font-size:16.5px;font-weight:800;color:#0e1d2e;line-height:1.3}
+.pi-branch{font-size:13px;font-weight:500;color:#3a5570;margin-top:1px}
+.pi-addr{font-size:11.5px;color:#5a7a99;margin-top:4px}
+.pi-trn{font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:700;color:#1a2332;margin-top:5px}
+.pi-dcol{text-align:right;flex-shrink:0}
+.pi-dlbl{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--st-acc);margin-bottom:4px}
+.pi-dval{font-size:20px;font-weight:800;color:#0e1d2e}
+.pi-rlbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5a7a99;margin-top:9px;margin-bottom:2px}
+.pi-rval{font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:600;color:#1a2332}
+
+.ps-tbl{width:100%;border-collapse:collapse}
+.ps-tbl thead th{background:var(--st-thbg);color:var(--st-thtx);padding:11px 19px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.ps-tbl thead th:last-child{text-align:right}
+.ps-tbl tbody tr:nth-child(even){background:#f5f9fd}
+.ps-tbl tbody tr:nth-child(odd){background:#fff}
+.ps-tbl tbody td{padding:10px 19px;font-size:13.5px;border-bottom:1px solid #dae5f0}
+.ps-tbl tbody td:first-child{color:#8aabcc;font-size:12px;text-align:center;width:34px}
+.ps-tbl tbody td:last-child{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600}
+.ps-ref{font-weight:700;color:var(--st-hbg)}
+
+.ps-tots{padding:9px 19px;border-top:2px solid #d5e3f0;background:#fff}
+.pt-row{display:flex;justify-content:flex-end;gap:52px;padding:5px 0;font-size:13px}
+.pt-row .tl{color:#5a7a99;font-weight:500}.pt-row .tr2{font-family:'JetBrains Mono',monospace;font-weight:600;min-width:100px;text-align:right}
+
+.ps-pays{padding:0 19px 7px;background:#fff}
+.pp-row{display:flex;justify-content:flex-end;gap:52px;padding:4px 0;font-size:12px}
+.pp-row .tl{color:var(--success);font-weight:600}.pp-row .tr2{font-family:'JetBrains Mono',monospace;min-width:100px;text-align:right;color:var(--success);font-weight:700}
+
+.ps-pend{background:var(--st-pbg);padding:15px 26px;display:flex;justify-content:space-between;align-items:center}
+.pp-lbl{font-size:11px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--st-htx);opacity:.82}
+.pp-r{display:flex;align-items:baseline;gap:8px}
+.pp-cur{font-size:12px;color:var(--st-htx);opacity:.6;font-weight:700}
+.pp-amt{font-size:29px;font-weight:800;color:var(--st-pamt);font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
+
+.ps-say{background:#f0f5fb;padding:9px 26px;font-size:11.5px;font-style:italic;color:#5a7a99;line-height:1.5}
+.ps-say strong{color:#1a2332;font-style:normal;font-weight:700}
+
+.ps-ftr{background:var(--st-fbg);padding:15px 26px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.ps-ftxt{color:var(--st-ftx);font-size:12px;line-height:1.9}
+.ps-ftxt strong{font-size:12.5px;display:block;margin-bottom:2px}
+
+/* Stamp – realistic ink look */
+.ps-stamp{width:92px;height:92px;position:relative;border-radius:50%;border:2.5px solid rgba(240,165,0,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle,rgba(240,165,0,.03) 0%,rgba(240,165,0,.09) 100%);transform:rotate(-8deg);box-shadow:0 0 0 5px rgba(240,165,0,.04),inset 0 0 10px rgba(240,165,0,.06);filter:drop-shadow(0 1px 2px rgba(240,165,0,.15))}
+.ps-stamp::before{content:'';position:absolute;inset:5px;border:1.5px dashed rgba(240,165,0,.32);border-radius:50%}
+.ps-stamp-l1{font-size:7px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,.8);line-height:1.4}
+.ps-stamp-l2{font-size:6px;color:rgba(255,255,255,.52);font-weight:600;letter-spacing:.5px;margin-top:2px}
+
+.ps-ty{background:var(--st-acc);color:var(--st-atx);text-align:center;padding:8px 20px;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase}
+
+/* ════ PRINT @media ════ */
+@media print{
+  @page{size:A4;margin:9mm 11mm}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:#fff!important}
+  #sb,#tb,.pg-hd,.fsec,.itw,.tbox,.psec,#pvw>.pvw-bar,.btn,#toast,.mov,
+  #page-dashboard,#page-companies,#page-history{display:none!important}
+  #main{margin-left:0!important}
+  .page{display:block!important;padding:0!important}
+  #page-builder{display:block!important}
+  #pvw{display:block!important;box-shadow:none!important;border-radius:0!important;margin:0!important}
+  #pvw-body{background:#fff!important;padding:0!important}
+  .pstmt{border:none!important;border-radius:0!important;max-width:100%!important}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sb">
+  <div class="sb-brand">
+    <div class="sb-brand-name">Bilal Ahmed Hardware<br>&amp; Electric TR.</div>
+    <span class="sb-brand-sub">Statement Manager v2</span>
+  </div>
+  <div class="sb-sec">Main</div>
+  <div class="ni active" data-p="dashboard" onclick="nav('dashboard',this)"><span class="ni-ico">📊</span>Dashboard</div>
+  <div class="ni" data-p="builder" onclick="nav('builder',this);newStmt()"><span class="ni-ico">📄</span>New Statement</div>
+  <div class="ni" data-p="companies" onclick="nav('companies',this)"><span class="ni-ico">🏢</span>Companies</div>
+  <div class="sb-sep"></div>
+  <div class="sb-sec">Records</div>
+  <div class="ni" data-p="history" onclick="nav('history',this)"><span class="ni-ico">🗂️</span>Saved Statements</div>
+  <div class="sb-sep"></div>
+  <div class="sb-sec">Settings</div>
+  <div class="ni" onclick="openMyCo()"><span class="ni-ico">🏭</span>My Company</div>
+  <div class="ni" onclick="openTheme()"><span class="ni-ico">🎨</span>Theme Editor</div>
+  <div class="sb-ver">© 2026 Bilal Ahmed Hardware</div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+<div id="tb">
+  <div class="tb-l">
+    <div class="tb-title" id="tbt">Dashboard</div>
+    <div class="tb-badge" id="tbb"></div>
+  </div>
+  <div class="tb-r">
+    <button class="btn bg btn-sm" onclick="openTheme()">🎨 Theme</button>
+    <button class="btn bp" onclick="nav('builder',document.querySelector('[data-p=builder]'));newStmt()">＋ New Statement</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="sg" id="dsg"></div>
+  <div class="card">
+    <div class="sec-hd"><div class="sec-hd-t">Recent Statements</div>
+      <button class="btn bg btn-sm" onclick="nav('history',document.querySelector('[data-p=history]'))">View All →</button>
+    </div>
+    <table><thead><tr><th>Ref #</th><th>Company</th><th>Date</th><th>Sub-Total</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <tbody id="dtb"></tbody></table>
+  </div>
+</div>
+
+<!-- BUILDER -->
+<div class="page" id="page-builder">
+  <div class="pg-hd">
+    <h2>Statement of Account</h2>
+    <div class="pg-hd-a">
+      <button class="btn bg btn-sm" onclick="addPay()">＋ Payment</button>
+      <button class="btn bg btn-sm" onclick="doPreview()">👁 Preview</button>
+      <button class="btn bs" onclick="doSave()">💾 Save</button>
+      <button class="btn ba" onclick="doPrint()">🖨 Print</button>
+    </div>
+  </div>
+
+  <!-- Bill To -->
+  <div class="fsec">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:10px;flex-wrap:wrap;">
+      <div class="fst" style="margin:0;padding:0;border:0;">Bill To</div>
+      <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
+        <select id="coq" class="inp" style="width:255px;font-size:13px;padding:8px 11px;" onchange="qfill()">
+          <option value="">— Select Company —</option>
+        </select>
+        <button class="btn bg btn-sm" onclick="nav('companies',document.querySelector('[data-p=companies]'))">＋ Add</button>
+      </div>
+    </div>
+    <div class="fg">
+      <div class="fgrp" style="grid-column:span 2"><label>Company Name *</label><input id="bn" class="inp" placeholder="MAHRAJ BUILDING MAINTENANCE LLC"></div>
+      <div class="fgrp"><label>Branch / Sub-name</label><input id="bb" class="inp" placeholder="DUBAI BRANCH"></div>
+      <div class="fgrp"><label>Address</label><input id="ba" class="inp" placeholder="B2B Tower, Business Bay, Dubai, UAE"></div>
+      <div class="fgrp"><label>Customer TRN</label><input id="bt" class="inp" style="font-family:'JetBrains Mono',monospace" placeholder="100365060100003"></div>
+      <div class="fgrp"><label>Statement Date</label><input id="bd" class="inp" type="date"></div>
+      <div class="fgrp"><label>Reference #</label><input id="br" class="inp" placeholder="SOA-000001"></div>
+    </div>
+  </div>
+
+  <!-- Invoice Table -->
+  <div class="itw">
+    <table id="invt">
+      <thead><tr>
+        <th style="width:36px;text-align:center">#</th>
+        <th>Invoice / Reference</th>
+        <th style="width:150px">Type</th>
+        <th style="width:155px">Date</th>
+        <th style="width:155px;text-align:right">Amount (AED)</th>
+        <th style="width:36px"></th>
+      </tr></thead>
+      <tbody id="invb"></tbody>
+    </table>
+  </div>
+  <button class="btn bg btn-sm" onclick="addRow()" style="margin-bottom:18px;">＋ Add Row</button>
+
+  <!-- Payments -->
+  <div class="psec" id="psec" style="display:none">
+    <div class="psec-t">💳 Payments Received</div>
+    <div id="prows"></div>
+  </div>
+
+  <!-- Totals -->
+  <div class="tbox">
+    <div class="ti">
+      <div class="tr2"><span class="lbl">Sub-Total</span><span class="amt" id="tsub">AED 0.00</span></div>
+      <div class="tr2"><span class="lbl">VAT / Tax (Inclusive)</span><span class="amt" style="color:var(--muted)">—</span></div>
+      <hr class="tsep">
+      <div class="tr2"><span class="lbl" style="color:var(--success)">Total Paid</span><span class="amt" id="tpaid" style="color:var(--success)">AED 0.00</span></div>
+      <hr class="tsep">
+      <div class="tr2 tout"><span class="lbl">Outstanding</span><span class="amt" id="tout">AED 0.00</span></div>
+    </div>
+  </div>
+
+  <!-- Stamp toggle -->
+  <div class="fsec" style="padding:13px 18px;">
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--primary);">
+      <input type="checkbox" id="chkstamp" checked style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary-light);">
+      Include company stamp on printed statement
+    </label>
+  </div>
+
+  <!-- Preview -->
+  <div id="pvw">
+    <div class="pvw-bar">
+      <span class="pvw-lbl">📄 Statement Preview</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn ba btn-sm" onclick="doPrint()">🖨 Print</button>
+        <button class="btn bd btn-sm" onclick="document.getElementById('pvw').style.display='none'">✕ Close</button>
+      </div>
+    </div>
+    <div id="pvw-body"></div>
+  </div>
+</div>
+
+<!-- COMPANIES -->
+<div class="page" id="page-companies">
+  <div class="pg-hd"><h2>Company Directory</h2>
+    <button class="btn bp" onclick="openAddCo()">＋ Add Company</button>
+  </div>
+  <div class="cog" id="cog"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="pg-hd"><h2>Saved Statements</h2>
+    <button class="btn bd btn-sm" onclick="if(confirm('Clear ALL statements?')){stmts=[];saveS();renderHist();toast('Cleared');}">🗑 Clear All</button>
+  </div>
+  <div class="card">
+    <table><thead><tr><th>Ref #</th><th>Company</th><th>Date</th><th>Sub-Total</th><th>Paid</th><th>Outstanding</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="htb"></tbody></table>
+  </div>
+</div>
+</div><!-- /main -->
+
+<!-- MODAL: Add/Edit Company -->
+<div class="mov" id="m-co">
+  <div class="modal">
+    <div class="mt" id="m-co-t">Add Company</div>
+    <div class="fg" style="gap:12px">
+      <div class="fgrp" style="grid-column:1/-1"><label>Company Name *</label><input id="co-nm" class="inp" placeholder="Full company name"></div>
+      <div class="fgrp"><label>Branch</label><input id="co-br" class="inp" placeholder="e.g. DUBAI BRANCH"></div>
+      <div class="fgrp"><label>Address</label><input id="co-ad" class="inp" placeholder="Full address"></div>
+      <div class="fgrp"><label>TRN</label><input id="co-tr" class="inp" placeholder="100000000000000" style="font-family:'JetBrains Mono',monospace"></div>
+      <div class="fgrp"><label>Phone</label><input id="co-ph" class="inp" placeholder="+971 XX XXX XXXX"></div>
+      <div class="fgrp"><label>Email</label><input id="co-em" class="inp" type="email" placeholder="email@company.com"></div>
+      <div class="fgrp"><label>Contact Person</label><input id="co-cp" class="inp" placeholder="Name"></div>
+      <div class="fgrp" style="grid-column:1/-1"><label>Notes</label><textarea id="co-nt" class="inp" placeholder="Optional..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn bg" onclick="closeM('m-co')">Cancel</button>
+      <button class="btn bp" onclick="saveCo()">Save Company</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: My Company -->
+<div class="mov" id="m-myco">
+  <div class="modal wide">
+    <div class="mt">🏭 My Company Details</div>
+    <div class="fg" style="gap:12px">
+      <div class="fgrp" style="grid-column:1/-1"><label>Company Name *</label><input id="mc-nm" class="inp"></div>
+      <div class="fgrp"><label>Address</label><input id="mc-ad" class="inp"></div>
+      <div class="fgrp"><label>TRN</label><input id="mc-tr" class="inp" style="font-family:'JetBrains Mono',monospace"></div>
+      <div class="fgrp"><label>Phone 1</label><input id="mc-p1" class="inp"></div>
+      <div class="fgrp"><label>Phone 2</label><input id="mc-p2" class="inp"></div>
+      <div class="fgrp"><label>Contact Person</label><input id="mc-ct" class="inp"></div>
+      <div class="fgrp"><label>Contact Phone</label><input id="mc-cp" class="inp"></div>
+      <div class="fgrp"><label>Email</label><input id="mc-em" class="inp" type="email"></div>
+      <div class="fgrp"><label>P.O. Box</label><input id="mc-po" class="inp"></div>
+    </div>
+    <div class="mf">
+      <button class="btn bg" onclick="closeM('m-myco')">Cancel</button>
+      <button class="btn bp" onclick="saveMyCo()">Save Details</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Theme Editor -->
+<div class="mov" id="m-theme">
+  <div class="modal wide">
+    <div class="mt">🎨 Statement Theme Editor</div>
+    <div class="tg">
+      <div class="tf"><label>Header Background</label><input type="color" id="t-hbg" oninput="applyT()"></div>
+      <div class="tf"><label>Header Text</label><input type="color" id="t-htx" oninput="applyT()"></div>
+      <div class="tf"><label>Accent Color</label><input type="color" id="t-acc" oninput="applyT()"></div>
+      <div class="tf"><label>Accent Text</label><input type="color" id="t-atx" oninput="applyT()"></div>
+      <div class="tf"><label>Table Header BG</label><input type="color" id="t-thbg" oninput="applyT()"></div>
+      <div class="tf"><label>Table Header Text</label><input type="color" id="t-thtx" oninput="applyT()"></div>
+      <div class="tf"><label>Pending Block BG</label><input type="color" id="t-pbg" oninput="applyT()"></div>
+      <div class="tf"><label>Pending Amount</label><input type="color" id="t-pamt" oninput="applyT()"></div>
+      <div class="tf"><label>Footer Background</label><input type="color" id="t-fbg" oninput="applyT()"></div>
+      <div class="tf"><label>Footer Text</label><input type="color" id="t-ftx" oninput="applyT()"></div>
+      <div class="tf" style="grid-column:1/-1">
+        <label>Font Family</label>
+        <select id="t-font" onchange="applyT()" class="inp" style="font-size:13px;padding:8px 11px">
+          <option value="'DM Sans',sans-serif">DM Sans (Default)</option>
+          <option value="'Playfair Display',serif">Playfair Display (Elegant)</option>
+          <option value="Georgia,serif">Georgia (Classic)</option>
+          <option value="'JetBrains Mono',monospace">JetBrains Mono (Technical)</option>
+          <option value="Arial,sans-serif">Arial (Simple)</option>
+          <option value="'Times New Roman',serif">Times New Roman (Formal)</option>
+        </select>
+      </div>
+      <div class="tf">
+        <label>Company Name Align</label>
+        <select id="t-align" onchange="applyT()" class="inp" style="font-size:13px;padding:8px 11px">
+          <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
+        </select>
+      </div>
+    </div>
+    <div class="tpre">
+      <span style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;align-self:center">Presets:</span>
+      <button class="btn bg btn-sm" onclick="preset('blue')">🔵 Navy Blue</button>
+      <button class="btn bg btn-sm" onclick="preset('dark')">⬛ Dark Elite</button>
+      <button class="btn bg btn-sm" onclick="preset('green')">🌿 Forest Green</button>
+      <button class="btn bg btn-sm" onclick="preset('maroon')">🔴 Maroon Gold</button>
+      <button class="btn bg btn-sm" onclick="preset('teal')">🩵 Deep Teal</button>
+    </div>
+    <div class="mf">
+      <button class="btn bg" onclick="closeM('m-theme')">Close</button>
+      <button class="btn ba" onclick="saveTheme();closeM('m-theme');toast('Theme saved! ✓','ok')">✓ Save &amp; Apply</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ═══ STATE ═══ */
+let myco = JSON.parse(localStorage.getItem('bah_myco')||'null') || {
+  name:'BILAL AHMED HARDWARE AND ELECTRIC TR.',
+  addr:'Al Sajaa Industrial Area, Sharjah, UAE',
+  trn:'100349794600003', ph1:'054 722 4006', ph2:'052 758 0015',
+  contact:'RABNAWAZ', cph:'+971 54 722 4006',
+  email:'Almadhicarpentry@yahoo.com', po:'P.O. Box: 63189, Sharjah-U.A.E'
+};
+let cos = JSON.parse(localStorage.getItem('bah_cos')||'null');
+if(!cos){
+  cos=[
+    {name:'MAHRAJ BUILDING MAINTENANCE LLC',branch:'DUBAI BRANCH',addr:'B2B Tower, Business Bay, Dubai, UAE',trn:'100365060100003',phone:'',email:'',contact:'',notes:''},
+    {name:'AL FUTTAIM GROUP',branch:'',addr:'Festival City, Dubai, UAE',trn:'',phone:'',email:'',contact:'',notes:''}
+  ];saveCos();
+}
+let stmts=JSON.parse(localStorage.getItem('bah_stmts')||'[]');
+let editCI=-1, rc=0, pc=0;
+
+const TYPES=['Invoice','Credit Note','Debit Note','Receipt','Payment','Adjustment','Proforma'];
+const PMETH=['Bank Transfer','Cash','Cheque','Online Transfer','NEFT','PDC'];
+const TMAP={hbg:'--st-hbg',htx:'--st-htx',acc:'--st-acc',atx:'--st-atx',thbg:'--st-thbg',thtx:'--st-thtx',pbg:'--st-pbg',pamt:'--st-pamt',fbg:'--st-fbg',ftx:'--st-ftx'};
+const PRESETS={
+  blue:{hbg:'#1a3a5c',htx:'#ffffff',acc:'#f0a500',atx:'#1a2332',thbg:'#1a3a5c',thtx:'#ffffff',pbg:'#1a3a5c',pamt:'#f0a500',fbg:'#1a3a5c',ftx:'#ffffff'},
+  dark:{hbg:'#0c0c0c',htx:'#ffffff',acc:'#e8c96a',atx:'#0c0c0c',thbg:'#1a1a1a',thtx:'#e8c96a',pbg:'#111',pamt:'#e8c96a',fbg:'#0c0c0c',ftx:'#e0e0e0'},
+  green:{hbg:'#1b3d2b',htx:'#ffffff',acc:'#5bbf74',atx:'#0d1f14',thbg:'#1b3d2b',thtx:'#ffffff',pbg:'#1b3d2b',pamt:'#5bbf74',fbg:'#1b3d2b',ftx:'#ffffff'},
+  maroon:{hbg:'#5c1a1a',htx:'#ffffff',acc:'#d4af37',atx:'#1a0000',thbg:'#5c1a1a',thtx:'#ffffff',pbg:'#5c1a1a',pamt:'#d4af37',fbg:'#5c1a1a',ftx:'#ffffff'},
+  teal:{hbg:'#0d3d4a',htx:'#ffffff',acc:'#4ecdc4',atx:'#0d2428',thbg:'#0d3d4a',thtx:'#ffffff',pbg:'#0d3d4a',pamt:'#4ecdc4',fbg:'#0d3d4a',ftx:'#ffffff'},
+};
+
+function saveCos(){localStorage.setItem('bah_cos',JSON.stringify(cos))}
+function saveS(){localStorage.setItem('bah_stmts',JSON.stringify(stmts))}
+function saveMc(){localStorage.setItem('bah_myco',JSON.stringify(myco))}
+
+/* ═══ NAV ═══ */
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.ni[data-p]').forEach(n=>n.classList.remove('active'));
+  if(el&&el.dataset&&el.dataset.p)el.classList.add('active');
+  const T={dashboard:'Dashboard',builder:'Statement Builder',companies:'Company Directory',history:'Saved Statements'};
+  document.getElementById('tbt').textContent=T[id]||'';
+  const B={history:stmts.length+' records',companies:cos.length+' companies',dashboard:'',builder:''};
+  document.getElementById('tbb').textContent=B[id]||'';
+  if(id==='dashboard')renderDash();
+  if(id==='companies')renderCos();
+  if(id==='history')renderHist();
+  if(id==='builder')refreshDrop();
+}
+
+/* ═══ DASHBOARD ═══ */
+function renderDash(){
+  const tot=stmts.reduce((a,s)=>a+(s.subtotal||0),0);
+  const paid=stmts.reduce((a,s)=>a+(s.paid||0),0);
+  const out=stmts.reduce((a,s)=>a+(s.outstanding||0),0);
+  document.getElementById('dsg').innerHTML=`
+    <div class="sc"><div class="sl">Total Statements</div><div class="sv">${stmts.length}</div><div class="ss">All time</div></div>
+    <div class="sc ca"><div class="sl">Total Invoiced</div><div class="sv">AED ${fmt(tot)}</div><div class="ss">Gross amount</div></div>
+    <div class="sc cs"><div class="sl">Total Received</div><div class="sv">AED ${fmt(paid)}</div><div class="ss">Payments collected</div></div>
+    <div class="sc cd"><div class="sl">Outstanding</div><div class="sv">AED ${fmt(out)}</div><div class="ss">Pending collection</div></div>`;
+  const tb=document.getElementById('dtb');
+  const rec=[...stmts].reverse().slice(0,8);
+  tb.innerHTML=rec.map((s,ri)=>{
+    const si=stmts.length-1-ri;
+    const o=s.outstanding||0;
+    const bc=o>0?(s.paid>0?'bpa':'bp2'):'bpd';
+    const bt=o>0?(s.paid>0?'Partial':'Pending'):'Paid';
+    return`<tr>
+      <td class="mono" style="color:var(--primary-light)">${e(s.ref)||'—'}</td>
+      <td><strong>${e(s.company)}</strong>${s.branch?`<br><small style="color:var(--muted)">${e(s.branch)}</small>`:''}</td>
+      <td>${s.date||''}</td>
+      <td class="mono">AED ${fmt(s.subtotal||0)}</td>
+      <td class="mono" style="color:var(--danger);font-weight:700">AED ${fmt(o)}</td>
+      <td><span class="badge ${bc}">${bt}</span></td>
+      <td><button class="btn bg btn-xs" onclick="loadS(${si})">Open</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px 0">No statements yet — create your first one!</td></tr>';
+}
+
+/* ═══ BUILDER ═══ */
+function newStmt(){
+  document.getElementById('invb').innerHTML='';
+  document.getElementById('prows').innerHTML='';
+  document.getElementById('psec').style.display='none';
+  document.getElementById('pvw').style.display='none';
+  document.getElementById('bn').value='';document.getElementById('bb').value='';
+  document.getElementById('ba').value='';document.getElementById('bt').value='';
+  document.getElementById('bd').value=tday();
+  document.getElementById('br').value='SOA-'+Date.now().toString().slice(-6);
+  document.getElementById('coq').value='';
+  rc=0;pc=0;
+  addRow();addRow();addRow();recalc();
+}
+
+function tday(){return new Date().toISOString().split('T')[0]}
+
+function refreshDrop(){
+  const s=document.getElementById('coq');const v=s.value;
+  s.innerHTML='<option value="">— Select Company —</option>'+
+    cos.map((c,i)=>`<option value="${i}">${e(c.name)}${c.branch?' – '+e(c.branch):''}</option>`).join('');
+  if(v)s.value=v;
+}
+
+function qfill(){
+  const i=document.getElementById('coq').value;if(i==='')return;
+  const c=cos[i];
+  document.getElementById('bn').value=c.name;
+  document.getElementById('bb').value=c.branch||'';
+  document.getElementById('ba').value=c.addr||'';
+  document.getElementById('bt').value=c.trn||'';
+}
+
+function addRow(d={}){
+  rc++;
+  const tb=document.getElementById('invb');
+  const n=tb.children.length+1;
+  const to=TYPES.map(t=>`<option${t===(d.type||'Invoice')?' selected':''}>${t}</option>`).join('');
+  const tr=document.createElement('tr');tr.dataset.rid=rc;
+  tr.innerHTML=`
+    <td style="text-align:center;color:#9ab5cc;font-size:12px;width:36px;padding:6px 4px">${n}</td>
+    <td><input class="inp" type="text" value="${e(d.ref||'')}" placeholder="e.g. BAH-1860" onkeydown="rk(event,this,0)"></td>
+    <td><select class="inp" onkeydown="rk(event,this,1)">${to}</select></td>
+    <td><input class="inp" type="date" value="${d.date||tday()}" onkeydown="rk(event,this,2)"></td>
+    <td><input class="inp" type="number" step="0.01" min="0" value="${d.amount||''}" placeholder="0.00"
+        oninput="recalc()" onkeydown="rk(event,this,3)" style="text-align:right;font-family:'JetBrains Mono',monospace"></td>
+    <td><button class="del-btn" onclick="delR(this)">✕</button></td>`;
+  tb.appendChild(tr);renum();recalc();return tr;
+}
+
+function rk(ev,el,col){
+  if(ev.key!=='Enter')return;ev.preventDefault();
+  const tr=el.closest('tr');
+  const ins=tr.querySelectorAll('input,select');
+  if(col<ins.length-1){ins[col+1].focus();}
+  else{const nx=tr.nextElementSibling;if(nx){nx.querySelector('input,select').focus();}else{const r=addRow();r.querySelector('input').focus();}}
+}
+function delR(b){b.closest('tr').remove();renum();recalc()}
+function renum(){document.querySelectorAll('#invb tr').forEach((t,i)=>{t.cells[0].textContent=i+1})}
+
+function addPay(d={}){
+  pc++;const wr=document.getElementById('prows');
+  document.getElementById('psec').style.display='block';
+  const mo=PMETH.map(m=>`<option${m===(d.method||'Bank Transfer')?' selected':''}>${m}</option>`).join('');
+  const dv=document.createElement('div');dv.className='prow';dv.dataset.pid=pc;
+  dv.innerHTML=`
+    <select class="inp">${mo}</select>
+    <input class="inp" type="date" value="${d.date||tday()}">
+    <input class="inp" type="text" value="${e(d.ref||'')}" placeholder="Ref / Cheque No.">
+    <input class="inp" type="number" step="0.01" min="0" value="${d.amount||''}" placeholder="Amount AED"
+        oninput="recalc()" style="font-family:'JetBrains Mono',monospace;text-align:right">
+    <button class="del-btn" onclick="this.parentElement.remove();if(!document.getElementById('prows').children.length)document.getElementById('psec').style.display='none';recalc()">✕</button>`;
+  wr.appendChild(dv);recalc();
+}
+
+function recalc(){
+  let sub=0;document.querySelectorAll('#invb input[type=number]').forEach(i=>sub+=parseFloat(i.value)||0);
+  let paid=0;document.querySelectorAll('#prows input[type=number]').forEach(i=>paid+=parseFloat(i.value)||0);
+  const out=Math.max(0,sub-paid);
+  document.getElementById('tsub').textContent='AED '+fmt(sub);
+  document.getElementById('tpaid').textContent='AED '+fmt(paid);
+  document.getElementById('tout').textContent='AED '+fmt(out);
+}
+
+function collectData(){
+  const rows=[];
+  document.querySelectorAll('#invb tr').forEach(tr=>{
+    const ins=tr.querySelectorAll('input,select');
+    const ref=ins[0].value.trim(),type=ins[1].value,date=ins[2].value,amount=parseFloat(ins[3].value)||0;
+    if(ref||amount)rows.push({ref,type,date,amount});
+  });
+  const pays=[];
+  document.querySelectorAll('#prows .prow').forEach(d=>{
+    const ins=d.querySelectorAll('input,select');
+    pays.push({method:ins[0].value,date:ins[1].value,ref:ins[2].value,amount:parseFloat(ins[3].value)||0});
+  });
+  const sub=rows.reduce((a,r)=>a+r.amount,0);
+  const paid=pays.reduce((a,p)=>a+p.amount,0);
+  return{
+    company:document.getElementById('bn').value.trim(),
+    branch:document.getElementById('bb').value.trim(),
+    addr:document.getElementById('ba').value.trim(),
+    trn:document.getElementById('bt').value.trim(),
+    date:document.getElementById('bd').value,
+    ref:document.getElementById('br').value.trim(),
+    stamp:document.getElementById('chkstamp').checked,
+    rows,pays,subtotal:sub,paid,outstanding:Math.max(0,sub-paid)
+  };
+}
+
+function buildHTML(d){
+  const ds=fd(d.date);const out=d.outstanding||0;
+  const rh=d.rows.map((r,i)=>`
+    <tr><td>${i+1}</td><td><span class="ps-ref">${e(r.ref)}</span></td>
+    <td>${e(r.type)}</td><td>${fd(r.date)}</td><td>${fmt(r.amount)}</td></tr>`).join('');
+  const ph=d.pays.filter(p=>p.amount>0).map(p=>`
+    <div class="pp-row"><span class="tl">Payment – ${e(p.method)}${p.ref?' ('+e(p.ref)+')':''}</span>
+    <span class="tr2">– AED ${fmt(p.amount)}</span></div>`).join('');
+  const stH=d.stamp?`<div class="ps-stamp">
+    <div class="ps-stamp-l1">${e(myco.name.split(' ').slice(0,3).join(' '))}</div>
+    <div class="ps-stamp-l2">${e(myco.addr.split(',').pop().trim())}</div></div>`:'';
+  return`<div class="pstmt">
+  <div class="ps-hdr">
+    <div class="ps-hdr-co">
+      <h1>${e(myco.name)}</h1>
+      <div class="ph-addr">${e(myco.addr)}</div>
+      <div class="ph-ph">${e(myco.ph1)} &nbsp;|&nbsp; ${e(myco.ph2)}</div>
+    </div>
+    <div class="ps-hdr-meta">
+      <div class="ph-doctype">Statement of Account</div>
+      <div class="ph-trn">TRN: ${e(myco.trn)}</div>
+    </div>
+  </div>
+  <div class="ps-abar">Statement of Account</div>
+  <div class="ps-info">
+    <div>
+      <div class="pi-lbl">Bill To</div>
+      <div class="pi-name">${e(d.company)||'—'}</div>
+      ${d.branch?`<div class="pi-branch">— ${e(d.branch)}</div>`:''}
+      ${d.addr?`<div class="pi-addr">${e(d.addr)}</div>`:''}
+      ${d.trn?`<div class="pi-trn">CUST. TRN: ${e(d.trn)}</div>`:''}
+    </div>
+    <div class="pi-dcol">
+      <div class="pi-dlbl">Statement Date</div>
+      <div class="pi-dval">${ds}</div>
+      ${d.ref?`<div class="pi-rlbl">Reference</div><div class="pi-rval">${e(d.ref)}</div>`:''}
+    </div>
+  </div>
+  <table class="ps-tbl">
+    <thead><tr>
+      <th style="width:34px;text-align:center">#</th>
+      <th>Invoice / Reference</th><th>Type</th><th>Date</th>
+      <th>Amount (AED)</th>
+    </tr></thead>
+    <tbody>${rh}</tbody>
+  </table>
+  <div class="ps-tots">
+    <div class="pt-row"><span class="tl">Sub-Total</span><span class="tr2">${fmt(d.subtotal)}</span></div>
+    <div class="pt-row"><span class="tl">VAT / Tax (Inclusive)</span><span class="tr2" style="color:#aaa">—</span></div>
+  </div>
+  ${ph?`<div class="ps-pays">${ph}</div>`:''}
+  <div class="ps-pend">
+    <div class="pp-lbl">Outstanding Amount</div>
+    <div class="pp-r"><span class="pp-cur">AED</span><span class="pp-amt">${fmt(out)}</span></div>
+  </div>
+  <div class="ps-say"><strong>Say:</strong> ${n2w(out)} only.</div>
+  <div class="ps-ftr">
+    <div class="ps-ftxt">
+      <strong>Payment Instructions</strong>
+      Cheques payable to: ${e(myco.name)}<br>
+      Contact: ${e(myco.contact)} &nbsp;·&nbsp; ${e(myco.cph)}<br>
+      Email: ${e(myco.email)} &nbsp;|&nbsp; ${e(myco.po)}
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end">${stH}</div>
+  </div>
+  <div class="ps-ty">✦ &nbsp; Thank You for Your Business &nbsp; ✦</div>
+</div>`;
+}
+
+function doPreview(){
+  const d=collectData();
+  document.getElementById('pvw-body').innerHTML=buildHTML(d);
+  const w=document.getElementById('pvw');w.style.display='block';
+  w.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function doSave(){
+  const d=collectData();
+  if(!d.company){toast('Enter company name.','err');return}
+  if(!d.rows.length){toast('Add at least one invoice row.','err');return}
+  d.savedAt=new Date().toISOString();stmts.push(d);saveS();
+  toast('Statement saved! ✓','ok');
+}
+function doPrint(){doPreview();setTimeout(()=>window.print(),350)}
+function loadS(i){
+  const d=stmts[i];
+  nav('builder',document.querySelector('[data-p=builder]'));
+  setTimeout(()=>{
+    document.getElementById('bn').value=d.company||'';document.getElementById('bb').value=d.branch||'';
+    document.getElementById('ba').value=d.addr||'';document.getElementById('bt').value=d.trn||'';
+    document.getElementById('bd').value=d.date||'';document.getElementById('br').value=d.ref||'';
+    document.getElementById('invb').innerHTML='';document.getElementById('prows').innerHTML='';
+    document.getElementById('psec').style.display='none';document.getElementById('pvw').style.display='none';
+    rc=0;pc=0;
+    d.rows.forEach(r=>addRow(r));if(!d.rows.length)addRow();
+    (d.pays||[]).forEach(p=>addPay(p));
+    recalc();toast('Statement loaded.','ok');
+  },80);
+}
+
+/* ═══ COMPANIES ═══ */
+function renderCos(){
+  const g=document.getElementById('cog');
+  if(!cos.length){g.innerHTML='<p style="color:var(--muted)">No companies yet. Add one!</p>';return}
+  g.innerHTML=cos.map((c,i)=>`
+    <div class="coc">
+      <h4>${e(c.name)}</h4>
+      ${c.branch?`<p>📍 ${e(c.branch)}</p>`:''}
+      ${c.addr?`<p>🏠 ${e(c.addr)}</p>`:''}
+      ${c.trn?`<p class="mono" style="font-size:11px;margin-top:4px">TRN: ${e(c.trn)}</p>`:''}
+      ${c.phone?`<p>📞 ${e(c.phone)}</p>`:''}
+      ${c.email?`<p>✉️ ${e(c.email)}</p>`:''}
+      ${c.contact?`<p>👤 ${e(c.contact)}</p>`:''}
+      <div class="coc-a">
+        <button class="btn bg btn-sm" onclick="openEditCo(${i})">✏️ Edit</button>
+        <button class="btn bd btn-sm" onclick="delCo(${i})">🗑 Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function openAddCo(){
+  editCI=-1;document.getElementById('m-co-t').textContent='Add New Company';
+  ['co-nm','co-br','co-ad','co-tr','co-ph','co-em','co-cp','co-nt'].forEach(id=>document.getElementById(id).value='');
+  openM('m-co');
+}
+function openEditCo(i){
+  editCI=i;const c=cos[i];document.getElementById('m-co-t').textContent='Edit Company';
+  document.getElementById('co-nm').value=c.name||'';document.getElementById('co-br').value=c.branch||'';
+  document.getElementById('co-ad').value=c.addr||'';document.getElementById('co-tr').value=c.trn||'';
+  document.getElementById('co-ph').value=c.phone||'';document.getElementById('co-em').value=c.email||'';
+  document.getElementById('co-cp').value=c.contact||'';document.getElementById('co-nt').value=c.notes||'';
+  openM('m-co');
+}
+function saveCo(){
+  const name=document.getElementById('co-nm').value.trim();
+  if(!name){toast('Company name required.','err');return}
+  const co={name,branch:document.getElementById('co-br').value.trim(),addr:document.getElementById('co-ad').value.trim(),
+    trn:document.getElementById('co-tr').value.trim(),phone:document.getElementById('co-ph').value.trim(),
+    email:document.getElementById('co-em').value.trim(),contact:document.getElementById('co-cp').value.trim(),
+    notes:document.getElementById('co-nt').value.trim()};
+  if(editCI>=0)cos[editCI]=co;else cos.push(co);
+  saveCos();closeM('m-co');renderCos();refreshDrop();toast('Company saved! ✓','ok');
+}
+function delCo(i){
+  if(!confirm('Delete "'+cos[i].name+'"?'))return;
+  cos.splice(i,1);saveCos();renderCos();refreshDrop();toast('Deleted.');
+}
+
+/* ═══ HISTORY ═══ */
+function renderHist(){
+  const tb=document.getElementById('htb');
+  if(!stmts.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px 0">No saved statements yet.</td></tr>';return}
+  tb.innerHTML=[...stmts].reverse().map((s,ri)=>{
+    const si=stmts.length-1-ri;const o=s.outstanding||0;
+    const bc=o>0?(s.paid>0?'bpa':'bp2'):'bpd';const bt=o>0?(s.paid>0?'Partial':'Pending'):'Paid';
+    return`<tr>
+      <td class="mono" style="color:var(--primary-light)">${e(s.ref)||'—'}</td>
+      <td><strong>${e(s.company)}</strong>${s.branch?`<br><small style="color:var(--muted)">${e(s.branch)}</small>`:''}</td>
+      <td>${s.date||''}</td>
+      <td class="mono">AED ${fmt(s.subtotal||0)}</td>
+      <td class="mono" style="color:var(--success)">AED ${fmt(s.paid||0)}</td>
+      <td class="mono" style="color:var(--danger);font-weight:700">AED ${fmt(o)}</td>
+      <td><span class="badge ${bc}">${bt}</span></td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn bg btn-xs" onclick="loadS(${si})">✏️</button>
+        <button class="btn bg btn-xs" onclick="printSaved(${si})">🖨</button>
+        <button class="btn bd btn-xs" onclick="delStmt(${si})">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function printSaved(i){loadS(i);setTimeout(()=>doPrint(),300)}
+function delStmt(i){
+  if(!confirm('Delete this statement?'))return;
+  stmts.splice(i,1);saveS();renderHist();toast('Deleted.');
+}
+
+/* ═══ MY COMPANY ═══ */
+function openMyCo(){
+  document.getElementById('mc-nm').value=myco.name||'';document.getElementById('mc-ad').value=myco.addr||'';
+  document.getElementById('mc-tr').value=myco.trn||'';document.getElementById('mc-p1').value=myco.ph1||'';
+  document.getElementById('mc-p2').value=myco.ph2||'';document.getElementById('mc-ct').value=myco.contact||'';
+  document.getElementById('mc-cp').value=myco.cph||'';document.getElementById('mc-em').value=myco.email||'';
+  document.getElementById('mc-po').value=myco.po||'';openM('m-myco');
+}
+function saveMyCo(){
+  myco.name=document.getElementById('mc-nm').value.trim();myco.addr=document.getElementById('mc-ad').value.trim();
+  myco.trn=document.getElementById('mc-tr').value.trim();myco.ph1=document.getElementById('mc-p1').value.trim();
+  myco.ph2=document.getElementById('mc-p2').value.trim();myco.contact=document.getElementById('mc-ct').value.trim();
+  myco.cph=document.getElementById('mc-cp').value.trim();myco.email=document.getElementById('mc-em').value.trim();
+  myco.po=document.getElementById('mc-po').value.trim();
+  saveMc();closeM('m-myco');toast('My Company updated! ✓','ok');
+}
+
+/* ═══ THEME ═══ */
+function openTheme(){
+  const r=document.documentElement;
+  Object.entries(TMAP).forEach(([k,v])=>{
+    const el=document.getElementById('t-'+k);
+    if(el)el.value=(getComputedStyle(r).getPropertyValue(v).trim()||'#000000');
+  });
+  openM('m-theme');
+}
+function applyT(){
+  const r=document.documentElement;
+  Object.entries(TMAP).forEach(([k,v])=>{const el=document.getElementById('t-'+k);if(el)r.style.setProperty(v,el.value)});
+  r.style.setProperty('--st-font',document.getElementById('t-font').value);
+  r.style.setProperty('--st-align',document.getElementById('t-align').value);
+}
+function preset(n){
+  const p=PRESETS[n];Object.entries(p).forEach(([k,v])=>{const el=document.getElementById('t-'+k);if(el)el.value=v});applyT();
+}
+function saveTheme(){
+  const r=document.documentElement;const sv={};
+  Object.entries(TMAP).forEach(([k,v])=>{sv[v]=getComputedStyle(r).getPropertyValue(v).trim()});
+  sv['--st-font']=document.getElementById('t-font').value;
+  sv['--st-align']=document.getElementById('t-align').value;
+  localStorage.setItem('bah_theme',JSON.stringify(sv));
+}
+function loadTheme(){
+  const sv=JSON.parse(localStorage.getItem('bah_theme')||'null');if(!sv)return;
+  const r=document.documentElement;Object.entries(sv).forEach(([v,val])=>r.style.setProperty(v,val));
+  const fs=document.getElementById('t-font');
+  if(sv['--st-font']&&fs)[...fs.options].forEach(o=>{if(o.value===sv['--st-font'])o.selected=true});
+  const as=document.getElementById('t-align');
+  if(sv['--st-align']&&as)[...as.options].forEach(o=>{if(o.value===sv['--st-align'])o.selected=true});
+}
+
+/* ═══ MODAL ═══ */
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.mov').forEach(ov=>ov.addEventListener('click',ev=>{if(ev.target===ov)closeM(ov.id)}));
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape')document.querySelectorAll('.mov.open').forEach(m=>m.classList.remove('open'))});
+
+/* ═══ UTILS ═══ */
+function fmt(n){return(Math.round((n||0)*100)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function fd(iso){
+  if(!iso)return'—';
+  try{return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-')}
+  catch{return iso}
+}
+function e(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function toast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className='show'+(type?' '+type:'');clearTimeout(t._t);
+  t._t=setTimeout(()=>t.className='',2800);
+}
+function n2w(amount){
+  const n=Math.abs(amount||0);const dh=Math.floor(n);const fils=Math.round((n-dh)*100);
+  const on=['','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN',
+    'ELEVEN','TWELVE','THIRTEEN','FOURTEEN','FIFTEEN','SIXTEEN','SEVENTEEN','EIGHTEEN','NINETEEN'];
+  const tn=['','','TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];
+  function ck(x){if(!x)return'';if(x<20)return on[x]+' ';if(x<100)return tn[Math.floor(x/10)]+(x%10?' '+on[x%10]:'')+' ';return on[Math.floor(x/100)]+' HUNDRED '+(x%100?ck(x%100):'')}
+  function cv(x){if(!x)return'ZERO';let s='';if(x>=1e6){s+=ck(Math.floor(x/1e6))+'MILLION ';x%=1e6}if(x>=1000){s+=ck(Math.floor(x/1000))+'THOUSAND ';x%=1000}return(s+ck(x)).trim()}
+  let r=cv(dh)+' DIRHAM'+(dh!==1?'S':'');if(fils)r+=' AND '+cv(fils)+' FIL'+(fils!==1?'S':'');return r;
+}
+
+/* ═══ INIT ═══ */
+(function(){
+  loadTheme();renderDash();refreshDrop();
+  document.getElementById('bd').value=tday();
+  document.getElementById('br').value='SOA-'+Date.now().toString().slice(-6);
+  // Pre-fill from uploaded statement
+  addRow({ref:'BAH-1860',type:'Invoice',date:'2026-04-18',amount:722.40});
+  addRow({ref:'BAH-1861',type:'Invoice',date:'2026-04-20',amount:723.45});
+  addRow({ref:'BAH-1867',type:'Invoice',date:'2026-04-24',amount:392.70});
+  addRow({ref:'INV-133010',type:'Invoice',date:'2026-04-04',amount:1307.25});
+  addRow();
+  document.getElementById('bn').value='MAHRAJ BUILDING MAINTENANCE LLC';
+  document.getElementById('bb').value='DUBAI BRANCH';
+  document.getElementById('ba').value='B2B Tower, Business Bay, Dubai, UAE';
+  document.getElementById('bt').value='100365060100003';
+  document.getElementById('bd').value='2026-04-28';
+  recalc();
+})();
+</script>
+</body>
+</html>
