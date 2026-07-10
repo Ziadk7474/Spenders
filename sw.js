@@ -1,6 +1,6 @@
 // Al Madhi PWA service worker — instant opening
-const CACHE = 'almadhi-v1';
-const CORE = ['./', 'index.html', 'icon-192.png?v=2', 'icon-512.png?v=2', 'manifest.json?v=2'];
+const CACHE = 'almadhi-v2';
+const CORE = ['./', 'index.html', 'icon-192.png?v=3', 'icon-512.png?v=3', 'icon-1024.png?v=3', 'icon-192-maskable.png?v=3', 'icon-512-maskable.png?v=3', 'manifest.json?v=3'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
