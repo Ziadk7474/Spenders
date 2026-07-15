@@ -311,9 +311,16 @@ body.dark-mode .card { background: var(--surface); }
 body.dark-mode table { background: var(--surface); }
 body.dark-mode tbody tr { background: var(--surface); }
 body.dark-mode tbody tr:hover { background: var(--surface2); }
-body.dark-mode #bottom-nav { background: var(--hdr-bg, #0a1f3d); border-top: 1px solid rgba(212,160,23,.28); box-shadow: 0 -6px 18px rgba(0,0,0,.55); }
+body.dark-mode #bottom-nav .bnav-items { background: linear-gradient(180deg, rgba(19,39,64,.97), rgba(8,26,48,.97)); border-color: rgba(255,255,255,.09); box-shadow: 0 12px 30px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.06) inset; }
 body.dark-mode #bottom-nav .bnav-btn { color: rgba(255,255,255,.55); }
-body.dark-mode #bottom-nav .bnav-btn.active { color: var(--gold); }
+body.dark-mode #bottom-nav .bnav-label { color: #eaf1ff; }
+body.dark-mode #bottom-nav .bnav-btn.is-open,
+body.dark-mode #bottom-nav .bnav-btn:focus-visible { background: rgba(255, 255, 255, 0.12); color: #fff; }
+body.dark-mode #bottom-nav .bnav-btn.active { background: linear-gradient(135deg, #1c3a63 0%, #2c4e7a 100%); color:#fff; }
+body.dark-mode #bottom-nav .bnav-btn.active svg { stroke:#fff; }
+@media (hover:hover) and (pointer:fine) {
+  body.dark-mode #bottom-nav .bnav-btn:hover { background: rgba(75,131,245,.22); color:#8fb4ff; }
+}
 body.dark-mode .modal { background: var(--surface); }
 body.dark-mode .modal-body { background: var(--surface); }
 body.dark-mode .modal-footer { background: var(--surface2); }
@@ -1856,51 +1863,103 @@ tbody tr:hover {
 .manage-section-title { font-size:11px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 8px; }
 .manage-ftr { padding:14px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; flex-shrink:0; background: #f8f9fb; }
 
-/* ── BOTTOM NAV ── */
+/* ── BOTTOM NAV · expanding pill dock (white + navy-blue, bright theme) ──
+   Same interaction model as the "expanding-menu" reference: pills sit
+   collapsed to just their icon, and open to reveal a label on hover
+   (mouse) or on tap (touch — first tap previews, second tap navigates).
+   The rail itself is white glass; blue fills whichever pill is either
+   being pressed/open or is the current page. */
 #bottom-nav {
+  --bnav-item:      46px;
+  --bnav-item-open: 116px;
+  --bnav-ease:      cubic-bezier(.22,1,.36,1);
   display: none;
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  left: 0; right: 0;
+  bottom: max(8px, env(safe-area-inset-bottom));
   z-index: 200;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  padding: 5px 0 max(6px, env(safe-area-inset-bottom));
-  box-shadow: 0 -1px 0 rgba(0,0,0,.08), 0 -4px 16px rgba(0,0,0,.06);
-}
-#bottom-nav .bnav-items { display:flex; justify-content:space-around; align-items:flex-end; padding:0 4px; position:relative; touch-action: none; -webkit-user-select:none; user-select:none; }
-#bottom-nav .bnav-btn {
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  background:none; border:none; color:var(--t3); font-family:var(--font);
-  font-size:9px; font-weight:600; letter-spacing:.3px; padding:4px 2px 3px;
-  min-width:54px; cursor:pointer; border-radius:12px; position:relative;
-  transition:color .2s; -webkit-tap-highlight-color:transparent; user-select:none; touch-action:none;
-}
-#bottom-nav .bnav-btn .bnav-icon { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:9px; transition:background .2s, transform .15s; }
-#bottom-nav .bnav-btn svg { width:20px; height:20px; transition:stroke .2s; }
-#bottom-nav .bnav-btn.active { color: var(--gold); }
-#bottom-nav .bnav-btn.active .bnav-icon { background: var(--blue-lt); transform:translateY(-1px); }
-#bottom-nav .bnav-btn.active svg { stroke: var(--gold); }
-#bottom-nav .bnav-btn.active .bnav-label { color: var(--gold); }
-#bottom-nav .bnav-btn.active::after { display:none; }
-/* Sliding gold line — replaces the static ::after, moves smoothly */
-#bnav-line {
-  position: absolute;
-  bottom: 0;
-  height: 2px;
-  width: 18px;
-  background: var(--gold);
-  border-radius: 2px 2px 0 0;
-  transition: left .32s cubic-bezier(.4,0,.2,1), opacity .2s;
+  justify-content: center;
   pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-  transform: translateX(-50%);
 }
-.bnav-label { transition:color .2s; font-size:9px; }
-#bottom-nav .bnav-btn.bnav-add { color:var(--t2); }
-#bottom-nav .bnav-btn.bnav-add .bnav-icon-wrap { width:44px; height:44px; border-radius:13px; background: linear-gradient(135deg, #2f6bf0 0%, #4b83f5 100%); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(47,107,240,.38); margin-bottom:1px; transition:transform .15s, box-shadow .15s; }
-#bottom-nav .bnav-btn.bnav-add svg { stroke:#fff; width:22px; height:22px; }
-#bottom-nav .bnav-btn.bnav-add::after { display:none; }
+#bottom-nav .bnav-items {
+  display:flex; align-items:center; gap:4px;
+  padding:6px; border-radius:999px;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.92));
+  border: 1px solid rgba(15,40,80,.10);
+  box-shadow: 0 12px 30px rgba(15,35,70,.18), 0 1px 0 rgba(255,255,255,.8) inset;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  pointer-events: auto;
+  max-width: calc(100vw - 16px);
+  touch-action: manipulation; -webkit-user-select:none; user-select:none;
+}
+#bottom-nav .bnav-btn {
+  position:relative;
+  width:var(--bnav-item); height:var(--bnav-item);
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:.55rem;
+  padding-left:13px;
+  overflow:hidden;
+  border:0; border-radius:999px;
+  background:transparent; color:var(--t3); font-family:var(--font);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition: width .42s var(--bnav-ease), background .25s ease, box-shadow .25s ease, color .25s ease;
+  will-change: width, background;
+}
+#bottom-nav .bnav-btn svg { width:19px; height:19px; flex:0 0 auto; display:block; stroke:currentColor; transition:stroke .25s ease; }
+#bottom-nav .bnav-label {
+  opacity:0; max-width:0;
+  transform:translateX(-6px);
+  white-space:nowrap; overflow:hidden;
+  font-size:11.5px; font-weight:700; letter-spacing:.1px; color:#123156;
+  transition: opacity .2s ease, max-width .42s var(--bnav-ease), transform .3s ease;
+  will-change: opacity, max-width, transform;
+}
+
+/* expanded — tap-open on touch, or hover on a real pointer */
+#bottom-nav .bnav-btn.is-open {
+  width:var(--bnav-item-open);
+  background: rgba(10, 31, 61, 0.08);
+  color: #0a1f3d;
+  box-shadow: 0 0 0 1px rgba(10, 31, 61, 0.12), 0 8px 18px rgba(10, 31, 61, 0.12);
+}
+#bottom-nav .bnav-btn.is-open .bnav-label { opacity:1; max-width:82px; transform:translateX(0); }
+
+@media (hover:hover) and (pointer:fine) {
+  #bottom-nav .bnav-btn:hover {
+    width:var(--bnav-item-open);
+    background: rgba(47,107,240,.10);
+    color:#2f6bf0;
+    box-shadow: 0 0 0 1px rgba(47,107,240,.14), 0 8px 18px rgba(47,107,240,.16);
+  }
+  #bottom-nav .bnav-btn:hover .bnav-label { opacity:1; max-width:82px; transform:translateX(0); }
+}
+
+/* current page — solid blue pill, the "pressed" state */
+#bottom-nav .bnav-btn.active {
+  background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%);
+  color:#fff;
+  box-shadow: 0 6px 16px rgba(10, 31, 61, 0.35);
+}
+#bottom-nav .bnav-btn.active svg { stroke:#fff; }
+#bottom-nav .bnav-btn.active .bnav-label { color:#fff; }
+#bottom-nav .bnav-btn.active.is-open { background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%); }
+@media (hover:hover) and (pointer:fine) {
+  #bottom-nav .bnav-btn.active:hover { background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%); }
+}
+
+/* Keyboard focus reveals the label too, via :focus-visible so tap-focus
+   on touch doesn't pre-open the pill (mirrors the reference design). */
+#bottom-nav .bnav-btn:focus-visible {
+  outline:2px solid #0a1f3d; outline-offset:2px;
+  width:var(--bnav-item-open);
+  background: rgba(10, 31, 61, 0.08);
+}
+#bottom-nav .bnav-btn:focus-visible .bnav-label { opacity:1; max-width:82px; transform:translateX(0); }
+#bottom-nav .bnav-btn.active:focus-visible { background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%); }
+
+@media (prefers-reduced-motion:reduce) {
+  #bottom-nav .bnav-btn, #bottom-nav .bnav-label { transition-duration:1ms; }
+}
 
 /* ── MISC UTILITIES ── */
 .text-right{text-align:right} .text-center{text-align:center} .fw-700{font-weight:700}
@@ -2049,7 +2108,7 @@ tbody tr:hover {
 ══════════════════════════════════════ */
 @media screen and (max-width:430px) {
   body{font-size:13px}
-  #app-scroll{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
+  #app-scroll{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 
 
   /* Topbar */
@@ -2066,17 +2125,11 @@ tbody tr:hover {
   #topbar .date-badge{font-size:8px}
   #sync-pill{padding:3px 7px;font-size:8px}
 
-  /* Bottom nav */
-  #bottom-nav{display:block}
-  #bottom-nav .bnav-items{padding:0 2px}
-  #bottom-nav .bnav-btn{min-width:44px;font-size:8px;padding:4px 1px 3px;gap:3px}
-  #bottom-nav .bnav-btn .bnav-icon{width:28px;height:28px;border-radius:8px}
-  #bottom-nav .bnav-btn svg{width:18px;height:18px}
-  #bottom-nav .bnav-btn.bnav-add .bnav-icon-wrap{width:40px;height:40px;border-radius:11px}
-  #bottom-nav .bnav-btn.bnav-add svg{width:20px;height:20px}
+  /* Bottom nav — floating pill dock, sizing lives in the base #bottom-nav rule */
+  #bottom-nav{display:flex}
 
   /* Toast */
-  #toast-container{top:auto;bottom:calc(70px + env(safe-area-inset-bottom));right:8px;left:8px}
+  #toast-container{top:auto;bottom:calc(84px + env(safe-area-inset-bottom));right:8px;left:8px}
   .toast{max-width:100%;font-size:11px;padding:9px 12px}
 
   /* Pages */
@@ -3290,7 +3343,6 @@ body.dark-mode .scope-group {
 .manage-tab.active         { border-color: var(--accent-solid) !important; border-bottom-color: var(--accent-solid) !important; }
 body.dark-mode .manage-tab.active { border-color: var(--accent-solid) !important; }
 .section-divider           { border-left: none !important; }
-#bnav-line                 { background: var(--hl-gold) !important; }
 .hero-kpi,
 body.mode-sales .hero-kpi  { border-color: var(--hl-gold-soft) !important; }
 
@@ -4844,31 +4896,30 @@ _syncSbControls();
 
 <div id="toast-container"></div>
 
-<!-- BOTTOM NAV -->
+<!-- BOTTOM NAV — expanding pill dock -->
 <div id="bottom-nav">
-  <div class="bnav-items">
-    <div id="bnav-line"></div>
-    <button class="bnav-btn active" onclick="navMain('dashboard-fixed')" id="bnav-dashboard" data-page="dashboard">
-      <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg></span>
+  <nav class="bnav-items" aria-label="Main">
+    <button class="bnav-btn active" type="button" onclick="navMain('dashboard-fixed')" id="bnav-dashboard" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
       <span class="bnav-label">Home</span>
     </button>
-    <button class="bnav-btn" onclick="showPage('records')" id="bnav-records" data-page="records">
-      <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg></span>
+    <button class="bnav-btn" type="button" onclick="showPage('records')" id="bnav-records" data-page="records">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
       <span class="bnav-label">Records</span>
     </button>
-    <button class="bnav-btn bnav-add" onclick="showPage('entry')" id="bnav-entry" data-page="entry">
-      <span class="bnav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+    <button class="bnav-btn" type="button" onclick="showPage('entry')" id="bnav-entry" data-page="entry">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <span class="bnav-label">New</span>
     </button>
-    <button class="bnav-btn" onclick="showPage('search')" id="bnav-search" data-page="search">
-      <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+    <button class="bnav-btn" type="button" onclick="showPage('search')" id="bnav-search" data-page="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <span class="bnav-label">Statement</span>
     </button>
-    <button class="bnav-btn" onclick="showPage('payments')" id="bnav-payments" data-page="payments">
-      <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M21 12h-5a2 2 0 0 0 0 4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/></svg></span>
+    <button class="bnav-btn" type="button" onclick="showPage('payments')" id="bnav-payments" data-page="payments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M21 12h-5a2 2 0 0 0 0 4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/></svg>
       <span class="bnav-label">Payments</span>
     </button>
-  </div>
+  </nav>
 </div>
 
 <div id="app-scroll">
@@ -7531,25 +7582,32 @@ function showPage(id) {
   if(id==='urdu-stmt') { setTimeout(function(){ var s=document.getElementById('ur-party'); if(s && s.options.length<=1) populateAllDropdowns(); },100); }
   if(typeof closeDrawer==='function') closeDrawer();
   // Defer heavy rendering until after the page transition has painted (keeps switching buttery)
-  requestAnimationFrame(function(){ setTimeout(function(){
-    if(id==='dashboard') { renderDashboard(); if(typeof renderErpDashExtras==='function') renderErpDashExtras(); }
-    if(id==='records')   { populateAllDropdowns(); filterRecords(); }
-    if(id==='payments')  renderPayments();
-    if(id==='parties')   renderPartySummary();
-    if(id==='entry')     { if(window._skipEntryInit){ window._skipEntryInit=false; } else initEntry(); }
-    if(id==='search')    populateAllDropdowns();
-    if(id==='cheques')   renderCheques();
-    if(id==='deliverynote') { populateAllDropdowns(); if(typeof renderDeliveryNoteList==='function') renderDeliveryNoteList(); }
-    if(id==='deliverynote-entry' && typeof initDNEntry==='function') initDNEntry();
-    if(id==='expenses' && typeof renderExpenses==='function') renderExpenses();
-    if(id==='salary'   && typeof renderSalary==='function')   renderSalary();
-    if(id==='employee-detail' && typeof renderEmployeeDetailPage==='function') renderEmployeeDetailPage();
-    if(id==='manage'){
-      document.querySelectorAll('#manage-mode-seg .mms-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.m===DB.mode); });
-      switchManageTab(_manageTab);
-      renderManageLists();
-    }
-  }, 30); });
+    requestAnimationFrame(function(){ 
+    // We wait for the bottom-nav shrink animation (420ms) to complete fully 
+    // before starting any heavy JS rendering. This prevents the "stop-and-go" stutter.
+    const isHeavy = (id === 'records' || id === 'payments' || id === 'parties');
+    const delay = isHeavy ? 450 : 40; 
+    
+    setTimeout(function(){
+      if(id==='dashboard') { renderDashboard(); if(typeof renderErpDashExtras==='function') renderErpDashExtras(); }
+      if(id==='records')   { populateAllDropdowns(); filterRecords(); }
+      if(id==='payments')  renderPayments();
+      if(id==='parties')   renderPartySummary();
+      if(id==='entry')     { if(window._skipEntryInit){ window._skipEntryInit=false; } else initEntry(); }
+      if(id==='search')    populateAllDropdowns();
+      if(id==='cheques')   renderCheques();
+      if(id==='deliverynote') { populateAllDropdowns(); if(typeof renderDeliveryNoteList==='function') renderDeliveryNoteList(); }
+      if(id==='deliverynote-entry' && typeof initDNEntry==='function') initDNEntry();
+      if(id==='expenses' && typeof renderExpenses==='function') renderExpenses();
+      if(id==='salary'   && typeof renderSalary==='function')   renderSalary();
+      if(id==='employee-detail' && typeof renderEmployeeDetailPage==='function') renderEmployeeDetailPage();
+      if(id==='manage'){
+        document.querySelectorAll('#manage-mode-seg .mms-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.m===DB.mode); });
+        switchManageTab(_manageTab);
+        renderManageLists();
+      }
+    }, delay);
+  });
 }
 
 // Whether the unified dashboard is the page currently on screen — used by
@@ -12045,7 +12103,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const ham = document.getElementById('hamburger');
       // Phone (<600 = 6.5"–6.9"): use bottom nav, hide pill nav.
       // Tablet/desktop (>=600 = 8"–30"): show pill nav, hide bottom nav.
-      if(bn)    bn.style.display    = isWide ? 'none' : 'block';
+      if(bn)    bn.style.display    = isWide ? 'none' : 'flex';
       if(ham)   ham.style.display   = 'flex';
       if(tmnav) tmnav.style.display = isWide ? 'flex' : 'none';
       if(ipn)   ipn.style.display   = 'none';
@@ -12092,103 +12150,60 @@ addLineItem(); // first empty row
     segMoveSlider(document.getElementById('ur-inv-seg'), true);
   }, 120);
 
-  // ── BOTTOM NAV SLIDING LINE — exact mirror of topbar engine ─────────────
+  // ── BOTTOM NAV — expanding pill items ────────────────────────────────────
+  // Mouse/trackpad: CSS :hover alone expands a pill to reveal its label, and
+  // a click just navigates straight away (native onclick on the button).
+  // Touch: there's no hover, so the first tap only opens the pill (previewing
+  // the label) and a second tap on the now-open pill navigates. This mirrors
+  // the reference "expanding-menu" component's own tap logic.
   (function(){
-    var line  = document.getElementById('bnav-line');
-    var bar   = document.getElementById('bottom-nav');
-    if(!line || !bar) return;
+    var bar = document.getElementById('bottom-nav');
+    if(!bar) return;
+    var wrap = bar.querySelector('.bnav-items');
+    var canHover = matchMedia('(hover:hover) and (pointer:fine)').matches;
 
-    var SPRING  = 'left 0.30s cubic-bezier(0.34,1.25,0.64,1)';
-    var INSTANT = 'none';
-    var isActive = false, ptId = null, moved = false, startX = 0, hovered = null, raf = null;
-
-    // Centre of the line under a specific button — no transition, caller sets it
-    function lineOnBtn(btn) {
-      if(!btn) return;
-      var ir = bar.getBoundingClientRect();
-      var br = btn.getBoundingClientRect();
-      line.style.left    = (br.left - ir.left + br.width / 2) + 'px';
-      line.style.opacity = '1';
+    function closeAll(){
+      bar.querySelectorAll('.bnav-btn.is-open').forEach(function(b){ b.classList.remove('is-open'); });
     }
 
-    // Track exact finger X (same as capsuleAtX in topbar) — line follows raw position
-    function lineAtX(clientX) {
-      var ir  = bar.getBoundingClientRect();
-      // clamp inside bar
-      var cx  = Math.max(0, Math.min(ir.width, clientX - ir.left));
-      line.style.left    = cx + 'px';
-      line.style.opacity = '1';
-    }
-
-    // Closest bnav-btn by X
-    function btnAtX(clientX) {
-      var best = null, minD = Infinity;
-      bar.querySelectorAll('.bnav-btn').forEach(function(b) {
-        var r = b.getBoundingClientRect();
-        var d = Math.abs(r.left + r.width / 2 - clientX);
-        if(d < minD) { minD = d; best = b; }
-      });
-      return best;
-    }
-
-    // POINTERDOWN — instant snap, begin drag
-    bar.addEventListener('pointerdown', function(e) {
-      if(!e.target.closest('.bnav-btn')) return;
-      isActive = true; moved = false; startX = e.clientX; ptId = e.pointerId;
-      hovered  = btnAtX(e.clientX);
-      try { bar.setPointerCapture(e.pointerId); } catch(_){}
-      line.style.transition = INSTANT;
-      lineAtX(e.clientX);
-    }, { passive: true });
-
-    // POINTERMOVE — follow finger exactly like topbar
-    bar.addEventListener('pointermove', function(e) {
-      if(!isActive || e.pointerId !== ptId) return;
-      if(Math.abs(e.clientX - startX) > 2) moved = true;
-      if(raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(function() {
-        lineAtX(e.clientX);
-        var btn = btnAtX(e.clientX);
-        if(btn !== hovered) hovered = btn;
-      });
-    }, { passive: true });
-
-    // RELEASE — spring snap to nearest button + navigate
-    function onRelease(e) {
-      if(!isActive) return;
-      if(e && e.pointerId !== undefined && e.pointerId !== ptId) return;
-      isActive = false;
-      line.style.transition = SPRING;
-      if(hovered) {
-        lineOnBtn(hovered);
-        if(hovered.dataset.page) showPage(hovered.dataset.page);
+    // Capture phase so we can intercept BEFORE the click reaches the button
+    // itself — that's what lets the first touch tap open the pill without
+    // firing the button's own onclick (showPage/navMain) right away.
+    bar.addEventListener('click', function(e){
+      var btn = e.target.closest('.bnav-btn');
+      if(!btn || canHover) return; // pointer devices already previewed via hover — just navigate
+      if(!btn.classList.contains('is-open')){
+        e.preventDefault();
+        e.stopPropagation();
+        closeAll();
+        btn.classList.add('is-open');
+      } else {
+        // User clicked an already-open pill -> navigate.
+        // We capture the "closing" intent here. By removing 'is-open' immediately,
+        // the shrink animation starts. We then wait for the transition to finish
+        // (or a safe timeout) before allowing the heavy page rendering to kick in.
+        btn.classList.remove('is-open');
+        // The native onclick (showPage) will fire now.
       }
-      hovered = null; raf = null;
-    }
-    bar.addEventListener('pointerup',          onRelease, { passive: true });
-    bar.addEventListener('pointercancel',      onRelease, { passive: true });
-    bar.addEventListener('lostpointercapture', onRelease, { passive: true });
-
-    // Suppress click after a drag so onclick doesn't double-fire
-    bar.addEventListener('click', function(e) {
-      if(moved) { e.stopImmediatePropagation(); e.preventDefault(); moved = false; }
     }, true);
 
-    // Keep line in sync when showPage called from elsewhere (drawer, code, etc.)
-    var _sp = window.showPage;
-    window.showPage = function(id) {
-      if(_sp) _sp(id);
-      requestAnimationFrame(function(){
-        var ab = bar.querySelector('.bnav-btn.active');
-        if(ab) { line.style.transition = SPRING; lineOnBtn(ab); }
-      });
-    };
+    // Tapping anywhere outside the rail collapses whatever pill is open.
+    document.addEventListener('click', function(e){
+      if(!e.target.closest('#bottom-nav .bnav-btn')) closeAll();
+    });
 
-    // Init on load
-    setTimeout(function(){
-      var ab = bar.querySelector('.bnav-btn.active');
-      if(ab) { line.style.transition = INSTANT; lineOnBtn(ab); line.offsetWidth; line.style.transition = SPRING; }
-    }, 220);
+    // Arrow-key navigation across the rail (keyboard users).
+    if(wrap){
+      wrap.addEventListener('keydown', function(e){
+        var list = Array.from(wrap.querySelectorAll('.bnav-btn'));
+        var i = list.indexOf(document.activeElement);
+        if(i < 0) return;
+        if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+          e.preventDefault();
+          list[(i + (e.key === 'ArrowRight' ? 1 : -1) + list.length) % list.length].focus();
+        }
+      });
+    }
   })();
 });
 
