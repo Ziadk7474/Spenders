@@ -6458,6 +6458,11 @@ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded
             <input type="text" id="pm-notes" placeholder="Optional reference / memo">
           </div>
         </div>
+        <div class="form-group" style="margin-top:12px;max-width:260px">
+          <label>For Month <span style="font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input type="month" id="pm-month">
+          <div style="font-size:10.5px;color:var(--t3);margin-top:3px;line-height:1.4">Which month this payment counts toward. Leave blank to use the payment date's month.</div>
+        </div>
       </div>
 
       <div style="padding:16px 22px">
@@ -6664,6 +6669,11 @@ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded
           <div class="form-group"><label id="lbl-ep-paidby">Paid By</label><select id="ep-paidby"><option value="">— Select —</option></select></div>
           <div class="form-group"><label>Method</label><select id="ep-method"><option>CASH</option><option>CHEQUE</option><option>ACCOUNT TRANSFER</option><option>PAKISTAN</option><option>ONLINE</option></select></div>
           <div class="form-group"><label>Notes</label><input type="text" id="ep-notes"></div>
+        </div>
+        <div class="form-group" style="margin-top:12px;max-width:260px">
+          <label>For Month <span style="font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input type="month" id="ep-month">
+          <div style="font-size:10.5px;color:var(--t3);margin-top:3px;line-height:1.4">Which month this payment counts toward. Leave blank to use the payment date's month.</div>
         </div>
       </div>
       <div style="padding:16px 22px">
@@ -10411,6 +10421,7 @@ function openPaymentModal(preParty) {
   document.getElementById('pm-date').value   = today();
   document.getElementById('pm-amount').value = '';
   document.getElementById('pm-notes').value  = '';
+  document.getElementById('pm-month').value  = '';
   document.getElementById('pm-paidby').value = '';
   document.getElementById('pm-method').value = 'CASH';
   const sEl=document.getElementById('pm-alloc-search'); if(sEl) sEl.value='';
@@ -10437,9 +10448,10 @@ async function savePayment() {
 
   const payId = await allocateRecordId();
   AD().nextId = payId + 1;
+  const pmMonth = document.getElementById('pm-month').value || null;
   const pay = {
     id: payId, recNo: getNextRecNo(), date, party,
-    invoicePeriod: null,
+    invoicePeriod: pmMonth,
     allocMode: c.mode,
     allocations: c.allocations,
     paidBy: document.getElementById('pm-paidby').value,
@@ -10477,6 +10489,7 @@ function openEditPayment(id) {
   document.getElementById('ep-paidby').value = p.paidBy||'';
   document.getElementById('ep-method').value = p.method||'CASH';
   document.getElementById('ep-notes').value  = p.notes||'';
+  document.getElementById('ep-month').value  = p.invoicePeriod||'';
   const sEl=document.getElementById('ep-alloc-search'); if(sEl) sEl.value='';
 
   // seed the allocation state from the stored payment (exclude self so its own
@@ -10503,7 +10516,7 @@ async function saveEditPayment() {
   p.paidBy        = document.getElementById('ep-paidby').value;
   p.method        = document.getElementById('ep-method').value;
   p.notes         = document.getElementById('ep-notes').value;
-  p.invoicePeriod = null;
+  p.invoicePeriod = document.getElementById('ep-month').value || null;
   p.allocMode     = c.mode;
   p.allocations   = c.allocations;
   p.updatedAt     = new Date().toISOString();
