@@ -2000,6 +2000,8 @@ tbody tr:hover {
 /* ══════════════════════════════════════
    PRINT STYLES — CLEAN & SIMPLE
 ══════════════════════════════════════ */
+
+
 @media print {
   /* ── HIDE ALL UI CHROME ── */
   #topbar, #topbar-main-nav, #inner-pill-nav, #bottom-nav,
@@ -2213,12 +2215,12 @@ tbody tr:hover {
 
   /* Entry form — prevent ALL overflow */
   #page-entry{padding:6px 8px 10px!important;overflow-x:hidden!important}
-  #page-entry .card{overflow:hidden!important;width:100%!important;box-sizing:border-box!important}
-  #page-entry .card-body{padding:6px 8px!important}
-  #page-entry .card > div:first-child{padding:6px 10px!important;border-radius:8px 8px 0 0!important}
-  #page-entry .form-grid-4{grid-template-columns:1fr 1fr!important;gap:4px!important}
-  #page-entry .form-grid{grid-template-columns:1fr 1fr!important;gap:4px!important}
-  #page-entry .form-group .btn.btn-ghost.btn-sm{padding:0 6px!important;font-size:14px!important;min-height:32px!important}
+  #page-entry .card, #page-edit-invoice .card{overflow:hidden!important;width:100%!important;box-sizing:border-box!important}
+  #page-entry .card-body, #page-edit-invoice .card-body{padding:6px 8px!important}
+  #page-entry .card > div:first-child, #page-edit-invoice .card > div:first-child{padding:6px 10px!important;border-radius:8px 8px 0 0!important}
+  #page-entry .form-grid-4, #page-edit-invoice .form-grid-4{grid-template-columns:1fr 1fr!important;gap:4px!important}
+  #page-entry .form-grid, #page-edit-invoice .form-grid{grid-template-columns:1fr 1fr!important;gap:4px!important}
+  #page-entry .form-group .btn.btn-ghost.btn-sm, #page-edit-invoice .form-group .btn.btn-ghost.btn-sm{padding:0 6px!important;font-size:14px!important;min-height:32px!important}
 
   /* Line items — full single-column stacked cards, nothing overflows */
   .items-table-wrap{overflow:visible!important;border:none!important;background:transparent!important;border-radius:0!important;margin-bottom:4px!important;width:100%!important;box-sizing:border-box!important}
@@ -2267,8 +2269,8 @@ tbody tr:hover {
   .add-row-btn{width:100%!important;box-sizing:border-box!important;justify-content:center!important}
 
   /* Payment info section */
-  #page-entry .form-grid-2{grid-template-columns:1fr 1fr!important;gap:4px 6px!important}
-  #page-entry .form-actions{padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
+  #page-entry .form-grid-2, #page-edit-invoice .form-grid-2{grid-template-columns:1fr 1fr!important;gap:4px 6px!important}
+  #page-entry .form-actions, #page-edit-invoice .form-actions{padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
 
   /* Search panel */
   .search-panel{padding:12px 12px;margin-bottom:10px}
@@ -2309,8 +2311,7 @@ tbody tr:hover {
   .modal-footer{padding:10px 13px;gap:6px}
   .modal-footer .btn{flex:1 1 calc(50% - 4px);justify-content:center;min-height:40px;overflow:visible;min-width:0}
   #inv-modal .modal{max-height:96vh}
-  #edit-inv-modal .modal{max-height:96vh}
-  #edit-inv-modal .modal-body{max-height:72vh!important;overflow-y:auto}
+  #edit-items-wrap{overflow-x:auto}
   #payment-modal .modal-body > div > div[style*="grid-template-columns:1.5fr"]{grid-template-columns:1fr!important;gap:7px!important}
   #payment-modal .modal-body > div > div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important;gap:7px!important}
   #payment-modal .modal-body > div:last-child > div[style*="grid-template-columns"]{grid-template-columns:1fr 1fr!important;gap:7px!important}
@@ -2427,8 +2428,7 @@ tbody tr:hover {
   .modal-footer{padding:10px 17px;gap:8px}
   .modal-footer .btn{min-height:36px}
   #inv-modal .modal{max-height:96vh}
-  #edit-inv-modal .modal{max-height:96vh}
-  #edit-inv-modal .modal-body{max-height:72vh!important;overflow-y:auto}
+  #edit-items-wrap{overflow-x:auto}
   #payment-modal .modal-body > div > div[style*="grid-template-columns:1.5fr"]{grid-template-columns:1fr!important;gap:7px!important}
   #payment-modal .modal-body > div > div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important;gap:7px!important}
   #payment-modal .modal-body > div:last-child > div[style*="grid-template-columns"]{grid-template-columns:1fr 1fr!important;gap:7px!important}
@@ -6358,6 +6358,76 @@ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded
   </div>
 </div>
 
+<!-- ═══════════════ EDIT INVOICE PAGE ═══════════════ -->
+<div class="page" id="page-edit-invoice" style="padding-top:10px">
+  <div class="card entry-main-card">
+    <div class="entry-hero">
+      <div class="entry-hero-copy">
+        <div>
+          <div class="entry-eyebrow">Edit Invoice</div>
+          <span id="edit-inv-title" style="display:block;font-size:20px;font-weight:700;letter-spacing:-.3px;color:var(--t1)">Invoice</span>
+        </div>
+      </div>
+    </div>
+    <div class="entry-form-body">
+
+      <section class="entry-section">
+        <div class="entry-section-head"><div class="entry-section-title"><span class="entry-step">1</span><span>Invoice Information</span></div></div>
+        <div class="entry-rows">
+          <div class="form-group fg-row"><label>Invoice No.</label><div class="fg-field"><input type="text" id="ei-invno"></div></div>
+          <div class="form-group fg-row"><label>Date *</label><div class="fg-field"><input type="date" id="ei-date"></div></div>
+          <div class="form-group fg-row"><label>Party Name *</label><div class="fg-field"><select id="ei-party"><option value="">— Select —</option></select></div></div>
+          <div class="form-group fg-row"><label>PO No.</label><div class="fg-field"><input type="text" id="ei-vehicle" placeholder="PO number" oninput="checkPoDupeEdit()" autocomplete="off"><div id="ei-po-dupe-warn" style="display:none;font-size:11px;color:#e23b3b;font-weight:700;margin-top:4px"></div></div></div>
+        </div>
+      </section>
+
+      <section class="entry-section">
+        <div class="entry-section-head">
+          <div class="entry-section-title"><span class="entry-step">2</span><span>Line Items</span></div>
+          <div class="entry-section-hint">Max 10 items</div>
+        </div>
+        <div class="items-table-wrap" id="edit-items-wrap">
+          <table class="items-table">
+            <thead><tr>
+              <th style="width:26%">Description</th>
+              <th style="width:8%">Qty</th>
+              <th style="width:8%">Unit</th>
+              <th id="ei-th-kgbag" style="width:8%;display:none">KG/Bag</th>
+              <th id="ei-th-totalkg" style="width:9%;display:none">Total KG</th>
+              <th style="width:15%">Price (<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg>)</th>
+              <th style="width:18%">Total (<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg>)</th>
+              <th style="width:40px;text-align:center;font-size:9px;letter-spacing:.3px">Del</th>
+            </tr></thead>
+            <tbody id="edit-line-items-body"></tbody>
+            <tfoot>
+              <tr>
+                <td id="ei-tfoot-label" colspan="4" style="text-align:right;font-size:11px;color:var(--t3);font-weight:700;letter-spacing:.4px;text-transform:uppercase">INVOICE TOTAL</td>
+                <td id="edit-grand-total" style="font-weight:700;font-family:var(--mono)"><svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> 0.00</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addEditLineItem()" style="margin-top:8px">+ Add Another Item</button>
+      </section>
+
+      <section class="entry-section">
+        <div class="entry-section-head"><div class="entry-section-title"><span class="entry-step">3</span><span>Payment Information</span></div></div>
+        <div class="entry-rows">
+          <div class="form-group fg-row"><label>Balance Due (AED)</label><div class="fg-field"><input type="text" id="ei-balance" class="balance-field" readonly placeholder="Auto-calculated"></div></div>
+          <div class="form-group fg-row"><label>Payment Method</label><div class="fg-field"><select id="ei-method"><option value="">— Select —</option></select></div></div>
+          <div class="form-group fg-row"><label>Notes</label><div class="fg-field"><input type="text" id="ei-notes" placeholder="Optional notes / memo"></div></div>
+        </div>
+      </section>
+
+          <div class="entry-actions" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:16px 0 0">
+        <button class="btn btn-ghost" onclick="closeEditInvModal()">Cancel</button>
+        <button class="btn btn-success" onclick="saveEditInvoice()" style="min-width:150px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /app-scroll -->
 
 <!-- ═══════════════ CHEQUE MODAL ═══════════════ -->
@@ -6511,71 +6581,6 @@ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded
   </div>
 </div>
 
-<!-- ═══════════════ EDIT INVOICE MODAL ═══════════════ -->
-<div class="modal-overlay" id="edit-inv-modal" style="display:none">
-  <div class="modal" style="max-width:780px;width:100%">
-    <div class="modal-header">
-      <h2 style="display:flex;align-items:center;gap:8px">Edit Invoice <span id="edit-inv-title" style="opacity:.6;font-size:13px;font-weight:400;font-family:var(--mono)"></span></h2>
-      <button class="modal-close" onclick="closeEditInvModal()">×</button>
-    </div>
-    <div class="modal-body" style="overflow-y:auto;max-height:72vh">
-
-      <div class="section-divider" style="margin-top:0">Invoice Information</div>
-      <div class="form-grid-4" style="margin-bottom:14px">
-        <div class="form-group"><label>Invoice No.</label><input type="text" id="ei-invno"></div>
-        <div class="form-group"><label>Date *</label><input type="date" id="ei-date"></div>
-        <div class="form-group"><label>Party Name *</label>
-          <select id="ei-party"><option value="">— Select —</option></select>
-        </div>
-      </div>
-      <div class="form-grid-4" style="margin-bottom:14px">
-        <div class="form-group"><label>PO No.</label><input type="text" id="ei-vehicle" placeholder="PO number" oninput="checkPoDupeEdit()" autocomplete="off"><div id="ei-po-dupe-warn" style="display:none;font-size:11px;color:#e23b3b;font-weight:700;margin-top:4px"></div></div>
-      </div>
-
-      <div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
-        <span>Line Items</span>
-        <span style="font-size:11px;color:var(--t3);text-transform:none;font-weight:400;letter-spacing:0">Max 10 items</span>
-      </div>
-      <div class="items-table-wrap" id="edit-items-wrap">
-        <table class="items-table">
-          <thead><tr>
-            <th style="width:30%">Description</th>
-            <th style="width:11%">Qty</th>
-            <th style="width:10%">Unit</th>
-            <th style="width:14%">Price (<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg>)</th>
-            <th style="width:16%">Total (<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg>)</th>
-            <th style="width:11%">Custom</th>
-            <th style="width:8%">Del</th>
-          </tr></thead>
-          <tbody id="edit-line-items-body"></tbody>
-          <tfoot>
-            <tr>
-              <td colspan="4" style="text-align:right;font-size:11px;color:var(--t3);font-weight:700;letter-spacing:.4px;text-transform:uppercase">INVOICE TOTAL</td>
-              <td id="edit-grand-total" style="font-weight:700;font-family:var(--mono)"><svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> 0.00</td>
-              <td colspan="2"></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <button class="add-row-btn" onclick="addEditLineItem()" style="margin-top:8px">＋ Add Item</button>
-
-      <div class="section-divider">Payment Information</div>
-      <div class="form-grid-4">
-        <div class="form-group"><label>Balance Due (AED)</label><input type="text" id="ei-balance" class="balance-field" readonly placeholder="Auto-calculated"></div>
-        <div class="form-group"><label>Payment Method</label>
-          <select id="ei-method"><option value="">— Select —</option></select>
-        </div>
-      </div>
-
-      <div class="section-divider" style="margin-top:14px">Notes</div>
-      <div class="form-group"><input type="text" id="ei-notes" placeholder="Optional notes / memo"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeEditInvModal()">Cancel</button>
-      <button class="btn btn-success" onclick="saveEditInvoice()" style="min-width:150px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Changes</button>
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════════ VIEW DELIVERY NOTE MODAL ═══════════════ -->
 <div class="modal-overlay" id="dn-modal" style="display:none">
@@ -9018,6 +9023,34 @@ function descComboKey(e, input) {
   } else if(e.key === 'Escape') {
     if(listOpen) { e.preventDefault(); e.stopPropagation(); _dcClose(); }
   }
+}
+
+// ── Feature: Get last price/rate for a description ──
+// Same-party rate takes priority over global fallback
+function getLastRate(descVal, partyVal) {
+  if(!descVal) return null;
+  const matching = AD().records.filter(r => {
+    const items = r.items || [];
+    return items.some(it => it.desc === descVal && (parseFloat(it.price)||0) > 0);
+  });
+  if(!matching.length) return null;
+  const sorted = matching.slice().sort((a, b) => {
+    const da = a.date || '', db2 = b.date || '';
+    if(da !== db2) return da < db2 ? 1 : -1;
+    return (b.id||0) - (a.id||0);
+  });
+  if(partyVal) {
+    const sameParty = sorted.filter(r => r.party === partyVal);
+    for(const r of sameParty) {
+      const it = (r.items||[]).find(it => it.desc === descVal && (parseFloat(it.price)||0) > 0);
+      if(it) return { rate: parseFloat(it.price), source: 'party' };
+    }
+  }
+  for(const r of sorted) {
+    const it = (r.items||[]).find(it => it.desc === descVal && (parseFloat(it.price)||0) > 0);
+    if(it) return { rate: parseFloat(it.price), source: 'global' };
+  }
+  return null;
 }
 
 // ── Feature: Get last KG/Bag value for a description ──
@@ -11884,7 +11917,6 @@ function openEditInvoiceModal() {
   document.getElementById('inv-modal').style.display = 'none';
 
   // Fill header fields
-  document.getElementById('edit-inv-title').textContent = r.vehicle || r.invNo;
   document.getElementById('ei-invno').value   = r.invNo   || '';
   document.getElementById('ei-date').value    = r.date    || '';
   document.getElementById('ei-vehicle').value = r.vehicle || '';
@@ -11916,6 +11948,9 @@ function openEditInvoiceModal() {
     sel.appendChild(o);
   });
 
+  // Show/hide KG columns before loading items so calcEditRow sees the right state
+  _updateEditKgColumnsVisibility();
+
   // Load line items
   const tbody = document.getElementById('edit-line-items-body');
   tbody.innerHTML = '';
@@ -11926,11 +11961,25 @@ function openEditInvoiceModal() {
   items.forEach(it => addEditLineItem(it));
 
   updateEditGrandTotal();
-  document.getElementById('edit-inv-modal').style.display = 'flex';
+  // Remember where we came from, then show the edit page like any other page.
+  // Being a real .page means it inherits the same sidebar/collapse/spacing
+  // behaviour as every other page automatically.
+  const cur = document.querySelector('.page.active');
+  window._editInvReturnPage = cur ? cur.id.replace('page-','') : 'records';
+  window._skipEntryInit = false;
+  showPage('edit-invoice');
+  const sc = document.getElementById('app-scroll');
+  if(sc) sc.scrollTop = 0;
+  // Set the hero title
+  const titleEl = document.getElementById('edit-inv-title');
+  if(titleEl) titleEl.textContent = r.vehicle || r.invNo || 'Invoice';
 }
 
 function closeEditInvModal() {
-  document.getElementById('edit-inv-modal').style.display = 'none';
+  // Go back to whichever page we opened the editor from
+  const back = window._editInvReturnPage || 'records';
+  window._skipEntryInit = true; // don't wipe the entry form if we return to it
+  showPage(back);
 }
 
 function addEditLineItem(prefill) {
@@ -11938,78 +11987,187 @@ function addEditLineItem(prefill) {
   if(tbody.querySelectorAll('tr').length >= 10) { toast('Max 10 items', 'error'); return; }
 
   const id   = ++_editLineItemCount;
-  const descs = getDescs();
   const units = getUnits();
-  const dOpts = descs.map(d => `<option value="${d}" ${prefill&&prefill.desc===d?'selected':''}>${d}</option>`).join('');
   const uOpts = units.map(u => `<option value="${u}" ${prefill&&prefill.unit===u?'selected':''}>${u}</option>`).join('');
+  const kgVal = prefill && prefill.kgPerBag ? prefill.kgPerBag : '';
+  const tkgVal = prefill && prefill.totalKg ? prefill.totalKg : '';
 
   const tr = document.createElement('tr');
   tr.dataset.elid = id;
   tr.innerHTML = `
-    <td data-label="Description"><select class="eli-desc" onchange="calcEditRow(${id})"><option value="">— Select —</option>${dOpts}</select></td>
-    <td data-label="Qty"><input type="number" class="eli-qty" placeholder="0" min="0" inputmode="decimal" oninput="calcEditRow(${id})" value="${prefill?prefill.qty:''}" style="width:100%"></td>
-    <td data-label="Unit"><select class="eli-unit" onchange="calcEditRow(${id})">${uOpts}</select></td>
-    <td data-label="Price"><input type="number" class="eli-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" oninput="calcEditRow(${id})" value="${prefill?prefill.price:''}" style="width:100%"></td>
-    <td data-label="Total">
-      <div style="display:flex;align-items:center;gap:4px">
-        <input type="number" class="eli-total row-total" placeholder="0.00" step="0.01" inputmode="decimal" oninput="updateEditGrandTotal()" value="${prefill?prefill.amount:''}" style="width:100%" readonly>
-        <label style="cursor:pointer;font-size:12px;color:var(--gold);white-space:nowrap"><input type="checkbox" class="eli-custom" onchange="toggleEditCustom(${id})" style="width:12px;height:12px"> ✎</label>
+    <td data-label="Description" style="position:relative">
+      <div class="desc-combo" style="position:relative;display:flex;align-items:center">
+        <input type="text" class="eli-desc" data-elid="${id}" placeholder="Type to search…" autocomplete="off" spellcheck="false"
+          style="width:100%;padding-right:30px"
+          oninput="_editDescComboInput(this)" onfocus="_editDescComboOpen(this)" onblur="_editDescComboBlur(this)" onkeydown="_editDescComboKey(event,this)">
+        <button type="button" tabindex="-1" title="Show all descriptions"
+          style="position:absolute;right:2px;top:50%;transform:translateY(-50%);width:26px;height:calc(100% - 8px);border:none;background:transparent;color:var(--t3);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;border-radius:5px"
+          onmousedown="event.preventDefault();_editDescComboToggle(this)">▼</button>
       </div>
     </td>
-    <td data-label="Mode" style="text-align:center"><span style="font-size:10px;color:var(--t3)">Auto</span></td>
-    <td data-label="Del"><button class="del-row-btn" onclick="this.closest('tr').remove();updateEditGrandTotal()" title="Remove">×</button></td>`;
+    <td data-label="Qty"><input type="number" class="eli-qty" placeholder="0" min="0" inputmode="decimal" oninput="calcEditRow(${id})" value="${prefill?prefill.qty:''}" style="width:100%"></td>
+    <td data-label="Unit"><select class="eli-unit" onchange="calcEditRow(${id})">${uOpts}</select></td>
+    <td data-label="KG/Bag" class="ei-td-kgbag" style="display:none"><input type="number" class="eli-kgbag" placeholder="0" min="0" step="0.1" oninput="this.dataset.autofill='0';calcEditRow(${id})" value="${kgVal}" style="width:100%;background:var(--field-bg-alt)" title="KG per bag — auto-calculates Total KG"></td>
+    <td data-label="Total KG" class="ei-td-totalkg" style="display:none"><input type="number" class="eli-totalkg" placeholder="0.00" step="0.01" readonly value="${tkgVal}" style="width:100%;background:var(--field-bg-alt);color:var(--accent-text);font-weight:700" title="Auto: Qty × KG/Bag"></td>
+    <td data-label="Price"><input type="number" class="eli-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" oninput="this.dataset.autofill='0';calcEditRow(${id})" value="${prefill?prefill.price:''}" style="width:100%"></td>
+    <td data-label="Total"><input type="number" class="eli-total row-total" placeholder="0.00" step="0.01" inputmode="decimal" oninput="onEditCustomTotal(${id})" value="${prefill?prefill.amount:''}" style="width:100%" title="Auto-calculated. Edit directly to override."></td>
+    <td data-label="Del" style="width:40px;text-align:center;vertical-align:middle"><button class="del-row-btn" onclick="this.closest('tr').remove();updateEditGrandTotal()" title="Remove row" tabindex="-1" style="width:28px;height:28px;border-radius:var(--field-radius);border:1px solid var(--field-border);background:transparent;color:var(--t3);cursor:pointer;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;transition:background .12s,color .12s,border-color .12s;margin:auto" onmouseenter="this.style.background='#e23b3b';this.style.color='#fff';this.style.borderColor='#e23b3b'" onmouseleave="this.style.background='transparent';this.style.color='var(--t3)';this.style.borderColor='var(--field-border)'">×</button></td>`;
   tbody.appendChild(tr);
 
-  // If custom amount (doesn't match qty×price), tick custom
+  // Apply current KG visibility
+  _updateEditKgColumnsVisibility();
+
   if(prefill) {
     if(prefill.desc) tr.querySelector('.eli-desc').value = prefill.desc;
     if(prefill.unit) tr.querySelector('.eli-unit').value = prefill.unit;
-    const calc = (parseFloat(prefill.qty)||0) * (parseFloat(prefill.price)||0);
-    if(prefill.amount && Math.abs(prefill.amount - calc) > 0.01) {
-      const chk = tr.querySelector('.eli-custom');
-      chk.checked = true;
-      toggleEditCustom(id);
-    }
+    calcEditRow(id);
   }
+  updateEditGrandTotal();
+}
+
+// ── Edit invoice description combobox (mirrors the new-entry combobox) ──
+let _edcInput = null, _edcItems = [], _edcActive = -1;
+function _edcList() {
+  let el = document.getElementById('edit-desc-combo-list');
+  if(!el) {
+    el = document.createElement('div');
+    el.id = 'edit-desc-combo-list';
+    el.style.cssText = 'display:none;position:fixed;z-index:10060;max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface,#fff);border:1px solid var(--field-border,#d3dbe7);border-radius:5px;box-shadow:0 8px 26px rgba(15,35,70,.22);font-size:13px';
+    el.addEventListener('mousedown', e => e.preventDefault());
+    window.addEventListener('scroll', () => { if(_edcInput && el.style.display==='block') _edcPos(el); }, true);
+    window.addEventListener('resize', () => { if(_edcInput && el.style.display==='block') _edcPos(el); });
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function _edcPos(list) {
+  if(!_edcInput) return;
+  const r = _edcInput.getBoundingClientRect();
+  if(r.bottom < 0 || r.top > window.innerHeight) { list.style.display='none'; return; }
+  list.style.width = Math.max(r.width,230)+'px';
+  list.style.left  = Math.max(6, Math.min(r.left, window.innerWidth-Math.max(r.width,230)-6))+'px';
+  const spaceBelow = window.innerHeight - r.bottom;
+  const h = Math.min(list.scrollHeight||240, 240);
+  if(spaceBelow < Math.min(h,180)+8 && r.top > spaceBelow) {
+    list.style.top = Math.max(6, r.top-h-3)+'px';
+    list.style.maxHeight = Math.min(240,r.top-9)+'px';
+  } else {
+    list.style.top = (r.bottom+3)+'px';
+    list.style.maxHeight = Math.min(240,spaceBelow-9)+'px';
+  }
+  list.style.display='block';
+}
+function _edcClose() { const el=document.getElementById('edit-desc-combo-list'); if(el) el.style.display='none'; _edcInput=null; _edcActive=-1; _edcItems=[]; }
+function _edcRender() {
+  const list=_edcList();
+  if(!_edcInput||!_edcItems.length) { if(_edcInput) { list.innerHTML='<div style="padding:10px 12px;color:var(--t3,#888)">No matching description</div>'; } else { list.style.display='none'; return; } }
+  else { list.innerHTML=_edcItems.map((d,i)=>'<div class="dc-item" data-i="'+i+'" style="padding:9px 12px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'+(i===_edcActive?'background:var(--gold-lt,rgba(212,160,23,.15));color:var(--gold2,#b8860b);font-weight:700':'color:var(--t1,#222)')+'" onmousedown="event.preventDefault();_edcPick('+i+')">'+d.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>').join(''); }
+  _edcPos(list);
+  const act=list.querySelector('.dc-item[data-i="'+_edcActive+'"]'); if(act) act.scrollIntoView({block:'nearest'});
+}
+function _edcFilter(q) { const all=getDescs(); q=(q||'').trim().toLowerCase(); if(!q) return all.slice(0,60); return all.filter(d=>d.toLowerCase().startsWith(q)).concat(all.filter(d=>!d.toLowerCase().startsWith(q)&&d.toLowerCase().includes(q))).slice(0,60); }
+function _editDescComboOpen(input) { _edcInput=input; _edcItems=_edcFilter(input.value); _edcActive=_edcItems.length?0:-1; _edcRender(); }
+function _editDescComboInput(input) { _edcInput=input; _edcItems=_edcFilter(input.value); _edcActive=_edcItems.length?0:-1; _edcRender(); }
+function _editDescComboToggle(btn) { const input=btn.parentElement.querySelector('.eli-desc'); if(_edcInput===input&&document.getElementById('edit-desc-combo-list')&&document.getElementById('edit-desc-combo-list').style.display==='block'){_edcClose();return;} input.focus(); _edcInput=input; _edcItems=_edcFilter(''); _edcActive=_edcItems.length?0:-1; _edcRender(); }
+function _editDescComboBlur(input) { setTimeout(()=>{ if(document.getElementById('edit-desc-combo-list')&&document.getElementById('edit-desc-combo-list').style.display==='block') { const v=input.value.trim().toLowerCase(); const m=_edcItems.find(d=>d.toLowerCase()===v); if(!_edcInput||_edcInput!==input) return; if(m) { input.value=m; const id=parseInt(input.dataset.elid,10); onEditDescChange(id); } _edcClose(); } },150); }
+function _edcPick(i) { if(!_edcInput||i<0||i>=_edcItems.length) return; const input=_edcInput; input.value=_edcItems[i]; _edcClose(); const id=parseInt(input.dataset.elid,10); onEditDescChange(id); input.focus(); }
+function _editDescComboKey(e,input) {
+  const listOpen=_edcInput===input&&document.getElementById('edit-desc-combo-list')&&document.getElementById('edit-desc-combo-list').style.display==='block';
+  if(e.key==='ArrowDown'){e.preventDefault();if(!listOpen){_editDescComboOpen(input);return;}_edcActive=Math.min(_edcActive+1,_edcItems.length-1);_edcRender();}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(!listOpen)return;_edcActive=Math.max(_edcActive-1,0);_edcRender();}
+  else if(e.key==='Enter'){if(listOpen&&_edcActive>=0){e.preventDefault();_edcPick(_edcActive);const tr=input.closest('tr');const qty=tr&&tr.querySelector('.eli-qty');if(qty){qty.focus();qty.select();}}}
+  else if(e.key==='Escape'){if(listOpen){e.preventDefault();e.stopPropagation();_edcClose();}}
+}
+
+// Allow direct editing of Total cell (same as new invoice onCustomTotal)
+function onEditCustomTotal(id) {
+  const tr = document.querySelector(`tr[data-elid="${id}"]`);
+  if(!tr) return;
+  const tEl = tr.querySelector('.eli-total');
+  tEl.dataset.manual = '1';
   updateEditGrandTotal();
 }
 
 function calcEditRow(id) {
   const tr = document.querySelector(`tr[data-elid="${id}"]`);
   if(!tr) return;
-  if(tr.querySelector('.eli-custom').checked) return;
-  const qty   = parseFloat(tr.querySelector('.eli-qty').value)   || 0;
-  const price = parseFloat(tr.querySelector('.eli-price').value) || 0;
-  const tEl   = tr.querySelector('.eli-total');
-  tEl.value   = qty * price > 0 ? (qty * price).toFixed(2) : '';
+  const tEl = tr.querySelector('.eli-total');
+  if(tEl && tEl.dataset.manual === '1') { updateEditGrandTotal(); return; }
+  const qty      = parseFloat(tr.querySelector('.eli-qty').value)   || 0;
+  const price    = parseFloat(tr.querySelector('.eli-price').value) || 0;
+  const kgBagEl  = tr.querySelector('.eli-kgbag');
+  const totalKgEl= tr.querySelector('.eli-totalkg');
+  if(kgBagEl && totalKgEl) {
+    const kgPerBag = parseFloat(kgBagEl.value) || 0;
+    const totalKg  = kgPerBag > 0 ? qty * kgPerBag : 0;
+    totalKgEl.value = totalKg > 0 ? totalKg.toFixed(2) : '';
+    const total = kgPerBag > 0 ? totalKg * price : qty * price;
+    if(tEl) tEl.value = total > 0 ? total.toFixed(2) : '';
+  } else {
+    if(tEl) tEl.value = qty * price > 0 ? (qty * price).toFixed(2) : '';
+  }
   updateEditGrandTotal();
 }
 
-function toggleEditCustom(id) {
-  const tr  = document.querySelector(`tr[data-elid="${id}"]`);
+// ── Auto-fill price and KG/Bag when description changes in Edit Invoice ──
+function onEditDescChange(id) {
+  const tr = document.querySelector(`tr[data-elid="${id}"]`);
   if(!tr) return;
-  const chk = tr.querySelector('.eli-custom');
-  const tEl = tr.querySelector('.eli-total');
-  if(chk.checked) {
-    tEl.readOnly = false;
-    tEl.style.borderColor = 'var(--gold)';
-    tEl.style.background  = 'var(--gold-lt)';
-    tr.cells[5].innerHTML = '<span style="font-size:10px;color:var(--gold);font-weight:600">Custom</span>';
-    tEl.focus();
-  } else {
-    tEl.readOnly = true;
-    tEl.style.borderColor = '';
-    tEl.style.background  = '';
-    tr.cells[5].innerHTML = '<span style="font-size:10px;color:var(--t3)">Auto</span>';
-    calcEditRow(id);
+  const descVal  = tr.querySelector('.eli-desc').value;
+  const priceEl  = tr.querySelector('.eli-price');
+  const kgBagEl  = tr.querySelector('.eli-kgbag');
+
+  if(descVal) {
+    const party = document.getElementById('ei-party').value;
+    // Auto-fill unit
+    const unit = getUnitForDesc(descVal);
+    if(unit) { const us = tr.querySelector('.eli-unit'); if(us) us.value = unit; }
+    // Auto-fill last rate (price)
+    const rateInfo  = getLastRate(descVal, party);
+    const userTyped = priceEl.dataset.autofill === '0' && priceEl.value && parseFloat(priceEl.value) > 0;
+    if(rateInfo && !userTyped) { priceEl.value = rateInfo.rate.toFixed(2); priceEl.dataset.autofill = '1'; }
+    else if(!rateInfo && priceEl.dataset.autofill === '1') { priceEl.value = ''; priceEl.dataset.autofill = ''; }
+    // Auto-fill last KG/Bag
+    if(kgBagEl) {
+      const kgInfo      = getLastKgPerBag(descVal, party);
+      const kgUserTyped = kgBagEl.dataset.autofill === '0' && kgBagEl.value && parseFloat(kgBagEl.value) > 0;
+      if(kgInfo && !kgUserTyped) { kgBagEl.value = kgInfo.kgPerBag; kgBagEl.dataset.autofill = '1'; }
+      else if(!kgInfo && kgBagEl.dataset.autofill === '1') { kgBagEl.value = ''; kgBagEl.dataset.autofill = ''; }
+    }
+    // Reset manual flag so recalc works
+    const tEl = tr.querySelector('.eli-total');
+    if(tEl) tEl.dataset.manual = '';
   }
+  calcEditRow(id);
 }
+
+// Show/hide KG/Bag and Total KG columns in the Edit Invoice modal
+function _updateEditKgColumnsVisibility() {
+  const show = (DB.mode === 'sales');
+  const d = show ? '' : 'none';
+  document.querySelectorAll('.ei-td-kgbag, .ei-td-totalkg').forEach(el => { el.style.display = d; });
+  const thKg    = document.getElementById('ei-th-kgbag');
+  const thTotKg = document.getElementById('ei-th-totalkg');
+  if(thKg)    thKg.style.display    = d;
+  if(thTotKg) thTotKg.style.display = d;
+  // Also recalc all rows now that columns are visible
+  document.querySelectorAll('#edit-line-items-body tr').forEach(tr => {
+    const id = parseInt(tr.dataset.elid, 10);
+    if(id) calcEditRow(id);
+  });
+}
+
+// toggleEditCustom removed — Total cell is now directly editable like new invoice
 
 function updateEditGrandTotal() {
   let t = 0;
   document.querySelectorAll('#edit-line-items-body .eli-total').forEach(el => {
     t += parseFloat(el.value) || 0;
   });
+  // Dynamic colspan: 4 base (Desc+Qty+Unit+Price) + 2 if KG cols visible
+  const kgVisible = document.getElementById('ei-th-kgbag') && document.getElementById('ei-th-kgbag').style.display !== 'none';
+  const labelCell = document.getElementById('ei-tfoot-label') || document.querySelector('#edit-items-wrap tfoot td:first-child');
+  if(labelCell) labelCell.colSpan = kgVisible ? 6 : 4;
   document.getElementById('edit-grand-total').innerHTML = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(t);
 }
 
@@ -12024,12 +12182,20 @@ async function saveEditInvoice() {
 
   const items = [];
   document.querySelectorAll('#edit-line-items-body tr').forEach(tr => {
-    const desc  = tr.querySelector('.eli-desc').value;
-    const qty   = parseFloat(tr.querySelector('.eli-qty').value)   || 0;
-    const unit  = tr.querySelector('.eli-unit').value;
-    const price = parseFloat(tr.querySelector('.eli-price').value) || 0;
-    const amt   = parseFloat(tr.querySelector('.eli-total').value) || 0;
-    if(desc || qty) items.push({ desc, qty, unit, price, amount: amt });
+    const desc      = tr.querySelector('.eli-desc').value;
+    const qty       = parseFloat(tr.querySelector('.eli-qty').value)   || 0;
+    const unit      = tr.querySelector('.eli-unit').value;
+    const price     = parseFloat(tr.querySelector('.eli-price').value) || 0;
+    const amt       = parseFloat(tr.querySelector('.eli-total').value) || 0;
+    const kgBagEl   = tr.querySelector('.eli-kgbag');
+    const totalKgEl = tr.querySelector('.eli-totalkg');
+    const kgPerBag  = kgBagEl  ? (parseFloat(kgBagEl.value)  || 0) : 0;
+    const totalKg   = totalKgEl? (parseFloat(totalKgEl.value) || 0) : 0;
+    if(desc || qty) {
+      const item = { desc, qty, unit, price, amount: amt };
+      if(kgPerBag > 0) { item.kgPerBag = kgPerBag; item.totalKg = totalKg; }
+      items.push(item);
+    }
   });
 
   if(!items.length)                        { toast('Add at least one line item', 'error'); return; }
@@ -12045,6 +12211,8 @@ async function saveEditInvoice() {
     return;
   }
 
+  const totalKgSale = items.reduce((s,i) => s + (parseFloat(i.totalKg)||0), 0);
+
   const updated = {
     ...r,
     invNo:     document.getElementById('ei-invno').value.trim() || r.invNo,
@@ -12058,6 +12226,7 @@ async function saveEditInvoice() {
     price:     items[0].price,
     amount:    total,
     items,
+    totalKgSale: totalKgSale > 0 ? totalKgSale : undefined,
     updatedAt: new Date().toISOString(),
     updatedBy: window._user ? window._user.email : 'system'
   };
@@ -12835,18 +13004,13 @@ function syncMainMenu(){
   document.querySelectorAll('.zm-theme-lbl').forEach(function(l){ l.textContent = dark ? 'Light Mode' : 'Dark Mode'; });
 }
 
-// On first load, open a sensible group so the menu isn't fully collapsed.
+// On first load, only expand the group that matches the current page.
+// On the Dashboard (which belongs to no group) nothing is expanded — the
+// user opens Sales or Purchase themselves.
 function initMainMenu(){
   // Collapsed state is a user preference now (persisted in localStorage and
   // applied on load) — don't clear it here or the rail would never survive.
   syncMainMenu();
-  // If nothing is auto-opened (e.g. on the Dashboard leaf), open Purchase by default.
-  document.querySelectorAll('#sidebar .zmenu, #drawer .zmenu').forEach(function(menu){
-    if(!menu.querySelector('.zm-group.open')){
-      var groups = menu.querySelectorAll('.zm-group');
-      if(groups[1]) groups[1].classList.add('open'); // [0]=Sales,[1]=Purchase
-    }
-  });
 }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDrawer(); });
 
@@ -13659,13 +13823,13 @@ function toggleThemeQuick() {
   #page-payments > div[style*="display:flex"] > span { display: none !important; }
 
   /* Entry form invoice info: 2 cols */
-  #page-entry .form-grid-4 {
+  #page-entry .form-grid-4, #page-edit-invoice .form-grid-4 {
     grid-template-columns: 1fr 1fr !important;
     gap: 4px !important;
   }
 
   /* Entry form payment section: 2 cols */
-  #page-entry #e-normal-pay-fields .form-grid-4 {
+  #page-entry #e-normal-pay-fields .form-grid-4, #page-edit-invoice #e-normal-pay-fields .form-grid-4 {
     grid-template-columns: 1fr 1fr !important;
     gap: 4px !important;
   }
@@ -13999,7 +14163,7 @@ function toggleThemeQuick() {
     margin:0!important; align-self:stretch!important;
   }
   /* Entry form: Party spans full row 1 on mobile */
-  #page-entry .form-grid-4 .form-group[style*="order:1"] { grid-column:span 2!important; }
+  #page-entry .form-grid-4 .form-group[style*="order:1"], #page-edit-invoice .form-grid-4 .form-group[style*="order:1"]{ grid-column:span 2!important; }
 }
 </style>
 
@@ -17007,10 +17171,11 @@ function _amcTightenEntrySpacing(){
   if(window.innerWidth > 640) return;
   var set = function(el, prop, val){ if(el) el.style.setProperty(prop, val, 'important'); };
 
-  document.querySelectorAll('#page-entry .entry-rows').forEach(function(row){
+  var _sel = '#page-entry, #page-edit-invoice';
+  document.querySelectorAll(_sel + ' .entry-rows').forEach(function(row){
     set(row, 'gap', '4px');
   });
-  document.querySelectorAll('#page-entry .form-group.fg-row').forEach(function(fg){
+  document.querySelectorAll('#page-entry .form-group.fg-row, #page-edit-invoice .form-group.fg-row').forEach(function(fg){
     set(fg, 'flex-direction', 'column');
     set(fg, 'gap', '2px');
     set(fg, 'margin', '0');
@@ -17026,20 +17191,20 @@ function _amcTightenEntrySpacing(){
     set(field, 'margin', '0');
     set(field, 'width', '100%');
   });
-  document.querySelectorAll('#page-entry .entry-section').forEach(function(sec){
+  document.querySelectorAll('#page-entry .entry-section, #page-edit-invoice .entry-section').forEach(function(sec){
     set(sec, 'padding', '10px');
     set(sec, 'margin-bottom', '6px');
   });
-  document.querySelectorAll('#page-entry .entry-section-head').forEach(function(h){
+  document.querySelectorAll('#page-entry .entry-section-head, #page-edit-invoice .entry-section-head').forEach(function(h){
     set(h, 'margin-bottom', '6px');
   });
-  document.querySelectorAll('#page-entry .entry-form-body').forEach(function(b){
+  document.querySelectorAll('#page-entry .entry-form-body, #page-edit-invoice .entry-form-body').forEach(function(b){
     set(b, 'padding', '10px');
   });
-  document.querySelectorAll('#page-entry .items-table tbody tr').forEach(function(tr){
+  document.querySelectorAll('#page-entry .items-table tbody tr, #page-edit-invoice .items-table tbody tr').forEach(function(tr){
     set(tr, 'gap', '3px');
   });
-  document.querySelectorAll('#page-entry .items-table tbody td').forEach(function(td){
+  document.querySelectorAll('#page-entry .items-table tbody td, #page-edit-invoice .items-table tbody td').forEach(function(td){
     set(td, 'gap', '1px');
   });
 }
