@@ -3776,6 +3776,29 @@ body.mode-sales .zm-item.active, body.mode-sales .zm-subitem.active{
 body.sb-collapsed #sidebar .zm-ghead { position: relative; }
 body.sb-collapsed #sidebar .zm-group.open > .zm-ghead { background: var(--zm-hl); }
 body.sb-collapsed #sidebar .zm-group.open > .zm-ghead .zm-ic { color: var(--zm-active); stroke: var(--zm-active); }
+/* ── Sales vs Purchase — collapsed-rail differentiation ──────────────
+   The cart (Sales) and bag (Purchase) icons read as near-identical at
+   21px with no text label, and both used the same open-group highlight
+   color — nothing actually told the two modules apart at a glance.
+   Give each its own accent plus a small corner-arrow flag, Zoho-Books
+   style, on whichever icon is the currently active module. */
+body.sb-collapsed #sidebar .zm-group-sales.open > .zm-ghead .zm-ic {
+  color: #0fa968; stroke: #0fa968;
+}
+body.sb-collapsed #sidebar .zm-group-purchase.open > .zm-ghead .zm-ic {
+  color: #2f6bf0; stroke: #2f6bf0;
+}
+body.sb-collapsed #sidebar .zm-group-sales.open > .zm-ghead::after,
+body.sb-collapsed #sidebar .zm-group-purchase.open > .zm-ghead::after {
+  content: ""; position: absolute; top: 4px; left: 4px;
+  width: 0; height: 0; border-style: solid; border-width: 0 0 8px 8px;
+}
+body.sb-collapsed #sidebar .zm-group-sales.open > .zm-ghead::after {
+  border-color: transparent transparent #0fa968 transparent;
+}
+body.sb-collapsed #sidebar .zm-group-purchase.open > .zm-ghead::after {
+  border-color: transparent transparent #2f6bf0 transparent;
+}
 
 </style>
 <link rel="icon" type="image/png" href="icon-512.png?v=3">
@@ -4254,6 +4277,7 @@ let _setupStage = 'first'; // 'first' | 'confirm'
 let _setupFirst = '';
 let _setupMode  = 'set';   // 'set' | 'change'
 let _bioSupported = false;
+let _bioFastFailRetried = false; // guards the single cold-start auto-retry in lockBioAuth()
 
 // ── Detect biometrics support via WebAuthn ──
 async function detectBioSupport() {
@@ -4315,7 +4339,7 @@ function showLockScreen() {
   document.getElementById('lock-bio-btn').style.display =
     (_bioSupported && LOCK.bioEnabled()) ? '' : 'none';
   // Auto-trigger biometric prompt (password stays available by tapping the box)
-  _bioAutoDone = false; _bioAutoRetries = 0;
+  _bioAutoDone = false; _bioAutoRetries = 0; _bioFastFailRetried = false;
   setTimeout(maybeAutoBio, 350);
 }
 
@@ -4374,6 +4398,7 @@ async function lockBioAuth() {
   if(!_bioSupported) return;
   const btn = document.getElementById('lock-bio-btn');
   btn.disabled = true;
+  const startedAt = Date.now();
   try {
     // Use a simple platform authenticator assertion
     // We register a credential the first time bio is enabled, then verify it
@@ -4396,6 +4421,18 @@ async function lockBioAuth() {
     });
     if(assertion) hideLockScreen();
   } catch(e) {
+    // A rejection within ~400ms is too fast for the OS fingerprint sheet to
+    // have even been shown to the user — that's not a failed fingerprint,
+    // it's the Android WebView/Credential-Manager bridge not being ready yet
+    // on a cold app start (a known quirk). Retry once, silently, before
+    // bothering the user with an error message.
+    const tooFast = (Date.now() - startedAt) < 400;
+    if(tooFast && !_bioFastFailRetried) {
+      _bioFastFailRetried = true;
+      btn.disabled = false;
+      setTimeout(lockBioAuth, 400);
+      return;
+    }
     document.getElementById('lock-error').textContent = 'Biometric failed. Use PIN.';
   }
   btn.disabled = false;
@@ -4726,7 +4763,7 @@ document.addEventListener('DOMContentLoaded', () => lockInit());
     <svg class="zm-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.4V21h14V9.4"/><path d="M9.5 21v-6h5v6"/></svg><span>Dashboard</span>
   </div>
 
-  <div class="zm-group">
+  <div class="zm-group zm-group-sales">
     <div class="zm-ghead" onclick="toggleMenuGroup(this)">
       <svg class="zm-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2.5 3h2l2.15 12.1a1.5 1.5 0 0 0 1.48 1.24h8.74a1.5 1.5 0 0 0 1.48-1.22L21 7H6"/></svg>
       <span>Sales</span>
@@ -4744,7 +4781,7 @@ document.addEventListener('DOMContentLoaded', () => lockInit());
     </div>
   </div>
 
-  <div class="zm-group">
+  <div class="zm-group zm-group-purchase">
     <div class="zm-ghead" onclick="toggleMenuGroup(this)">
       <svg class="zm-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 11.2a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.8L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
       <span>Purchase</span>
@@ -7668,6 +7705,7 @@ function refreshCurrentPage() {
   else if(id==='deliverynote' && typeof renderDeliveryNoteList==='function') renderDeliveryNoteList();
   else if(id==='expenses' && typeof renderExpenses==='function') renderExpenses();
   else if(id==='salary' && typeof renderSalary==='function') renderSalary();
+  else if(id==='entry') reapplyEntryAutofill();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -9081,6 +9119,23 @@ function getLastKgPerBag(descVal, partyVal) {
   return null;
 }
 
+// Re-runs price/KG autofill for every line-item row already on the New Entry
+// page. Needed because Firebase's records listener can resolve AFTER the user
+// has already opened New Entry and typed a description — without this, a
+// late-arriving records payload never backfills the price/kg that
+// getLastRate()/getLastKgPerBag() would have found had the data been ready in
+// time. This is the "works when I open it locally, not in the app" symptom:
+// a browser tab that's been open a while already has records loaded; a
+// freshly-opened APK session often doesn't yet, and the lookup only ever ran
+// once, at the moment the description was picked.
+function reapplyEntryAutofill() {
+  document.querySelectorAll('#page-entry tr[data-lid]').forEach(function(tr) {
+    const id = tr.getAttribute('data-lid');
+    const descEl = tr.querySelector('.li-desc');
+    if(descEl && descEl.value) onDescChange(id);
+  });
+}
+
 function onDescChange(id) {
   const tr = document.querySelector(`tr[data-lid="${id}"]`);
   if(!tr) return;
@@ -9341,9 +9396,17 @@ function initEntry() {
   const vatRow = document.getElementById('e-vat-row');
   if(vatRow) vatRow.style.display = 'none';
 
-  // Sales PO numbers auto-generate as AMC-XXXX-YY; Purchase PO stays manual (empty)
+  // Sales PO numbers auto-generate as AMC-XXXX-YY; Purchase PO stays fully
+  // manual. The PO input is one shared field behind both modes, so simply
+  // never touching it in Purchase mode wasn't enough — switching from Sales
+  // to Purchase mid-entry left the Sales-generated number sitting in the
+  // field, which read as "Sales and Purchase share the same PO." Purchase
+  // now explicitly clears it every time this page initializes.
   const poEl = document.getElementById('e-vehicle');
-  if(poEl && DB.mode === 'sales' && !poEl.value) poEl.value = getNextSalesPo();
+  if(poEl) {
+    if(DB.mode === 'sales') { if(!poEl.value) poEl.value = getNextSalesPo(); }
+    else { poEl.value = ''; }
+  }
   syncEntryPoDisplay();
 
   // Add first row if empty
