@@ -4310,6 +4310,7 @@ let _setupFirst = '';
 let _setupMode  = 'set';   // 'set' | 'change'
 let _bioSupported = false;
 let _bioFastFailRetried = false; // guards the single cold-start auto-retry in lockBioAuth()
+let _lockErrorClearTimer = null; // clears the shake/error state after a wrong attempt
 
 // ── Detect biometrics support via WebAuthn ──
 async function detectBioSupport() {
@@ -4397,10 +4398,12 @@ function showLockScreen() {
   document.getElementById('lock-prompt-label').textContent = 'Enter Password';
   lo.style.display = 'flex';
   lo.classList.remove('hiding');
+  document.getElementById('lock-input-field').dataset.awaitingClear = '';
   setTimeout(() => document.getElementById('lock-input-field').focus(), 100);
   syncLockBioVisibility();
   _bioFastFailRetried = false;
-  clearTimeout(_lockCheckTimer);
+  clearTimeout(_lockErrorClearTimer);
+  clearTimeout(_lockIdleTimer);
 }
 
 function hideLockScreen() {
@@ -4422,14 +4425,41 @@ function lockNow() {
 // wrong → the shake + "Incorrect password" flow runs immediately too.
 // If the length isn't known yet (first run before any successful unlock
 // has backfilled it), it falls back to checking after a short typing pause.
-let _lockCheckTimer = null;
+// Auto-unlock, no button, in both states:
+//
+//  • Length known (normal case): checked the instant the entry reaches that
+//    exact length — instant open, or an immediate "incorrect" if it's wrong.
+//
+//  • Length not yet known (only until the first successful unlock): every
+//    keystroke is verified SILENTLY. A correct password opens the app the
+//    moment its last character lands; a partial or wrong one produces no
+//    error, no shake, no clearing — it just stays quiet and keeps waiting.
+//    The "incorrect" verdict only appears once typing has genuinely stopped
+//    (see the idle timer below) or on Enter/Go. That first success stores the
+//    length, after which the exact-length path above takes over permanently.
+//
+// Either way a partial entry can never be judged wrong, which was the bug.
+const LOCK_IDLE_VERDICT_MS = 2500;
+let _lockIdleTimer = null;
+
+async function _lockSilentTry(val) {
+  const ok = await LOCK.checkPin(val);
+  if(!ok) return;
+  const el = document.getElementById('lock-input-field');
+  if(!el || el.value !== val) return; // entry changed while checking — ignore
+  clearTimeout(_lockIdleTimer);
+  clearTimeout(_lockErrorClearTimer);
+  el.dataset.awaitingClear = '';
+  hideLockScreen();
+}
+
 function onLockInputChange() {
   const el = document.getElementById('lock-input-field');
   document.getElementById('lock-error').textContent = '';
   el.classList.remove('error');
-  clearTimeout(_lockCheckTimer);
   clearTimeout(_lockErrorClearTimer);
-  // A keystroke landing right after a wrong attempt (before the 600ms shake
+  clearTimeout(_lockIdleTimer);
+  // A keystroke landing right after a wrong attempt (before the shake
   // finishes clearing it) would otherwise append onto the old wrong value —
   // start fresh with just the new character instead.
   if(el.dataset.awaitingClear === '1') {
@@ -4443,12 +4473,12 @@ function onLockInputChange() {
     if(val.length >= expectedLen) checkLockPin();
     return;
   }
-  _lockCheckTimer = setTimeout(checkLockPin, 550);
+  _lockSilentTry(val);
+  _lockIdleTimer = setTimeout(checkLockPin, LOCK_IDLE_VERDICT_MS);
 }
 
-let _lockErrorClearTimer = null;
 async function checkLockPin() {
-  clearTimeout(_lockCheckTimer);
+  clearTimeout(_lockIdleTimer);
   const val = document.getElementById('lock-input-field').value;
   if(!val) return;
   if(await LOCK.checkPin(val)) {
