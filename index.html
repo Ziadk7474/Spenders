@@ -10319,13 +10319,15 @@ function runSearch() {
       <td class="num c-due">${!isPay && t.dueDate ? fmtDate(t.dueDate).replace(/\s20(\d\d)$/,' $1') : '<span style="color:#999">—</span>'}</td>
       <td class="c-duein">${isPay ? '<span style="color:#999">—</span>' : _stmtStatusCellEn(t.status)}</td>`;
     const kgCellHtml = _salesMode ? `<td class="num c-kg">${kgDisplay}</td>` : '';
-const clickAction = isPay ? (t.payId ? `onclick="openEditPayment('${t.payId}')"` : '') : (t.id ? `onclick="viewRecord(${t.id})"` : '');
+const clickAction = isPay
+      ? (t.payId ? `onclick="openEditPayment('${t.payId}')" title="Click to edit this payment"` : '')
+      : (t.id ? `onclick="viewRecord(${t.id})" title="Click to open this invoice"` : '');
     rows.push(`<tr style="cursor:${(t.id||t.payId)?'pointer':'default'}" ${clickAction}>
       <td style="color:#888">${rowNum}</td>
       <td class="num" style="font-weight:600">${fmtDate(t.date).replace(/\s20(\d\d)$/,' $1')}</td>
       <td><span style="color:${typeColor};font-weight:700">${isPay?(_salesMode?'Receipt':'Payment'):(_salesMode?'Sale':'Purchase')}</span></td>
       <td class="num">${t.ref}</td>
-      <td class="c-desc">${t.desc}${isPay && t.payId ? ` <button type="button" class="stmt-row-edit no-print" title="Edit this payment" onclick="event.stopPropagation();openEditPayment('${t.payId}')">Edit</button>` : ''}</td>
+      <td class="c-desc">${t.desc}</td>
       ${dueDueInCells}
       ${kgCellHtml}
       <td class="num">${qtyDisplay}</td>
