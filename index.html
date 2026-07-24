@@ -1997,6 +1997,15 @@ tbody tr:hover {
 .modal-header h2 svg { width: 15px; height: 15px; }
 .manage-hdr h2 svg { width: 15px; height: 15px; }
 
+/* Inline "Edit" chip shown on payment rows inside the statement */
+.stmt-row-edit{
+  display:inline-flex;align-items:center;margin-left:8px;padding:1px 8px;
+  font-size:10px;font-weight:700;letter-spacing:.3px;cursor:pointer;
+  border-radius:20px;border:1px solid #c9d4e6;background:#eef3fb;color:#1f4b8f;
+  vertical-align:middle;line-height:1.7;
+}
+.stmt-row-edit:hover{ background:#dce7f8;border-color:#9dbbe6; }
+
 /* ══════════════════════════════════════
    PRINT STYLES — CLEAN & SIMPLE
 ══════════════════════════════════════ */
@@ -5412,8 +5421,7 @@ _syncSbControls();
         <button class="btn btn-success btn-scope-print" onclick="printStatement()" title="Print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> <span>Print</span></button>
       </div>
       <button class="btn btn-ghost" id="stmt-stampbtn" onclick="toggleStmtStamp()" title="Show or hide the company stamp on this statement">Stamp: ON</button>
-      <!-- Bulk-print every invoice matching the current customer + date-range filters -->
-      <button id="print-all-inv-btn" class="btn btn-primary" style="display:none" onclick="printAllInvoicesPDF()" title="Print every invoice matching the current filters"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print Invoices</button>
+      <!-- "Print Invoices" button removed on request -->
 
     </div>
   </div>
@@ -5494,6 +5502,7 @@ _syncSbControls();
         <div class="ref-outstanding" style="justify-content:flex-end">
           <span id="stmt-due"></span>
         </div>
+        <div id="stmt-due-note" style="display:none;font-size:10.5px;font-weight:700;color:#9a7b2e;margin-top:3px"></div>
       </div>
     </div>
 
@@ -5514,7 +5523,7 @@ _syncSbControls();
     <div id="monthly-payment-panel" style="display:none;margin-bottom:16px">
       <div style="background:linear-gradient(135deg,#0a1f3d 0%,#123156 60%,#0d233f 100%);border-radius:var(--radius-lg);padding:20px 24px;color:#fff;box-shadow:0 4px 24px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07)">
         <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.55);margin-bottom:14px">
-          Monthly Payment Summary — <span id="mps-month-label" style="color:var(--gold3)"></span>
+          <span id="mps-title">Payment Summary</span> — <span id="mps-month-label" style="color:var(--gold3)"></span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
           <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:14px 18px">
@@ -6140,7 +6149,10 @@ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded
 <div class="page" id="page-payments">
   <div class="page-header">
     <div><h1 id="payments-h1">Payments Ledger</h1><p id="payments-subtitle">All payment records made to vendors</p></div>
-    <button class="btn btn-success" onclick="openPaymentModal()"> Record Payment</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="openDupeScan()" title="Check the data: duplicates, unlinked cash payments, orphan payments">Data Health</button>
+      <button class="btn btn-success" onclick="openPaymentModal()"> Record Payment</button>
+    </div>
   </div>
   <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px" id="pay-kpis"></div>
   <div style="display:flex;gap:10px;margin-bottom:14px;align-items:flex-end;flex-wrap:wrap">
@@ -9560,7 +9572,10 @@ function checkPoDupeEdit() {
   } else warn.style.display = 'none';
 }
 
+let _entrySaveBusy = false;
 async function saveEntry() {
+  // Re-entry guard: a double tap on Save can no longer create two invoices.
+  if(_entrySaveBusy) { toast('Still saving — please wait', 'error'); return; }
   const party  = document.getElementById('e-party').value;
   const date   = document.getElementById('e-date').value;
   const invno  = document.getElementById('e-invno').value;
@@ -9585,12 +9600,38 @@ async function saveEntry() {
   const subtotalAmount = items.reduce((s,i) => s+i.amount, 0);
   if(subtotalAmount <= 0) { toast('Invoice total must be greater than 0', 'error'); return; }
 
+  // ── Cash-in-hand "Paid By" is validated BEFORE anything is written. ──
+  // This was the source of the phantom duplicates: the invoice used to be saved
+  // first, the error was raised afterwards, and re-saving created a second copy.
+  const _isCashParty = CASH_PARTIES_LIVE.includes(party.toUpperCase());
+  if(_isCashParty && !document.getElementById('e-cash-paidby').value) {
+    toast('Please select who paid (Paid By)', 'error');
+    const _cb = document.getElementById('e-cash-paidby'); if(_cb) _cb.focus();
+    return;
+  }
+
   // VAT only ever applies to Sales invoices (output tax on what's sold to a
   // customer) — Purchase entries never carry it, matching standard UAE VAT
   // treatment where only the seller's invoice shows Tax Invoice/VAT/TRN.
   const vatApplied = entryVatEnabled();
   const vatAmount  = entryVatAmount(subtotalAmount);
   const totalAmount = subtotalAmount + vatAmount;
+
+  // ── Identical-entry guard (same party + date + total + PO already on file) ──
+  const _poNow = (document.getElementById('e-vehicle').value || '').trim();
+  const _dupeRec = (AD().records || []).find(r =>
+      r.party === party && r.date === date &&
+      Math.abs((+r.amount || 0) - totalAmount) < 0.005 &&
+      (r.vehicle || '').trim() === _poNow);
+  if(_dupeRec && !confirm(
+      'An identical entry already exists:\n\n' +
+      party + '\n' + date + '   AED ' + fmt(totalAmount) + (_poNow ? '   PO ' + _poNow : '') +
+      '\n\nSave a SECOND copy anyway?')) return;
+
+  _entrySaveBusy = true;
+  const _saveBtns = Array.from(document.querySelectorAll('[onclick*="saveEntry"]'));
+  _saveBtns.forEach(b => { b.disabled = true; b.style.opacity = '.6'; });
+  try {
 
   const newId  = await allocateRecordId();
   const newInv = getNextInv();
@@ -9628,7 +9669,6 @@ async function saveEntry() {
     // Cash-in-hand parties (CASH WOOD / CASH PALLETS) pay at delivery time —
     // the payment date is ALWAYS the invoice (purchase) date
     const cashPayDate = date;
-    if(!cashPaidBy) { toast('Please select who paid (Paid By)', 'error'); return; }
     const payId = await allocateRecordId();
     AD().nextId = payId + 1;
     const pay = {
@@ -9637,6 +9677,10 @@ async function saveEntry() {
       method: 'CASH',
       amount: totalAmount,
       withInvoice: true,
+      // Locked to ITS OWN invoice. Without this the cash payment used to flow
+      // onto the party's oldest open invoice and left this one "Partially Paid".
+      allocMode: 'manual',
+      allocations: [{ invId: newId, amount: totalAmount }],
       invRef: document.getElementById('e-vehicle').value || invno,
       notes: document.getElementById('e-cash-notes').value || 'Cash-in-hand payment',
       createdAt: new Date().toISOString(),
@@ -9656,6 +9700,9 @@ async function saveEntry() {
         method: document.getElementById('e-method').value,
         amount: paid,
         withInvoice: true,
+        // Paid-with-invoice money settles THIS invoice first.
+        allocMode: 'manual',
+        allocations: [{ invId: newId, amount: Math.min(paid, totalAmount) }],
         invRef: document.getElementById('e-vehicle').value || invno,
         notes: document.getElementById('e-notes').value,
         createdAt: new Date().toISOString(),
@@ -9674,6 +9721,11 @@ async function saveEntry() {
 
   toast(`Saved: ${poNo || invno} — <svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ${fmt(totalAmount)}`, 'success');
   clearEntry();
+  } finally {
+    _entrySaveBusy = false;
+    _saveBtns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
+    clearLedgerCache();
+  }
 }
 
 function clearEntry() {
@@ -9951,62 +10003,39 @@ function applyMonthPeriod() {
 // ═══════════════════════════════════════════════════════════
 function renderMonthlyPaymentPanel(party, from, to, monthVal) {
   const panel = document.getElementById('monthly-payment-panel');
-  if(!party || !monthVal) { panel.style.display='none'; return; }
+  if(!party) { panel.style.display='none'; return; }
 
-  const label = new Date(monthVal+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const L = buildLedger(party, from, to, monthVal);
+  const label = monthVal
+      ? new Date(monthVal+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'})
+      : (L.hasPeriod ? `${L.from?fmtDate(L.from):'Start'} → ${L.to?fmtDate(L.to):'Today'}` : 'All Time');
   document.getElementById('mps-month-label').textContent = label;
 
-  // This period's invoices (by invoice date in selected range)
-  const periodInvoiced = AD().records.filter(r => r.party===party && r.date>=from && (!to||r.date<=to)).reduce((s,r)=>s+r.amount,0);
-
-  // Payments tagged to this invoice period only
-  const taggedPayments = AD().payments.filter(p => p.party===party && p.invoicePeriod===monthVal);
-  const taggedPaid     = taggedPayments.reduce((s,p)=>s+p.amount,0);
-  const periodOutstanding = Math.max(0, periodInvoiced - taggedPaid);
-
-  // ALL TIME: every invoice ever vs every payment ever for this party
-  const allTimePurchased = AD().records.filter(r => r.party===party).reduce((s,r)=>s+r.amount,0);
-  const allTimePaid      = AD().payments.filter(p => p.party===party).reduce((s,p)=>s+p.amount,0);
-  const allTimeBal       = Math.max(0, allTimePurchased - allTimePaid);
-
-  document.getElementById('mps-invoiced').innerHTML            = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(periodInvoiced);
-  document.getElementById('mps-paid').innerHTML                = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(taggedPaid);
-  document.getElementById('mps-period-outstanding').innerHTML  = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(periodOutstanding);
-  document.getElementById('mps-alltime-outstanding').innerHTML = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(allTimeBal);
+  const AEDI = (typeof ALLOC_AED!=='undefined') ? ALLOC_AED : 'AED';
+  document.getElementById('mps-invoiced').innerHTML            = AEDI + ' ' + fmt(L.invoiced);
+  document.getElementById('mps-paid').innerHTML                = AEDI + ' ' + fmt(L.received);
+  document.getElementById('mps-period-outstanding').innerHTML  = AEDI + ' ' + fmtBal(L.closing);
+  document.getElementById('mps-alltime-outstanding').innerHTML = AEDI + ' ' + fmtBal(L.allTime);
 
   const det = document.getElementById('mps-payments-detail');
-  if(!taggedPayments.length) {
-    // Show all payments for party so it's not confusing
-    const allPartyPayments = AD().payments.filter(p => p.party===party).slice(-5).reverse();
-    if(allPartyPayments.length) {
-      det.innerHTML = `<div style="font-size:11px;color:var(--t3);margin-bottom:8px;font-style:italic">No payment tagged to ${label}. Recent payments for ${party}:</div>` +
-        allPartyPayments.map(p =>
-          `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);align-items:center">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <span style="font-weight:800;color:var(--green);font-family:var(--mono)"><svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ${fmt(p.amount)}</span>
-              <span style="color:var(--t3);font-size:12px">Paid on ${fmtDate(p.date)}</span>
-              <span style="background:var(--blue-lt);color:var(--blue);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700">${p.method||'—'}</span>
-              ${p.paidBy?`<span style="color:var(--t3);font-size:12px">${p.paidBy}</span>`:''}
-              ${p.invoicePeriod?`<span style="color:var(--t3);font-size:11px">for ${new Date(p.invoicePeriod+'-01').toLocaleDateString('en-GB',{month:'short',year:'numeric'})}</span>`:''}
-            </div>
-          </div>`).join('');
-    } else {
-      det.innerHTML = '<span style="color:var(--t3);font-style:italic;font-size:13px">No payments recorded for this party yet.</span>';
-    }
+  const list = L.pays.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(!list.length) {
+    det.innerHTML = '<span style="color:rgba(255,255,255,.6);font-style:italic;font-size:13px">No payments recorded in this period.</span>';
   } else {
-    det.innerHTML = taggedPayments.map(p =>
-      `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);align-items:center">
+    det.innerHTML = list.map(p => `
+      <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.12);align-items:center;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-weight:800;color:var(--green);font-family:var(--mono)"><svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ${fmt(p.amount)}</span>
-          <span style="color:var(--t3);font-size:12px">Paid on ${fmtDate(p.date)}</span>
-          <span style="background:var(--blue-lt);color:var(--blue);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.4px">${p.method||'—'}</span>
-          ${p.paidBy?`<span style="color:var(--t3);font-size:12px">${p.paidBy}</span>`:''}
+          <span style="font-weight:800;color:#4ade80;font-family:var(--mono)">${AEDI} ${fmt(p.amount)}</span>
+          <span style="opacity:.7;font-size:12px">${fmtDate(p.date)}</span>
+          <span style="background:rgba(255,255,255,.14);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.4px">${_alEsc(p.method||'—')}</span>
+          ${p.paidBy?`<span style="opacity:.7;font-size:12px">${_alEsc(p.paidBy)}</span>`:''}
+          ${p.invoicePeriod?`<span style="opacity:.55;font-size:11px">label: for ${new Date(p.invoicePeriod+'-01').toLocaleDateString('en-GB',{month:'short',year:'numeric'})}</span>`:''}
+          ${p.notes?`<span style="opacity:.55;font-size:11px;font-style:italic">${_alEsc(p.notes)}</span>`:''}
         </div>
-        ${p.notes?`<span style="color:var(--t3);font-size:11px;font-style:italic">${p.notes}</span>`:''}
-      </div>`
-    ).join('');
+        <button type="button" class="stmt-row-edit no-print" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25);color:#fff"
+          onclick="openEditPayment('${p.id}')">Edit</button>
+      </div>`).join('');
   }
-
   panel.style.display = 'block';
 }
 
@@ -10015,6 +10044,77 @@ function renderMonthlyPaymentPanel(party, from, to, monthVal) {
 // No date = all-time total outstanding
 // Month selected = period invoices + payments TAGGED to that period via invoicePeriod
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// UNIFIED LEDGER ENGINE  —  Tally / Zoho Books rules
+// ───────────────────────────────────────────────────────────
+// ONE rule, used by the statement, the print view and the PDF:
+//
+//   A voucher belongs to a period by its ACTUAL DATE. Nothing else.
+//   `invoicePeriod` ("For Month") is only a LABEL printed beside a
+//   payment — it NEVER decides which period a payment falls into.
+//
+// This guarantees, for every possible date range:
+//     Opening + Invoiced − Received = Closing
+// and that no amount can ever vanish or be counted twice.
+// ═══════════════════════════════════════════════════════════
+function ledgerRange(from, to, monthVal){
+  if(monthVal){
+    const p = monthVal.split('-').map(Number);
+    const last = new Date(p[0], p[1], 0).getDate();
+    return { from: monthVal + '-01', to: monthVal + '-' + String(last).padStart(2,'0') };
+  }
+  return { from: from || '', to: to || '' };
+}
+// The month a payment BELONGS to.
+//   "For Month" (invoicePeriod) wins when it is set — that is the whole point of
+//   the field: money received on 7 July against June's supply is June's money.
+//   With no tag, the payment's own month is used.
+// One single classifier decides both the opening balance and the period rows,
+// so a payment can never land in two months, and can never fall between them.
+function payMonth(p){ return (p && p.invoicePeriod) ? p.invoicePeriod : String((p && p.date) || '').slice(0,7); }
+
+function buildLedger(party, from, to, monthVal){
+  const R         = ledgerRange(from, to, monthVal);
+  const hasPeriod = !!(R.from || R.to);
+  const monthMode = !!monthVal;   // tags only make sense against a whole month
+  const inR       = d => (!R.from || d >= R.from) && (!R.to || d <= R.to);
+  const before    = d => !!R.from && d < R.from;
+  const recAll    = (AD().records  || []).filter(r => !party || r.party === party);
+  const payAll    = (AD().payments || []).filter(p => !party || p.party === party);
+  const sum       = (a, k) => a.reduce((t, x) => t + (+x[k] || 0), 0);
+  const byDate    = (a, b) => (a.date||'').localeCompare(b.date||'') || ((a.id||0) - (b.id||0));
+
+  // Invoices always go by their own date — an invoice carries no month tag.
+  const openInv = sum(recAll.filter(r => before(r.date)), 'amount');
+  const recs    = recAll.filter(r => inR(r.date)).sort(byDate);
+
+  // Payments: by tag-aware month in month mode, by date in a free date range.
+  const payIn   = monthMode ? (p => payMonth(p) === monthVal) : (p => inR(p.date));
+  const payPrev = monthMode ? (p => payMonth(p) <  monthVal)  : (p => before(p.date));
+  const openPay = sum(payAll.filter(payPrev), 'amount');
+  const pays    = payAll.filter(payIn).sort(byDate);
+
+  // Payments shown in this month although the cash arrived on another date —
+  // used by the statement to spell that out instead of leaving it puzzling.
+  const shifted = monthMode ? pays.filter(p => String(p.date||'').slice(0,7) !== monthVal) : [];
+
+  const opening = openInv - openPay;
+  const invoiced= sum(recs, 'amount');
+  const received= sum(pays, 'amount');
+  const kg      = recs.reduce((t, r) =>
+      t + ((r.items || []).reduce((k, i) => k + (parseFloat(i.totalKg) || 0), 0)), 0);
+
+  return {
+    party, from: R.from, to: R.to, hasPeriod, monthMode, monthVal: monthVal || '',
+    recs, pays, shifted, opening, invoiced, received, kg,
+    closing: opening + invoiced - received,
+    allTime: sum(recAll, 'amount') - sum(payAll, 'amount')
+  };
+}
+// Balance formatter — a negative balance means the party is IN CREDIT
+// (they have paid more than invoiced / advance sitting with us).
+function fmtBal(n){ return (n < -0.005) ? (fmt(Math.abs(n)) + ' CR') : fmt(n); }
+
 function runSearch() {
   const _salesMode = DB.mode === 'sales';
   _renderStmtTableHead(_salesMode);
@@ -10028,16 +10128,23 @@ function runSearch() {
   const monthVal= document.getElementById('s-month').value;
   const hasPeriod = !!(from || to || monthVal);
 
-  const results = AD().records.filter(r => {
-    if(party && r.party !== party) return false;
-    if(inv && !(r.invNo||'').toLowerCase().includes(inv)) return false;
-    if(vehicle && !(r.vehicle||'').includes(vehicle)) return false;
-    if(from && r.date < from) return false;
-    if(to && r.date > to) return false;
-    if(desc && r.desc !== desc) return false;
+  // ── THE LEDGER — single source of truth (dates only) ──
+  const LG = buildLedger(party, from, to, monthVal);
+
+  // Text filters only narrow WHICH ROWS ARE DISPLAYED. They never change the
+  // balances — exactly like Tally: filtering a ledger never alters the money.
+  const _txtOn = !!(inv || vehicle || keyword || desc);
+  const _recShow = r => {
+    if(inv     && !(r.invNo||'').toLowerCase().includes(inv)) return false;
+    if(vehicle && !(r.vehicle||'').toLowerCase().includes(vehicle)) return false;
+    if(desc    && r.desc !== desc) return false;
     if(keyword && ![r.party,r.desc,r.invNo,r.vehicle,r.date].some(f => (f||'').toLowerCase().includes(keyword))) return false;
     return true;
-  }).sort((a,b) => a.date.localeCompare(b.date));
+  };
+  const _payShow = p => !_txtOn ? true
+    : (keyword ? [p.party,p.notes,p.paidBy,p.method,p.date].some(f => (f||'').toLowerCase().includes(keyword)) : false);
+
+  const results = LG.recs.filter(_recShow);
 
   window._lastSearchResults = results;
 
@@ -10046,7 +10153,7 @@ function runSearch() {
   const printBtn = document.getElementById('print-stmt-btn');
   const printAllBtn = document.getElementById('print-all-inv-btn');
 
-  if(!results.length && !hasPeriod) {
+  if(!results.length && !LG.pays.length && !hasPeriod) {
     area.style.display='none'; empty.style.display='block'; printBtn.style.display='none';
     if(printAllBtn) printAllBtn.style.display='none';
     document.getElementById('monthly-payment-panel').style.display='none';
@@ -10054,63 +10161,29 @@ function runSearch() {
   }
   area.style.display='block'; empty.style.display='none'; printBtn.style.display='flex';
   if(typeof segMoveSlider==='function') requestAnimationFrame(function(){ segMoveSlider(document.getElementById('inv-seg'), true); });
-  if(printAllBtn) printAllBtn.style.display = results.length ? 'flex' : 'none';
-    const periodInvoiced = results.reduce((s,r)=>s+r.amount,0);
-  // All-time: every invoice ever minus every payment ever for this party
-  const allTimePurchased = party ? AD().records.filter(r=>r.party===party).reduce((s,r)=>s+r.amount,0) : periodInvoiced;
-  const allTimePaidTotal = party ? AD().payments.filter(p=>p.party===party).reduce((s,p)=>s+p.amount,0) : AD().payments.reduce((s,p)=>s+p.amount,0);
-  const allTimeBal       = Math.max(0, allTimePurchased - allTimePaidTotal);
+  if(printAllBtn) printAllBtn.style.display = 'none';
 
-  // Which payments to show in timeline:
-  // • With monthVal → payments tagged invoicePeriod===monthVal (+ untagged in date range for legacy)
-  // • Date range only → payments falling in that date range
-  // • No filter → all payments for party
-  let periodPayments = [];
-  // Payments are shown for a single party AND for "All Parties" searches
-  const payPartyOk = p => !party || p.party === party;
-  if(monthVal) {
-    const tagged = AD().payments.filter(p=>payPartyOk(p) && p.invoicePeriod===monthVal);
-    const taggedIds = new Set(tagged.map(p=>p.id));
-    const mParts2 = monthVal.split('-').map(Number);
-    const mStart2 = monthVal+'-01';
-    const mEnd2   = monthVal+'-'+String(new Date(mParts2[0],mParts2[1],0).getDate()).padStart(2,'0');
-    const legacy = AD().payments.filter(p=>payPartyOk(p) && !p.invoicePeriod && !taggedIds.has(p.id) && p.date>=mStart2 && p.date<=mEnd2);
-    periodPayments = [...tagged, ...legacy];
-  } else if(from || to) {
-    periodPayments = AD().payments.filter(p=>{
-      if(!payPartyOk(p)) return false;
-      if(from && p.date<from) return false;
-      if(to && p.date>to) return false;
-      return true;
-    });
-  } else {
-    periodPayments = AD().payments.filter(p=>payPartyOk(p));
-  }
-  const periodPaid        = periodPayments.reduce((s,p)=>s+p.amount,0);
-  const periodOutstanding = hasPeriod ? (periodInvoiced - periodPaid) : allTimeBal;
-
-  // ── Compute opening balance EARLY so header can use it ──
-  let openingBalance = 0;
-  if(hasPeriod && party) {
-    const cutoffDate = monthVal ? `${monthVal}-01` : from;
-    if(cutoffDate) {
-      const prevPurch = AD().records.filter(r=>r.party===party && r.date<cutoffDate).reduce((s,r)=>s+r.amount,0);
-      const prevPaid  = AD().payments.filter(p=>{
-        if(p.party!==party) return false;
-        if(p.invoicePeriod) return p.invoicePeriod < (monthVal || from.slice(0,7));
-        return p.date < cutoffDate;
-      }).reduce((s,p)=>s+p.amount,0);
-      openingBalance = prevPurch - prevPaid;
-    }
-  }
-
-  // Total outstanding = opening balance brought forward + this period invoiced - this period paid
-  // This is the SAME number shown at the bottom closing row of the statement table
-  const totalPeriodOutstanding = hasPeriod ? Math.max(0, openingBalance + periodOutstanding) : allTimeBal;
+  const periodInvoiced   = LG.invoiced;
+  const periodPaid       = LG.received;
+  const periodPayments   = LG.pays;
+  const openingBalance   = LG.opening;
+  const allTimeBal       = LG.allTime;
+  // Closing = Opening + Invoiced − Received.  Never clamped: a credit balance
+  // must be visible as CR, not silently turned into 0.00.
+  const totalPeriodOutstanding = LG.closing;
 
   // Header — show the exact same amount as the closing row of the statement
   document.getElementById('stmt-date').textContent           = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-  document.getElementById('stmt-due').innerHTML            = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(totalPeriodOutstanding);
+  document.getElementById('stmt-due').innerHTML            = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmtBal(totalPeriodOutstanding);
+  // Sub-note: when a period filter is on, ALSO show the live balance as on today,
+  // so the man standing at the counter always sees what he really owes right now.
+  const _dueNote = document.getElementById('stmt-due-note');
+  if(_dueNote) {
+    if(party && hasPeriod && Math.abs(allTimeBal - totalPeriodOutstanding) > 0.005) {
+      _dueNote.textContent = 'Balance as on today (all time): AED ' + fmtBal(allTimeBal);
+      _dueNote.style.display = '';
+    } else { _dueNote.textContent=''; _dueNote.style.display='none'; }
+  }
   // Company Name has priority as the bold heading (falls back to the party's own
   // name/key when no company is set); Contact Person, Address, TRN, Phone, Email
   // follow underneath, one per line — Sales customers only. Purchase vendors keep
@@ -10138,12 +10211,12 @@ function runSearch() {
   }
   document.getElementById('stmt-total-purch').innerHTML    = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(periodInvoiced);
   document.getElementById('stmt-total-paid').innerHTML     = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(periodPaid);
-  document.getElementById('stmt-balance').innerHTML        = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(totalPeriodOutstanding);
+  document.getElementById('stmt-balance').innerHTML        = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmtBal(totalPeriodOutstanding);
   // Opening balance cell — use already-computed openingBalance
   const obCell = document.getElementById('stmt-opening-bal');
   if(obCell) {
-    if(hasPeriod && party) {
-      obCell.innerHTML = openingBalance === 0 ? 'None' : (openingBalance > 0 ? '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(openingBalance) : '−<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(Math.abs(openingBalance)));
+    if(hasPeriod) {
+      obCell.innerHTML = Math.abs(openingBalance) < 0.005 ? 'None' : (openingBalance > 0 ? '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(openingBalance) : '−<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(Math.abs(openingBalance)));
       obCell.style.color = '#0a1f3d';
     } else {
       obCell.textContent = 'All Time';
@@ -10161,7 +10234,7 @@ function runSearch() {
   // Timeline
   let timeline = [];
   const _remMap = _remainingByRecord(); // per-invoice unpaid balance for status
-  results.forEach(r => {
+  LG.recs.forEach(r => {
     // Calculate total quantity / total KG across all line items for this invoice
     let totalQty = 0;
     let qtyUnit = '';
@@ -10185,11 +10258,16 @@ function runSearch() {
       totalQty, qtyUnit, totalKgSale,
       dueDate: _due,
       status: _invoiceStatus(_due, _remMap[r.id]),
+      show: _recShow(r),
       sortKey: r.date + '_0' // purchases sort by actual date, with _0 so they come before payments on same date
     });
   });
   periodPayments.forEach(p => {
     const periodTag = p.invoicePeriod ? ` — for ${new Date(p.invoicePeriod+'-01').toLocaleDateString('en-GB',{month:'short',year:'numeric'})}` : '';
+    // Shown in this month because of its "For Month" tag, though the cash came
+    // in on another date — say so on the row so nobody has to guess.
+    const _shiftNote = (LG.monthMode && String(p.date||'').slice(0,7) !== LG.monthVal)
+      ? ` · received ${fmtDate(p.date)}` : '';
     // Strict date-wise ordering: payments are mixed with purchases by their ACTUAL date
     const sortDate = p.date;
 // Payments made together with an invoice (paid on delivery), or paid in cash,
@@ -10202,9 +10280,10 @@ function runSearch() {
     timeline.push({
       date: p.date, // actual date shown in the Date column
       type:'payment',
-      desc:`${party ? '' : p.party + ' — '}${pLabel}${pMethod ? ' · ' + pMethod : ''}${p.paidBy?' ('+p.paidBy+')':''}${p.notes?' · '+p.notes:''}`.trim(),
+      desc:`${party ? '' : p.party + ' — '}${pLabel}${_shiftNote}${pMethod ? ' · ' + pMethod : ''}${p.paidBy?' ('+p.paidBy+')':''}${p.notes?' · '+p.notes:''}`.trim(),
       ref: isCIH ? 'CASH' : 'PMT', amount:0, payment:p.amount, totalQty:0, qtyUnit:'',
       payId: p.id,
+      show: _payShow(p),
       sortKey: sortDate + '_1' // _1 so payments sort after purchases on same date
     });
   });
@@ -10217,21 +10296,20 @@ function runSearch() {
   let bal = openingBalance; // start running balance from opening balance
 
   const rows = [];
-  if(hasPeriod && party && bal !== 0) {
+  if(hasPeriod && Math.abs(bal) > 0.005) {
     rows.push(`<tr style="background:#faf6ec;border-bottom:1px solid #eee">
       <td colspan="${_salesMode ? 7 : 8}" style="padding:11px 14px"><strong style="color:var(--ref-gold)">Opening Balance — brought forward from prior periods</strong></td>
       <td></td><td></td>
-      <td class="num" style="padding:11px 14px;text-align:right;color:#0a1f3d">${fmt(bal)}</td>
+      <td class="num" style="padding:11px 14px;text-align:right;color:#0a1f3d">${fmtBal(bal)}</td>
     </tr>`);
   }
 
-  let rowNum=0, totalPurchShown=0, totalPaidShown=0, totalKgShown=0;
+  let rowNum=0;
+  const totalPurchShown = LG.invoiced, totalPaidShown = LG.received, totalKgShown = LG.kg;
   timeline.forEach(t => {
+    bal += t.amount - t.payment;   // every voucher moves the balance…
+    if(!t.show) return;            // …even when a text filter hides its row
     rowNum++;
-    bal += t.amount - t.payment;
-    totalPurchShown += t.amount;
-    totalPaidShown  += t.payment;
-    totalKgShown    += (t.totalKgSale || 0);
     const isPay = t.type==='payment';
     const typeColor = isPay ? '#16a34a' : '#0a1f3d';
     const kgDisplay = isPay ? '—' : (t.totalKgSale > 0 ? `${fmtShort(t.totalKgSale)} KG` : '—');
@@ -10247,22 +10325,27 @@ const clickAction = isPay ? (t.payId ? `onclick="openEditPayment('${t.payId}')"`
       <td class="num" style="font-weight:600">${fmtDate(t.date).replace(/\s20(\d\d)$/,' $1')}</td>
       <td><span style="color:${typeColor};font-weight:700">${isPay?(_salesMode?'Receipt':'Payment'):(_salesMode?'Sale':'Purchase')}</span></td>
       <td class="num">${t.ref}</td>
-      <td class="c-desc">${t.desc}</td>
+      <td class="c-desc">${t.desc}${isPay && t.payId ? ` <button type="button" class="stmt-row-edit no-print" title="Edit this payment" onclick="event.stopPropagation();openEditPayment('${t.payId}')">Edit</button>` : ''}</td>
       ${dueDueInCells}
       ${kgCellHtml}
       <td class="num">${qtyDisplay}</td>
       <td class="num" style="text-align:right">${t.amount>0?fmt(t.amount):'—'}</td>
       <td class="num" style="text-align:right">${t.payment>0?fmt(t.payment):'—'}</td>
-      <td class="num" style="text-align:right;font-weight:800">${fmt(bal)}</td>
+      <td class="num" style="text-align:right;font-weight:800">${fmtBal(bal)}</td>
     </tr>`);
   });
 
   // Closing outstanding row — uses totalPeriodOutstanding computed earlier
-  if(party) {
-    const closeBal  = hasPeriod ? totalPeriodOutstanding : allTimeBal;
-    const closeLabel= hasPeriod && monthVal
-      ? (closeBal>0 ? `${new Date(monthVal+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'})} — Total Outstanding (incl. prior balance)` : `${new Date(monthVal+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'})} — Fully Paid`)
-      : (closeBal>0 ? 'Total Outstanding (All Time)' : 'Fully Cleared');
+  if(true) {
+    const closeBal  = totalPeriodOutstanding;
+    const _perTxt   = hasPeriod ? (monthVal
+        ? new Date(monthVal+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'})
+        : `${from?fmtDate(from):'Start'} → ${to?fmtDate(to):'Today'}`) : '';
+    const closeLabel= closeBal < -0.005
+      ? (hasPeriod ? `${_perTxt} — Closing Balance (Advance / Credit)` : 'Advance / Credit Balance')
+      : closeBal > 0.005
+        ? (hasPeriod ? `${_perTxt} — Closing Balance (incl. opening balance)` : 'Total Outstanding (All Time)')
+        : (hasPeriod ? `${_perTxt} — Fully Cleared` : 'Fully Cleared');
     const kgValueHtml = `<td style="padding:14px;font-size:12px;font-weight:800;color:${_salesMode && totalKgShown>0?'var(--ref-gold)':'rgba(255,255,255,.4)'};text-align:right;white-space:nowrap">${_salesMode && totalKgShown>0 ? fmtShort(totalKgShown)+' KG' : ''}</td>`;
     rows.push(_salesMode ? `<tr class="stmt-closing-row" style="background:#0a1f3d;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-top:2px solid var(--ref-gold)">
       <td colspan="5" style="padding:14px;font-size:13px;font-weight:800;color:#fff;letter-spacing:.3px">${closeLabel}</td>
@@ -10270,22 +10353,25 @@ const clickAction = isPay ? (t.payId ? `onclick="openEditPayment('${t.payId}')"`
       <td></td>
       <td></td>
       <td></td>
-      <td style="padding:14px;font-size:16px;font-weight:900;color:var(--ref-gold);text-align:right;white-space:nowrap">${fmt(closeBal)}</td>
+      <td style="padding:14px;font-size:16px;font-weight:900;color:var(--ref-gold);text-align:right;white-space:nowrap">${fmtBal(closeBal)}</td>
     </tr>` : `<tr class="stmt-closing-row" style="background:#0a1f3d;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-top:2px solid var(--ref-gold)">
       <td colspan="7" style="padding:14px;font-size:13px;font-weight:800;color:#fff;letter-spacing:.3px">${closeLabel}</td>
       <td></td>
       <td></td>
       <td></td>
-      <td style="padding:14px;font-size:16px;font-weight:900;color:var(--ref-gold);text-align:right;white-space:nowrap">${fmt(closeBal)}</td>
+      <td style="padding:14px;font-size:16px;font-weight:900;color:var(--ref-gold);text-align:right;white-space:nowrap">${fmtBal(closeBal)}</td>
     </tr>`);
   }
 
-  document.getElementById('search-count').textContent = `${results.length} invoice${results.length!==1?'s':''} · ${periodPayments.length} payment${periodPayments.length!==1?'s':''} · Period: ${hasPeriod?periodEl.textContent:'All Time'}`;
+  document.getElementById('search-count').textContent =
+    `${results.length} invoice${results.length!==1?'s':''} · ${periodPayments.length} payment${periodPayments.length!==1?'s':''} · Period: ${hasPeriod?periodEl.textContent:'All Time'}`
+    + (LG.shifted.length ? ` · includes ${LG.shifted.length} payment${LG.shifted.length>1?'s':''} marked for this month but received on another date` : '')
+    + (_txtOn ? ' · filtered view — balances shown are the true ledger balances' : '');
   document.querySelector('#search-results-table tbody').innerHTML = rows.join('');
 
   document.getElementById('stmt-footer-purch').innerHTML = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(totalPurchShown);
   document.getElementById('stmt-footer-paid').innerHTML  = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(totalPaidShown);
-  document.getElementById('stmt-footer-bal').innerHTML   = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmt(hasPeriod ? totalPeriodOutstanding : allTimeBal);
+  document.getElementById('stmt-footer-bal').innerHTML   = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><path d="m88.3 1c0.4 0.6 2.6 3.3 4.7 5.9 15.3 18.2 26.8 47.8 33 85.1 4.1 24.5 4.3 32.2 4.3 125.6v87h-41.8c-38.2 0-42.6-0.2-50.1-1.7-11.8-2.5-24-9.2-32.2-17.8-6.5-6.9-6.3-7.3-5.9 13.6 0.5 17.3 0.7 19.2 3.2 28.6 4 14.9 9.5 26 17.8 35.9 11.3 13.6 22.8 21.2 39.2 26.3 3.5 1 10.9 1.4 37.1 1.6l32.7 0.5v43.3 43.4l-46.1-0.3-46.3-0.3-8-3.2c-9.5-3.8-13.8-6.6-23.1-14.9l-6.8-6.1 0.4 19.1c0.5 17.7 0.6 19.7 3.1 28.7 8.7 31.8 29.7 54.5 57.4 61.9 6.9 1.9 9.6 2 38.5 2.4l30.9 0.4v89.6c0 54.1-0.3 94-0.8 100.8-0.5 6.2-2.1 17.8-3.5 25.9-6.5 37.3-18.2 65.4-35 83.6l-3.4 3.7h169.1c101.1 0 176.7-0.4 187.8-0.9 19.5-1 63-5.3 72.8-7.4 3.1-0.6 8.9-1.5 12.7-2.1 8.1-1.2 21.5-4 40.8-8.9 27.2-6.8 52-15.3 76.3-26.1 7.6-3.4 29.4-14.5 35.2-18 3.1-1.8 6.8-4 8.2-4.7 3.9-2.1 10.4-6.3 19.9-13.1 4.7-3.4 9.4-6.7 10.4-7.4 4.2-2.8 18.7-14.9 25.3-21 25.1-23.1 46.1-48.8 62.4-76.3 2.3-4 5.3-9 6.6-11.1 3.3-5.6 16.9-33.6 18.2-37.8 0.6-1.9 1.4-3.9 1.8-4.3 2.6-3.4 17.6-50.6 19.4-60.9 0.6-3.3 0.9-3.8 3.4-4.3 1.6-0.3 24.9-0.3 51.8-0.1 53.8 0.4 53.8 0.4 65.7 5.9 6.7 3.1 8.7 4.5 16.1 11.2 9.7 8.7 8.8 10.1 8.2-11.7-0.4-12.8-0.9-20.7-1.8-23.9-3.4-12.3-4.2-14.9-7.2-21.1-9.8-21.4-26.2-36.7-47.2-44l-8.2-3-33.4-0.4-33.3-0.5 0.4-11.7c0.4-15.4 0.4-45.9-0.1-61.6l-0.4-12.6 44.6-0.2c38.2-0.2 45.3 0 49.5 1.1 12.6 3.5 21.1 8.3 31.5 17.8l5.8 5.4v-14.8c0-17.6-0.9-25.4-4.5-37-7.1-23.5-21.1-41-41.1-51.8-13-7-13.8-7.2-58.5-7.5-26.2-0.2-39.9-0.6-40.6-1.2-0.6-0.6-1.1-1.6-1.1-2.4 0-0.8-1.5-7.1-3.5-13.9-23.4-82.7-67.1-148.4-131-197.1-8.7-6.7-30-20.8-38.6-25.6-3.3-1.9-6.9-3.9-7.8-4.5-4.2-2.3-28.3-14.1-34.3-16.6-3.6-1.6-8.3-3.6-10.4-4.4-35.3-15.3-94.5-29.8-139.7-34.3-7.4-0.7-17.2-1.8-21.7-2.2-20.4-2.3-48.7-2.6-209.4-2.6-135.8 0-169.9 0.3-169.4 1zm330.7 43.3c33.8 2 54.6 4.6 78.9 10.5 74.2 17.6 126.4 54.8 164.3 117 3.5 5.8 18.3 36 20.5 42.1 10.5 28.3 15.6 45.1 20.1 67.3 1.1 5.4 2.6 12.6 3.3 16 0.7 3.3 1 6.4 0.7 6.7-0.5 0.4-100.9 0.6-223.3 0.5l-222.5-0.2-0.3-128.5c-0.1-70.6 0-129.3 0.3-130.4l0.4-1.9h71.1c39 0 78 0.4 86.5 0.9zm297.5 350.3c0.7 4.3 0.7 77.3 0 80.9l-0.6 2.7-227.5-0.2-227.4-0.3-0.2-42.4c-0.2 23.3 0-42.7 0.2-43.1 0.3-0.5 97.2-0.8 227.7-0.8h227.2zm-10.2 171.7c0.5 1.5-1.9 13.8-6.8 33.8-5.6 22.5-13.2 45.2-20.9 62-3.8 8.6-13.3 27.2-15.6 30.7-1.1 1.6-4.3 6.7-7.1 11.2-18 28.2-43.7 53.9-73 72.9-10.7 6.8-32.7 18.4-38.6 20.2-1.2 0.3-2.5 0.9-3 1.3-0.7 0.6-9.8 4-20.4 7.8-19.5 6.9-56.6 14.4-86.4 17.5-19.3 1.9-22.4 2-96.7 2h-76.9v-129.7-129.8l220.9-0.4c121.5-0.2 221.6-0.5 222.4-0.7 0.9-0.1 1.8 0.5 2.1 1.2z"/></svg> ' + fmtBal(totalPeriodOutstanding);
 
   // Opening balance footer display
   const footerObEl = document.getElementById('stmt-footer-ob');
@@ -10307,12 +10393,16 @@ const clickAction = isPay ? (t.payId ? `onclick="openEditPayment('${t.payId}')"`
   }
 
   if(party) {
+    // Aging must count what is STILL UNPAID (FIFO-settled), never gross invoice
+    // totals — otherwise a fully-cleared party still shows a 0–30d bucket.
+    const _rem = _remainingByRecord();
     const now=new Date(), age=d=>Math.floor((now-new Date(d))/86400000);
-    const allInv=AD().records.filter(r=>r.party===party);
-    const _a030 = allInv.filter(r=>age(r.date)<=30).reduce((s,r)=>s+r.amount,0);
-    const _a3160 = allInv.filter(r=>age(r.date)>30&&age(r.date)<=60).reduce((s,r)=>s+r.amount,0);
-    const _a6190 = allInv.filter(r=>age(r.date)>60&&age(r.date)<=90).reduce((s,r)=>s+r.amount,0);
-    const _a90p = allInv.filter(r=>age(r.date)>90).reduce((s,r)=>s+r.amount,0);
+    const allInv=AD().records.filter(r=>r.party===party && (_rem[r.id]||0) > 0.5);
+    const _due = r => _rem[r.id] || 0;
+    const _a030 = allInv.filter(r=>age(r.date)<=30).reduce((s,r)=>s+_due(r),0);
+    const _a3160 = allInv.filter(r=>age(r.date)>30&&age(r.date)<=60).reduce((s,r)=>s+_due(r),0);
+    const _a6190 = allInv.filter(r=>age(r.date)>60&&age(r.date)<=90).reduce((s,r)=>s+_due(r),0);
+    const _a90p = allInv.filter(r=>age(r.date)>90).reduce((s,r)=>s+_due(r),0);
     document.getElementById('stmt-aging').innerHTML =
       `<div class="ap-cell"><div class="ap-d">0–30d</div><div class="ap-v">${fmt(_a030)}</div></div>
        <div class="ap-cell"><div class="ap-d">31–60d</div><div class="ap-v">${fmt(_a3160)}</div></div>
@@ -10414,6 +10504,197 @@ function filterPayments() {
       </div></td>
     </tr>`;
   }).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// DUPLICATE SCANNER  —  cleans up entries that got saved twice
+// Groups by party + date + amount (+ PO for invoices, method for
+// payments). The OLDEST row in each group is treated as the keeper.
+// ═══════════════════════════════════════════════════════════
+function _dupeKeyRec(r){ return [r.party, r.date, (+r.amount||0).toFixed(2), (r.vehicle||'').trim().toUpperCase()].join('|'); }
+function _dupeKeyPay(p){ return [p.party, p.date, (+p.amount||0).toFixed(2), (p.method||'')].join('|'); }
+function _dupeGroups(list, keyFn){
+  const m = {};
+  list.forEach(x => { const k = keyFn(x); (m[k] = m[k] || []).push(x); });
+  return Object.keys(m).map(k => m[k])
+    .filter(g => g.length > 1)
+    .map(g => g.slice().sort((a,b) => String(a.createdAt||'').localeCompare(String(b.createdAt||'')) || ((a.id||0)-(b.id||0))));
+}
+function openDupeScan(){
+  clearLedgerCache();
+  let host = document.getElementById('dupe-scan-modal');
+  if(!host){
+    host = document.createElement('div');
+    host.id = 'dupe-scan-modal';
+    host.className = 'modal-overlay';
+    host.style.display = 'none';
+    document.body.appendChild(host);
+  }
+  renderDupeScan();
+  host.style.display = 'flex';
+}
+function closeDupeScan(){ const h=document.getElementById('dupe-scan-modal'); if(h) h.style.display='none'; }
+// ── Cash / paid-with-invoice payments that were never tied to their invoice ──
+// These are the ones that drift onto an older invoice and make a fully paid
+// cash entry read "Partially Paid". Matched back by party + PO/invoice ref.
+function _unlinkedCashPays(){
+  const recs = AD().records || [];
+  const out  = [];
+  (AD().payments || []).forEach(p => {
+    if(!p.withInvoice) return;                                  // only auto/with-invoice money
+    if(p.allocMode === 'manual' && _allocList(p).length) return; // already linked
+    const ref = (p.invRef || '').trim().toUpperCase();
+    let cands = recs.filter(r => r.party === p.party && ref &&
+      ((r.vehicle || '').trim().toUpperCase() === ref || (r.invNo || '').trim().toUpperCase() === ref));
+    if(cands.length > 1) cands = cands.filter(r => r.date === p.date) .length ? cands.filter(r => r.date === p.date) : cands;
+    if(cands.length > 1) cands = cands.filter(r => Math.abs((+r.amount||0) - (+p.amount||0)) < 0.005).length
+        ? cands.filter(r => Math.abs((+r.amount||0) - (+p.amount||0)) < 0.005) : cands;
+    out.push({ pay: p, match: cands.length === 1 ? cands[0] : null, ambiguous: cands.length > 1 });
+  });
+  return out;
+}
+// ── Payments pointing at invoices that no longer exist ──
+function _orphanPays(){
+  const ids = new Set((AD().records || []).map(r => String(r.id)));
+  // Only payments carrying an explicit allocation to a vanished invoice. Cash
+  // money with no allocation at all is already covered by the section above,
+  // so it is not listed twice.
+  return (AD().payments || []).filter(p => {
+    const al = _allocList(p);
+    return al.length > 0 && al.some(a => !ids.has(String(a.invId)));
+  });
+}
+async function repairCashLink(payId){
+  const row = _unlinkedCashPays().find(x => String(x.pay.id) === String(payId));
+  if(!row || !row.match) { toast('No single matching invoice found', 'error'); return; }
+  const p = row.pay;
+  p.allocMode   = 'manual';
+  p.allocations = [{ invId: row.match.id, amount: Math.min(+p.amount||0, +row.match.amount||0) }];
+  p.updatedAt   = new Date().toISOString();
+  p.updatedBy   = window._user ? window._user.email : 'system';
+  const ok = await fbSavePayment(p);
+  clearLedgerCache();
+  renderDupeScan();
+  toast(ok ? 'Payment linked to its invoice' : 'Could not save', ok ? 'success' : 'error');
+}
+async function repairAllCashLinks(){
+  const rows = _unlinkedCashPays().filter(x => x.match);
+  if(!rows.length) { toast('Nothing to link', 'success'); return; }
+  if(!confirm('Link ' + rows.length + ' cash payment' + (rows.length>1?'s':'') +
+              ' back to their own invoices?\n\nThis only changes which invoice each payment settles — no amount is touched.')) return;
+  let done = 0;
+  for(const row of rows){
+    const p = row.pay;
+    p.allocMode   = 'manual';
+    p.allocations = [{ invId: row.match.id, amount: Math.min(+p.amount||0, +row.match.amount||0) }];
+    p.updatedAt   = new Date().toISOString();
+    p.updatedBy   = window._user ? window._user.email : 'system';
+    if(await fbSavePayment(p)) done++;
+  }
+  clearLedgerCache();
+  renderDupeScan();
+  toast(done + ' payment' + (done!==1?'s':'') + ' linked', 'success');
+}
+function renderDupeScan(){
+  const host = document.getElementById('dupe-scan-modal');
+  if(!host) return;
+  const sales = DB.mode==='sales';
+  const recG  = _dupeGroups(AD().records  || [], _dupeKeyRec);
+  const payG  = _dupeGroups(AD().payments || [], _dupeKeyPay);
+  const unl   = _unlinkedCashPays();
+  const orph  = _orphanPays();
+  const AEDI  = (typeof ALLOC_AED!=='undefined') ? ALLOC_AED : 'AED';
+  const H     = t => `<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin:16px 0 10px">${t}</div>`;
+  const box   = inner => `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px">${inner}</div>`;
+
+  const grpHtml = (groups, kind) => groups.map(g => {
+    const head = g[0], extra = g.slice(1);
+    const title = kind==='rec'
+      ? `${_alEsc(head.party)} · ${fmtDate(head.date)} · ${AEDI} ${fmt(head.amount)}${head.vehicle?' · PO '+_alEsc(head.vehicle):''}`
+      : `${_alEsc(head.party)} · ${fmtDate(head.date)} · ${AEDI} ${fmt(head.amount)} · ${_alEsc(head.method||'')}`;
+    return box(`<div style="font-weight:700;color:var(--t1);font-size:13px;margin-bottom:6px">${title}</div>
+      <div style="font-size:11.5px;color:var(--t3);margin-bottom:8px">${g.length} copies on file — keeping the first, remove the rest.</div>
+      ${extra.map(x => `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-top:1px dashed var(--border)">
+        <span style="font-size:12px;color:var(--t2)">copy #${g.indexOf(x)+1} · id ${x.id}${x.createdAt?' · saved '+String(x.createdAt).slice(0,16).replace('T',' '):''}</span>
+        <button type="button" class="btn btn-danger btn-sm" onclick="dupeDelete('${kind}','${x.id}')">Delete this copy</button>
+      </div>`).join('')}`);
+  }).join('');
+
+  const unlHtml = unl.map(u => box(
+    `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;color:var(--t1);font-size:13px">${_alEsc(u.pay.party)} · ${fmtDate(u.pay.date)} · ${AEDI} ${fmt(u.pay.amount)}</div>
+        <div style="font-size:11.5px;color:var(--t3);margin-top:3px">
+          ${u.match ? 'Matches invoice ' + _alEsc(u.match.vehicle || u.match.invNo || ('#'+u.match.id)) + ' — ' + AEDI + ' ' + fmt(u.match.amount)
+            : (u.ambiguous ? 'Several invoices match — open the payment and allocate it by hand.'
+                           : 'No matching invoice found — open the payment and allocate it by hand.')}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${u.match ? `<button type="button" class="btn btn-success btn-sm" onclick="repairCashLink('${u.pay.id}')">Link</button>` : ''}
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeDupeScan();openEditPayment('${u.pay.id}')">Open</button>
+      </div>
+    </div>`)).join('');
+
+  const orphHtml = orph.map(p => box(
+    `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;color:var(--t1);font-size:13px">${_alEsc(p.party)} · ${fmtDate(p.date)} · ${AEDI} ${fmt(p.amount)}</div>
+        <div style="font-size:11.5px;color:var(--t3);margin-top:3px">The invoice this money was tied to no longer exists — it is now sitting as an advance.</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeDupeScan();openEditPayment('${p.id}')">Open</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="dupeDelete('pay','${p.id}')">Delete</button>
+      </div>
+    </div>`)).join('');
+
+  const clean = !recG.length && !payG.length && !unl.length && !orph.length;
+  const linkable = unl.filter(u => u.match).length;
+
+  host.innerHTML = `<div class="modal" style="max-width:660px">
+    <div class="modal-header">
+      <h2>Data Health — ${sales?'Sales':'Purchase'}</h2>
+      <button class="modal-close" onclick="closeDupeScan()">×</button>
+    </div>
+    <div class="modal-body" style="max-height:65vh;overflow:auto">
+      ${clean ? '<div style="padding:26px;text-align:center;color:var(--t3)">Everything checks out — no duplicates, every cash payment is tied to its invoice.</div>' : `
+        ${recG.length ? H(`Duplicate ${sales?'sales invoices':'purchase entries'} (${recG.length} group${recG.length>1?'s':''})`) + grpHtml(recG,'rec') : ''}
+        ${payG.length ? H(`Duplicate ${sales?'receipts':'payments'} (${payG.length} group${payG.length>1?'s':''})`) + grpHtml(payG,'pay') : ''}
+        ${unl.length ? H(`Cash payments not tied to their invoice (${unl.length})`) +
+          `<div style="font-size:12px;color:var(--t3);margin:-4px 0 10px;line-height:1.5">These settle the party's oldest open invoice instead of their own, which is why a paid cash entry can read "Partially Paid". Linking them changes nothing about the amounts.</div>` +
+          (linkable ? `<div style="margin-bottom:10px"><button type="button" class="btn btn-success btn-sm" onclick="repairAllCashLinks()">Link all ${linkable} matched</button></div>` : '') +
+          unlHtml : ''}
+        ${orph.length ? H(`Payments with a missing invoice (${orph.length})`) + orphHtml : ''}`}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDupeScan()">Close</button>
+    </div>
+  </div>`;
+}
+async function dupeDelete(kind, id){
+  const isRec = kind==='rec';
+  const list  = isRec ? AD().records : AD().payments;
+  const item  = list.find(x => String(x.id) === String(id));
+  if(!item) { toast('Already removed', 'success'); renderDupeScan(); return; }
+  if(!confirm('Delete this duplicate copy?\n\nYou can undo it right after.')) return;
+  const backup = JSON.parse(JSON.stringify(item));
+  const trashKey = 'almadhi/trash/' + (isRec ? 'record_' : 'payment_') + id;
+  try {
+    await fbWrite(trashKey, { ...backup, _deletedAt:new Date().toISOString(),
+      _deletedBy: window._user ? window._user.email : 'system',
+      _kind: isRec ? 'record' : 'payment', _module: DB.mode });
+    await window._fbRemove(window._fbRef(window._db, MODE_ROOT() + (isRec ? '/records/' : '/payments/') + id));
+  } catch(e){}
+  clearLedgerCache();
+  renderDupeScan();
+  if(typeof filterPayments==='function' && document.getElementById('pay-table')) filterPayments();
+  showUndoToast('Duplicate deleted', async () => {
+    if(isRec) await fbSaveRecord(backup); else await fbSavePayment(backup);
+    try { await window._fbRemove(window._fbRef(window._db, trashKey)); } catch(e){}
+    clearLedgerCache(); renderDupeScan();
+    toast('Restored', 'success');
+  });
 }
 
 function clearPayFilters() {
@@ -10749,7 +11030,9 @@ function openPaymentModal(preParty) {
 }
 function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
 
+let _paySaveBusy = false;
 async function savePayment() {
+  if(_paySaveBusy) { toast('Still saving — please wait', 'error'); return; }
   const party  = document.getElementById('pm-party').value;
   const date   = document.getElementById('pm-date').value;
   const amount = parseFloat(document.getElementById('pm-amount').value);
@@ -10763,6 +11046,16 @@ async function savePayment() {
     toast('Allocated is more than the amount', 'error'); return;
   }
 
+  // ── Same-payment guard: identical party + date + amount already recorded ──
+  const _dupePay = (AD().payments || []).find(p =>
+      p.party === party && p.date === date && Math.abs((+p.amount || 0) - amount) < 0.005);
+  if(_dupePay && !confirm(
+      'A payment for this party, date and amount is already recorded:\n\n' +
+      party + '\n' + date + '   AED ' + fmt(amount) +
+      '\n\nRecord a SECOND one anyway?')) return;
+
+  _paySaveBusy = true;
+  try {
   const payId = await allocateRecordId();
   AD().nextId = payId + 1;
   const pmMonth = document.getElementById('pm-month').value || null;
@@ -10786,6 +11079,7 @@ async function savePayment() {
     const advNote = c.advance>0.005 ? ` — ${ALLOC_AED} ${fmt(c.advance)} advance` : '';
     toast(`${sales?'Receipt':'Payment'} ${ALLOC_AED} ${fmt(amount)} for ${_alEsc(party)}${advNote} saved`, 'success');
   }
+  } finally { _paySaveBusy = false; }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -10826,9 +11120,17 @@ async function saveEditPayment() {
   const sales=DB.mode==='sales';
   const amount=parseFloat(document.getElementById('ep-amount').value)||0;
   if(amount<=0){ toast('Enter valid amount','error'); return; }
+  const _epParty = document.getElementById('ep-party').value;
+  const _epDate  = document.getElementById('ep-date').value;
+  if(!_epParty){ toast('Select a party','error'); return; }
+  if(!_epDate){ toast('Enter '+(sales?'receipt':'payment')+' date','error'); return; }
   const c=allocCollect('ep');
   if(c.mode==='manual' && c.allocated>amount+0.005){ toast('Allocated is more than the amount','error'); return; }
-  p.date          = document.getElementById('ep-date').value;
+  // Moving a payment to a different party must drop allocations that belonged
+  // to the old party's invoices, otherwise the money would settle a stranger.
+  if(_epParty !== p.party){ p.allocMode='auto'; c.allocations=[]; }
+  p.party         = _epParty;
+  p.date          = _epDate;
   p.amount        = amount;
   p.paidBy        = document.getElementById('ep-paidby').value;
   p.method        = document.getElementById('ep-method').value;
@@ -10839,7 +11141,15 @@ async function saveEditPayment() {
   p.updatedAt     = new Date().toISOString();
   p.updatedBy     = window._user ? window._user.email : 'system';
   const ok = await fbSavePayment(p);
-  if(ok) { clearLedgerCache(); document.getElementById('edit-pay-modal').style.display='none'; toast((sales?'Receipt':'Payment')+' updated', 'success'); }
+  if(ok) {
+    clearLedgerCache();
+    document.getElementById('edit-pay-modal').style.display='none';
+    toast((sales?'Receipt':'Payment')+' updated', 'success');
+    // Keep whatever the user is looking at in sync straight away.
+    if(typeof runSearch==='function' && document.getElementById('statement-area') &&
+       document.getElementById('statement-area').style.display !== 'none') runSearch();
+    if(typeof filterPayments==='function' && document.getElementById('pay-table')) filterPayments();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -10905,6 +11215,8 @@ async function deletePayment() {
     await window._fbRemove(window._fbRef(window._db, MODE_ROOT()+'/payments/'+pid));
   } catch(e){}
   document.getElementById('edit-pay-modal').style.display='none';
+  if(typeof runSearch==='function' && document.getElementById('statement-area') &&
+     document.getElementById('statement-area').style.display !== 'none') runSearch();
   showUndoToast('Payment deleted', async () => {
     if(backup) await fbSavePayment(backup);
     try { await window._fbRemove(window._fbRef(window._db, 'almadhi/trash/payment_'+pid)); } catch(e){}
@@ -11772,14 +12084,43 @@ async function deleteRecordFromModal() {
   if(!r) return;
   if(!confirm(`Delete invoice ${r.vehicle||r.invNo||''} for ${r.party}?\n\nYou can undo it right after.`)) return;
   const backup = JSON.parse(JSON.stringify(r));
+
+  // Cash / paid-with-invoice money attached to THIS invoice would otherwise be
+  // left behind as a floating credit and push the party's balance into minus.
+  const _ref = (r.vehicle || r.invNo || '').trim().toUpperCase();
+  const _linked = (AD().payments || []).filter(p =>
+      p.party === r.party && (
+        _allocList(p).some(a => String(a.invId) === String(id)) ||
+        (p.withInvoice && _ref && (p.invRef || '').trim().toUpperCase() === _ref)));
+  let _linkedBackups = [];
+  if(_linked.length && confirm(
+      _linked.length + ' payment' + (_linked.length>1?'s':'') + ' totalling AED ' +
+      fmt(_linked.reduce((t,p)=>t+(+p.amount||0),0)) + ' ' + (_linked.length>1?'were':'was') +
+      ' recorded with this invoice.\n\nDelete ' + (_linked.length>1?'them':'it') + ' as well?\n\n' +
+      'Cancel keeps the money on the account as an advance.')) {
+    for(const p of _linked){
+      _linkedBackups.push(JSON.parse(JSON.stringify(p)));
+      try {
+        await fbWrite('almadhi/trash/payment_'+p.id, { ...p, _deletedAt:new Date().toISOString(),
+          _deletedBy: window._user ? window._user.email : 'system', _kind:'payment', _module: DB.mode });
+        await window._fbRemove(window._fbRef(window._db, MODE_ROOT()+'/payments/'+p.id));
+      } catch(e){}
+    }
+  }
   try {
     await fbWrite('almadhi/trash/record_'+id, { ...backup, _deletedAt:new Date().toISOString(), _deletedBy: window._user ? window._user.email : 'system', _kind:'record', _module: DB.mode });
     await window._fbRemove(window._fbRef(window._db, MODE_ROOT()+'/records/'+id));
   } catch(e){}
   document.getElementById('inv-modal').style.display = 'none';
+  clearLedgerCache();
   showUndoToast(`Invoice ${r.vehicle||r.invNo||''} deleted`, async () => {
     await fbSaveRecord(backup);
     try { await window._fbRemove(window._fbRef(window._db, 'almadhi/trash/record_'+id)); } catch(e){}
+    for(const pb of _linkedBackups){
+      await fbSavePayment(pb);
+      try { await window._fbRemove(window._fbRef(window._db, 'almadhi/trash/payment_'+pb.id)); } catch(e){}
+    }
+    clearLedgerCache();
     toast(`Invoice ${r.vehicle||r.invNo||''} restored`, 'success');
   });
 }
@@ -14613,64 +14954,20 @@ function runUrduStmt() {
 
   var hasPeriod = !!(from || to || monthVal);
 
-  var recs = AD().records.filter(function(r) {
-    if(r.party !== party) return false;
-    if(monthVal && r.date.slice(0,7) !== monthVal) return false;
-    if(from && !monthVal && r.date < from) return false;
-    if(to   && !monthVal && r.date > to)   return false;
-    return true;
-  }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var LGU = buildLedger(party, from, to, monthVal);
+  var recs = LGU.recs;
+  var pays = LGU.pays;
+  var openBal = LGU.opening;
 
-  var pays;
-  if(monthVal) {
-    var tagged = AD().payments.filter(function(p){ return p.party===party && p.invoicePeriod===monthVal; });
-    var tagIds = new Set(tagged.map(function(p){return p.id;}));
-    // Also include untagged payments that fall within the selected month (handles cash-in-hand auto-payments)
-    var monthStart = monthVal + '-01';
-    var mParts = monthVal.split('-').map(Number);
-    var monthEnd = monthVal + '-' + String(new Date(mParts[0], mParts[1], 0).getDate()).padStart(2,'0');
-    var legacy = AD().payments.filter(function(p){
-      if(p.party!==party) return false;
-      if(p.invoicePeriod) return false; // already in tagged
-      if(tagIds.has(p.id)) return false;
-      // Include if payment date falls in this month
-      return p.date >= monthStart && p.date <= monthEnd;
-    });
-    pays = tagged.concat(legacy);
-  } else if(from||to) {
-    pays = AD().payments.filter(function(p){
-      if(p.party!==party) return false;
-      if(from && p.date<from) return false;
-      if(to   && p.date>to)   return false;
-      return true;
-    });
-  } else {
-    pays = AD().payments.filter(function(p){return p.party===party;});
-  }
-
-  var openBal = 0;
-  if(hasPeriod) {
-    var cutoff = monthVal ? monthVal+'-01' : from;
-    if(cutoff) {
-      var pp = AD().records.filter(function(r){return r.party===party && r.date<cutoff;}).reduce(function(s,r){return s+r.amount;},0);
-      var pd = AD().payments.filter(function(p){
-        if(p.party!==party) return false;
-        if(p.invoicePeriod) return p.invoicePeriod < (monthVal||(from||'').slice(0,7));
-        return p.date < cutoff;
-      }).reduce(function(s,p){return s+p.amount;},0);
-      openBal = pp - pd;
-    }
-  }
-
-  var periodPurch = recs.reduce(function(s,r){return s+r.amount;},0);
-  var periodPaid  = pays.reduce(function(s,p){return s+p.amount;},0);
+  var periodPurch = LGU.invoiced;
+  var periodPaid  = LGU.received;
   var allPurch    = AD().records.filter(function(r){return r.party===party;}).reduce(function(s,r){return s+r.amount;},0);
   var allPaid     = AD().payments.filter(function(p){return p.party===party;}).reduce(function(s,p){return s+p.amount;},0);
-  var allTimeBal  = Math.max(0, allPurch - allPaid);
-  var totalOut    = hasPeriod ? Math.max(0, openBal + periodPurch - periodPaid) : allTimeBal;
+  var allTimeBal  = LGU.allTime;
+  var totalOut    = LGU.closing;
   var dispPurch   = hasPeriod ? periodPurch : allPurch;
   var dispPaid    = hasPeriod ? periodPaid  : allPaid;
-  var closeBal    = hasPeriod ? totalOut : allTimeBal;
+  var closeBal    = LGU.closing;
 
   var periodLbl = 'تمام مدت';
   if(monthVal) {
