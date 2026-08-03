@@ -10896,31 +10896,39 @@ setTimeout(_initEntryKeyboard, 500);
 // ═══════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════
 // CHUNKED TABLE RENDER
-// Building 280 rows in one pass locks the main thread for the whole
-// paint — that is the "harsh" feel when Records or Payments opens. The
-// first screenful goes in immediately, the rest is appended a frame at a
-// time, so the page is interactive straight away and each batch fades in.
+// Building 280 rows in one pass locks the main thread for the whole paint —
+// that is the "harsh" feel when Records or Payments opens. So the row HTML is
+// built a batch per frame, which keeps the thread free.
+//
+// The rows are NOT inserted a batch at a time, though. These tables use auto
+// layout, so every batch would re-measure the columns against wider content
+// and the whole table would visibly resize as it filled — the same class of
+// bug as the dashboard's scrollbar. Batches accumulate off-DOM and go in with
+// one assignment, so the browser lays the table out exactly once.
 // ═══════════════════════════════════════════════════════════
 var _chunkJobs = {};
 function chunkRows(tbody, arr, build, first, size) {
   if (!tbody) return;
-  first = first || 25; size = size || 50;
+  first = first || 40; size = size || 60;
   var key = tbody.__ckey || (tbody.__ckey = 'ck' + Math.random().toString(36).slice(2, 8));
   if (_chunkJobs[key]) { cancelAnimationFrame(_chunkJobs[key]); delete _chunkJobs[key]; }
 
-  var head = '', n = Math.min(first, arr.length);
-  for (var i = 0; i < n; i++) head += build(arr[i], i);
-  tbody.innerHTML = head;
-  if (n >= arr.length) return;
+  // Small tables: no point deferring anything.
+  if (arr.length <= first) {
+    var one = '';
+    for (var k = 0; k < arr.length; k++) one += build(arr[k], k);
+    tbody.innerHTML = one;
+    return;
+  }
 
-  var idx = n;
+  var parts = [], idx = 0;
   function step() {
-    var end = Math.min(idx + size, arr.length), buf = '';
-    for (var j = idx; j < end; j++) buf += build(arr[j], j);
-    tbody.insertAdjacentHTML('beforeend', buf);
+    var end = Math.min(idx + size, arr.length);
+    for (var j = idx; j < end; j++) parts.push(build(arr[j], j));
     idx = end;
-    if (idx < arr.length) _chunkJobs[key] = requestAnimationFrame(step);
-    else delete _chunkJobs[key];
+    if (idx < arr.length) { _chunkJobs[key] = requestAnimationFrame(step); return; }
+    delete _chunkJobs[key];
+    tbody.innerHTML = parts.join('');
   }
   _chunkJobs[key] = requestAnimationFrame(step);
 }
@@ -19054,9 +19062,11 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
 /* ── Table + card entrance ──
    Each chunk of rows arrives on its own frame, so the stagger comes free —
    no per-row delay, which would cost more than it's worth at 280 rows. */
-@keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes rowIn { from { opacity: 0; } to { opacity: 1; } }
+/* Opacity only. A transform on a table row forces the row into its own layer
+   and can shift the column widths — not something to do to 280 rows. */
 #all-records-table tbody tr,
-#pay-table tbody tr { animation: rowIn .26s cubic-bezier(.22,1,.36,1) both; }
+#pay-table tbody tr { animation: rowIn .28s ease both; }
 @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 #page-records .card, #page-payments .card,
 #pay-kpis .pay-combined { animation: cardIn .3s cubic-bezier(.22,1,.36,1) both; }
