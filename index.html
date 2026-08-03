@@ -311,16 +311,7 @@ body.dark-mode .card { background: var(--surface); }
 body.dark-mode table { background: var(--surface); }
 body.dark-mode tbody tr { background: var(--surface); }
 body.dark-mode tbody tr:hover { background: var(--surface2); }
-body.dark-mode #bottom-nav .bnav-items { background: linear-gradient(180deg, rgba(19,39,64,.97), rgba(8,26,48,.97)); border-color: rgba(255,255,255,.09); box-shadow: 0 12px 30px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.06) inset; }
-body.dark-mode #bottom-nav .bnav-btn { color: rgba(255,255,255,.55); }
-body.dark-mode #bottom-nav .bnav-label { color: #eaf1ff; }
-body.dark-mode #bottom-nav .bnav-btn.is-open,
-body.dark-mode #bottom-nav .bnav-btn:focus-visible { background: rgba(255, 255, 255, 0.12); color: #fff; }
-body.dark-mode #bottom-nav .bnav-btn.active { background: linear-gradient(135deg, #1c3a63 0%, #2c4e7a 100%); color:#fff; }
-body.dark-mode #bottom-nav .bnav-btn.active svg { stroke:#fff; }
-@media (hover:hover) and (pointer:fine) {
-  body.dark-mode #bottom-nav .bnav-btn:hover { background: rgba(75,131,245,.22); color:#8fb4ff; }
-}
+/* Bottom-nav dark mode lives with the main #bottom-nav rules. */
 body.dark-mode .modal { background: var(--surface); }
 body.dark-mode .modal-body { background: var(--surface); }
 body.dark-mode .modal-footer { background: var(--surface2); }
@@ -696,8 +687,11 @@ body {
 @keyframes drawLine { to { stroke-dashoffset: 0; } }
 @keyframes fadeIn { to { opacity: 1; } }
 @keyframes popDot { to { opacity: 1; transform: scale(1); } }
-.page.active { display: block; animation: pageIn .26s cubic-bezier(.22,1,.36,1) both; }
-@keyframes pageIn { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+.page.active { display: block; animation: pageIn .24s cubic-bezier(.22,1,.36,1) both; }
+/* Opacity + a small rise ONLY. A scale here shrank the whole page for a few
+   frames, which is what left the gap down the right-hand edge of the
+   dashboard as it opened. */
+@keyframes pageIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce){ .page.active { animation: none; } }
 
 .page-header {
@@ -1866,131 +1860,218 @@ tbody tr:hover {
 .manage-section-title { font-size:11px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 8px; }
 .manage-ftr { padding:14px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; flex-shrink:0; background: #f8f9fb; }
 
-/* ── BOTTOM NAV · expanding pill dock (white + navy-blue, bright theme) ──
-   Same interaction model as the "expanding-menu" reference: pills sit
-   collapsed to just their icon, and open to reveal a label on hover
-   (mouse) or on tap (touch — first tap previews, second tap navigates).
-   The rail itself is white glass; blue fills whichever pill is either
-   being pressed/open or is the current page. */
+/* ── BOTTOM NAV · liquid-glass dock ──────────────────────────────────────
+   The rail itself is the glass: a near-transparent panel with real
+   refraction (SVG displacement via backdrop-filter) plus rim light and a
+   drop shadow to sell the material. A smaller glass capsule marks the
+   current page; it slides with transform only, so nothing re-rasterises
+   while it moves. Tap an item, or press and slide along the rail. */
 #bottom-nav {
-  --bnav-item:      46px;
-  --bnav-item-open: 116px;
-  --bnav-ease:      cubic-bezier(.32,.72,0,1);   /* Apple-style decelerate */
-  --bnav-spring:    cubic-bezier(.34,1.26,.64,1); /* slight overshoot on release */
+  --bnav-h:        56px;
+  --bnav-pill-h:   40px;
+  --bnav-cap-h:    36px;
+  --bnav-pad-x:    7px;
+  --bnav-pad-y:    8px;
+  --bnav-gap:      2px;
+  --bnav-ink:      #2b3444;
+  --bnav-accent:   #2f6bf0;
+  --bnav-glow-rgb: 205, 228, 255;
+  --bnav-ease:     cubic-bezier(.22, 1, .36, 1);
+  --bnav-spring:   cubic-bezier(.26, 1.14, .42, 1);
   display: none;
   position: fixed;
   left: 0; right: 0;
-  bottom: max(8px, env(safe-area-inset-bottom));
+  bottom: max(12px, env(safe-area-inset-bottom));
   z-index: 200;
   justify-content: center;
   pointer-events: none;
 }
-#bottom-nav .bnav-items {
-  display:flex; align-items:center; gap:4px;
-  padding:6px; border-radius:999px;
-  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.92));
-  border: 1px solid rgba(15,40,80,.10);
-  box-shadow: 0 12px 30px rgba(15,35,70,.18), 0 1px 0 rgba(255,255,255,.8) inset;
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+
+#bottom-nav .bnav-shell {
+  position: relative;
+  width: auto;
+  max-width: calc(100vw - 26px);
+  height: var(--bnav-h);
   pointer-events: auto;
-  max-width: calc(100vw - 16px);
-  /* An expanded pill can make the row wider than the rail itself — scroll
-     it inside the pill instead of letting it spill past the screen edge. */
-  overflow-x: auto; overflow-y: hidden;
-  scrollbar-width: none; -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-  /* #bottom-nav is position:fixed, so it sits OUTSIDE #app-scroll and has no
-     scrollable ancestor — a native vertical pan starting here can't scroll
-     anything (measured: 0px). So JS takes every gesture and routes it:
-     vertical is forwarded to #app-scroll with inertia, horizontal drives the
-     rail. */
-  touch-action: none; -webkit-user-select:none; user-select:none;
 }
-#bottom-nav .bnav-items::-webkit-scrollbar { display:none; }
-/* While a finger is actively dragging across the rail, shorten the width
-   transition so the pill keeps pace with the touch point instead of
-   trailing behind it. Ordinary hover/tap expansion keeps its own timing. */
-#bottom-nav.is-dragging .bnav-btn {
-  transition: width .14s linear, background .14s ease, box-shadow .14s ease, color .14s ease;
+/* No transform on the shell: a transformed ancestor can cut a backdrop-filter
+   off from the page behind it, which would kill the refraction mid-press.
+   The "engaged" feel comes from the rail's own light instead. */
+#bottom-nav .bnav-shell.engaged .bnav-lens {
+  box-shadow:
+    0 22px 46px -8px rgba(15, 35, 70, .32),
+    0 4px 12px -4px rgba(15, 35, 70, .16),
+    inset 0 1px 1px rgba(255, 255, 255, .85),
+    inset 0 -8px 20px rgba(255, 255, 255, .10),
+    inset 0 0 0 1px rgba(255, 255, 255, .50);
 }
-#bottom-nav.is-dragging .bnav-label {
-  transition: opacity .12s ease, max-width .14s linear, transform .14s linear;
+
+/* The glass rail is its own layer, NOT an ancestor of the capsule: an
+   element carrying backdrop-filter becomes a backdrop root, so anything
+   nested inside it can only sample that element's own paint — which is why
+   the capsule came out flat grey when it lived in here. Lens and capsule
+   are siblings now, so both refract the real page behind the bar. */
+#bottom-nav .bnav-lens {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  z-index: 0;
+  pointer-events: none;
+  transition: box-shadow .18s var(--bnav-ease);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, .10) 100%);
+  box-shadow:
+    0 18px 40px -8px rgba(15, 35, 70, .28),
+    0 4px 12px -4px rgba(15, 35, 70, .16),
+    inset 0 1px 1px rgba(255, 255, 255, .70),
+    inset 0 -8px 20px rgba(255, 255, 255, .07),
+    inset 0 0 0 1px rgba(255, 255, 255, .38);
 }
-/* Released: the pill eases into place with a touch of overshoot rather than
-   snapping the instant the finger leaves. Page navigation is NOT delayed by
-   this — the page swaps immediately and the bar settles behind it. */
-#bottom-nav.is-settling .bnav-btn {
-  transition: width .44s var(--bnav-spring), background .3s ease, box-shadow .3s ease, color .3s ease;
+#bottom-nav .bnav-items {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bnav-gap);
+  padding: var(--bnav-pad-y) var(--bnav-pad-x);
+  border-radius: 999px;
+  overflow: hidden;
+  background: transparent;
+  -webkit-user-select: none; user-select: none;
+  --gx: 50%; --gy: 50%; --ga: 0;
 }
-#bottom-nav.is-settling .bnav-label {
-  transition: opacity .26s ease, max-width .44s var(--bnav-spring), transform .36s var(--bnav-spring);
+
+#bottom-nav .bnav-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(180px 110px at var(--gx) var(--gy),
+              rgba(var(--bnav-glow-rgb), var(--ga)) 0%, rgba(var(--bnav-glow-rgb), 0) 72%);
+  transition: background .16s linear;
 }
+
+/* Capsule marking the current page — always inside the rail. */
+#bottom-nav .bnav-indicator {
+  position: absolute;
+  left: 0; top: calc((var(--bnav-h) - var(--bnav-cap-h)) / 2);
+  height: var(--bnav-cap-h);
+  width: 48px;
+  border-radius: 999px;
+  z-index: 1;
+  pointer-events: none;
+  will-change: transform;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .40), rgba(255, 255, 255, .20));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .85),
+    inset 0 0 0 1px rgba(255, 255, 255, .45),
+    0 4px 12px -4px rgba(15, 35, 70, .30);
+  transform-origin: center center;
+  transition:
+    transform .44s var(--bnav-spring),
+    width .34s var(--bnav-ease),
+    opacity .2s ease,
+    background .34s ease,
+    box-shadow .34s ease;
+}
+#bottom-nav .bnav-indicator.is-hidden { opacity: 0; }
+/* While a finger is on it: no transition, it tracks the touch 1:1. */
+#bottom-nav .bnav-items.dragging .bnav-indicator { transition: opacity .2s ease, background .2s ease; }
+/* Held or dragged: the capsule lifts off the rail — brighter glass, a real
+   shadow under it and a small scale-up. It settles back down over whichever
+   button you release on. */
+#bottom-nav .bnav-indicator.interacting {
+  z-index: 999;                     /* rides OVER the icons, like the reference */
+  background: linear-gradient(180deg, rgba(255, 255, 255, .44), rgba(255, 255, 255, .20));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .95),
+    inset 0 0 0 1px rgba(255, 255, 255, .55),
+    0 10px 22px -6px rgba(15, 35, 70, .40);
+}
+
 #bottom-nav .bnav-btn {
-  position:relative;
-  width:var(--bnav-item); height:var(--bnav-item);
-  flex:0 0 auto;
-  display:flex; align-items:center; gap:.55rem;
-  padding-left:13px;
-  overflow:hidden;
-  border:0; border-radius:999px;
-  background:transparent; color:var(--t3); font-family:var(--font);
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
-  transition: width .34s var(--bnav-ease), background .24s ease, box-shadow .24s ease, color .24s ease;
-  contain: layout paint;
+  position: relative;
+  z-index: 2;
+  border: none; outline: none; padding: 0;
+  cursor: pointer;
+  height: var(--bnav-pill-h);
+  width: 58px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: var(--bnav-ink);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  transition: color .16s ease, transform .14s var(--bnav-ease);
 }
-#bottom-nav .bnav-btn svg { width:19px; height:19px; flex:0 0 auto; display:block; stroke:currentColor; transition:stroke .25s ease; }
+#bottom-nav .bnav-btn:active { transform: scale(.94); }
+#bottom-nav .bnav-btn svg {
+  width: 18px; height: 18px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  filter: drop-shadow(0 1px 1.5px rgba(255, 255, 255, .85));
+  transition: stroke .22s ease;
+}
 #bottom-nav .bnav-label {
-  opacity:0; max-width:0;
-  transform:translateX(-6px);
-  white-space:nowrap; overflow:hidden;
-  font-size:11.5px; font-weight:700; letter-spacing:.1px; color:#123156;
-  transition: opacity .2s ease, max-width .34s var(--bnav-ease), transform .26s var(--bnav-ease);
+  display: block;
+  white-space: nowrap;
+  line-height: 1;
+  color: inherit;
+  text-shadow: 0 1px 1.5px rgba(255, 255, 255, .8);
+}
+#bottom-nav .bnav-btn.active { color: var(--bnav-accent); }
+@media (hover: hover) and (pointer: fine) {
+  #bottom-nav .bnav-btn:hover { color: var(--bnav-accent); }
+}
+#bottom-nav .bnav-btn:focus-visible { outline: 2px solid var(--bnav-accent); outline-offset: 2px; }
+
+/* Dark mode — same material, dark glass. */
+body.dark-mode #bottom-nav {
+  --bnav-ink:      rgba(255, 255, 255, .78);
+  --bnav-accent:   #8fb4ff;
+  --bnav-glow-rgb: 120, 170, 255;
+}
+body.dark-mode #bottom-nav .bnav-lens {
+  background: linear-gradient(180deg, rgba(20, 34, 58, .40) 0%, rgba(12, 22, 40, .30) 100%);
+  box-shadow:
+    0 18px 40px -8px rgba(0, 0, 0, .60),
+    inset 0 1px 1px rgba(255, 255, 255, .26),
+    inset 0 0 0 1px rgba(255, 255, 255, .16);
+}
+body.dark-mode #bottom-nav .bnav-indicator {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .18), rgba(255, 255, 255, .07));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .30),
+    inset 0 0 0 1px rgba(255, 255, 255, .18),
+    0 4px 12px -4px rgba(0, 0, 0, .5);
+}
+body.dark-mode #bottom-nav .bnav-btn svg { filter: none; }
+body.dark-mode #bottom-nav .bnav-label { text-shadow: none; }
+
+/* Safari / Firefox can't run an SVG filter through backdrop-filter — JS adds
+   this class and falls back to a frosted panel instead. */
+#bottom-nav .bnav-lens.lg-fallback {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .52), rgba(255, 255, 255, .38));
+}
+body.dark-mode #bottom-nav .bnav-lens.lg-fallback {
+  background: linear-gradient(180deg, rgba(20, 34, 58, .74), rgba(12, 22, 40, .68));
 }
 
-/* expanded — tap-open on touch, or hover on a real pointer */
-#bottom-nav .bnav-btn.is-open {
-  width:var(--bnav-item-open);
-  background: rgba(10, 31, 61, 0.08);
-  color: #0a1f3d;
-  box-shadow: 0 0 0 1px rgba(10, 31, 61, 0.12), 0 8px 18px rgba(10, 31, 61, 0.12);
-}
-#bottom-nav .bnav-btn.is-open .bnav-label { opacity:1; max-width:82px; transform:translateX(0); }
-
-@media (hover:hover) and (pointer:fine) {
-  #bottom-nav .bnav-btn:hover {
-    width:var(--bnav-item-open);
-    background: rgba(47,107,240,.10);
-    color:#2f6bf0;
-    box-shadow: 0 0 0 1px rgba(47,107,240,.14), 0 8px 18px rgba(47,107,240,.16);
-  }
-  #bottom-nav .bnav-btn:hover .bnav-label { opacity:1; max-width:82px; transform:translateX(0); }
-}
-
-/* current page — solid blue pill, the "pressed" state */
-#bottom-nav .bnav-btn.active {
-  background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%);
-  color:#fff;
-  box-shadow: 0 6px 16px rgba(10, 31, 61, 0.35);
-}
-#bottom-nav .bnav-btn.active svg { stroke:#fff; }
-#bottom-nav .bnav-btn.active .bnav-label { color:#fff; }
-#bottom-nav .bnav-btn.active.is-open { background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%); }
-@media (hover:hover) and (pointer:fine) {
-  #bottom-nav .bnav-btn.active:hover { background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%); }
-}
-
-/* Keyboard focus reveals the label too, via :focus-visible so tap-focus
-   on touch doesn't pre-open the pill (mirrors the reference design). */
-#bottom-nav .bnav-btn:focus-visible {
-  outline:2px solid #0a1f3d; outline-offset:2px;
-  width:var(--bnav-item-open);
-  background: rgba(10, 31, 61, 0.08);
-}
-#bottom-nav .bnav-btn:focus-visible .bnav-label { opacity:1; max-width:82px; transform:translateX(0); }
-#bottom-nav .bnav-btn.active:focus-visible { background: linear-gradient(135deg, #0a1f3d 0%, #1c3a63 100%); }
-
-@media (prefers-reduced-motion:reduce) {
-  #bottom-nav .bnav-btn, #bottom-nav .bnav-label { transition-duration:1ms; }
+@media (prefers-reduced-motion: reduce) {
+  #bottom-nav .bnav-btn, #bottom-nav .bnav-indicator, #bottom-nav .bnav-shell { transition-duration: 1ms; }
 }
 
 /* ── MISC UTILITIES ── */
@@ -2151,7 +2232,7 @@ tbody tr:hover {
 ══════════════════════════════════════ */
 @media screen and (max-width:430px) {
   body{font-size:13px}
-  #app-scroll{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  #app-scroll{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
 
 
   /* Topbar */
@@ -2172,7 +2253,7 @@ tbody tr:hover {
   #bottom-nav{display:flex}
 
   /* Toast */
-  #toast-container{top:auto;bottom:calc(84px + env(safe-area-inset-bottom));right:8px;left:8px}
+  #toast-container{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));right:8px;left:8px}
   .toast{max-width:100%;font-size:11px;padding:9px 12px}
 
   /* Pages */
@@ -5689,30 +5770,36 @@ _syncSbControls();
 
 <div id="toast-container"></div>
 
-<!-- BOTTOM NAV — expanding pill dock -->
+<!-- BOTTOM NAV — liquid glass dock -->
 <div id="bottom-nav">
-  <nav class="bnav-items" aria-label="Main">
-    <button class="bnav-btn active" type="button" onclick="navMain('dashboard-fixed')" id="bnav-dashboard" data-page="dashboard">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
-      <span class="bnav-label">Home</span>
-    </button>
-    <button class="bnav-btn" type="button" onclick="showPage('records')" id="bnav-records" data-page="records">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
-      <span class="bnav-label">Records</span>
-    </button>
-    <button class="bnav-btn" type="button" onclick="showPage('entry')" id="bnav-entry" data-page="entry">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span class="bnav-label">New</span>
-    </button>
-    <button class="bnav-btn" type="button" onclick="showPage('search')" id="bnav-search" data-page="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <span class="bnav-label">Statement</span>
-    </button>
-    <button class="bnav-btn" type="button" onclick="showPage('payments')" id="bnav-payments" data-page="payments">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M21 12h-5a2 2 0 0 0 0 4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/></svg>
-      <span class="bnav-label">Payments</span>
-    </button>
-  </nav>
+  <div class="bnav-shell" id="bnav-shell">
+    <div class="bnav-lens" id="bnav-lens"></div>
+    <div class="bnav-indicator" id="bnav-indicator"></div>
+    <nav class="bnav-items" id="bnav-inner" aria-label="Main">
+      <div class="bnav-glow" id="bnav-glow"></div>
+
+      <button class="bnav-btn active" type="button" id="bnav-dashboard" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+        <span class="bnav-label">Home</span>
+      </button>
+      <button class="bnav-btn" type="button" id="bnav-records" data-page="records">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
+        <span class="bnav-label">Records</span>
+      </button>
+      <button class="bnav-btn" type="button" id="bnav-entry" data-page="entry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="bnav-label">New</span>
+      </button>
+      <button class="bnav-btn" type="button" id="bnav-search" data-page="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="bnav-label">Statement</span>
+      </button>
+      <button class="bnav-btn" type="button" id="bnav-payments" data-page="payments">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M21 12h-5a2 2 0 0 0 0 4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/></svg>
+        <span class="bnav-label">Payments</span>
+      </button>
+    </nav>
+  </div>
 </div>
 
 <div id="app-scroll">
@@ -14021,253 +14108,7 @@ addLineItem(); // first empty row
     segMoveSlider(document.getElementById('ur-inv-seg'), true);
   }, 120);
 
-  // ── BOTTOM NAV — expanding pill items ────────────────────────────────────
-  // Mouse/trackpad: CSS :hover alone expands a pill to reveal its label, and
-  // a click just navigates straight away (native onclick on the button).
-  // Touch: there's no hover, so the first tap only opens the pill (previewing
-  // the label) and a second tap on the now-open pill navigates. This mirrors
-  // the reference "expanding-menu" component's own tap logic.
-  (function(){
-    var bar = document.getElementById('bottom-nav');
-    if(!bar) return;
-    var wrap = bar.querySelector('.bnav-items');
-    var canHover = matchMedia('(hover:hover) and (pointer:fine)').matches;
-
-    // Promote a pill to its own compositor layer only for the ~0.3s it's
-    // actually resizing — covers every trigger (tap-open, hover, keyboard
-    // focus, drag) since it listens for the transition itself rather than
-    // whichever class/state caused it. Static will-change on all 5 pills
-    // all the time was worse: 5 layers held in memory permanently for no
-    // reason, which is its own drag on scroll/paint elsewhere in the app.
-    wrap.addEventListener('transitionrun', function(e){
-      if(e.propertyName === 'width' && e.target.classList && e.target.classList.contains('bnav-btn')){
-        e.target.style.willChange = 'width';
-      }
-    });
-    wrap.addEventListener('transitionend', function(e){
-      if(e.propertyName === 'width' && e.target.classList && e.target.classList.contains('bnav-btn')){
-        e.target.style.willChange = 'auto';
-      }
-    });
-    var dragSuppressClick = false; // set true right after a drag commits, to swallow the touch "ghost click" that follows it
-
-    function closeAll(){
-      bar.querySelectorAll('.bnav-btn.is-open').forEach(function(b){ b.classList.remove('is-open'); });
-    }
-
-    // Capture phase so we can intercept BEFORE the click reaches the button
-    // itself — that's what lets the first touch tap open the pill without
-    // firing the button's own onclick (showPage/navMain) right away.
-    bar.addEventListener('click', function(e){
-      if(dragSuppressClick){ dragSuppressClick = false; return; }
-      var btn = e.target.closest('.bnav-btn');
-      if(!btn || canHover) return; // pointer devices already previewed via hover — just navigate
-      if(!btn.classList.contains('is-open')){
-        e.preventDefault();
-        e.stopPropagation();
-        closeAll();
-        btn.classList.add('is-open');
-      } else {
-        // User clicked an already-open pill -> navigate.
-        // We capture the "closing" intent here. By removing 'is-open' immediately,
-        // the shrink animation starts. We then wait for the transition to finish
-        // (or a safe timeout) before allowing the heavy page rendering to kick in.
-        btn.classList.remove('is-open');
-        // The native onclick (showPage) will fire now.
-      }
-    }, true);
-
-    // Tapping anywhere outside the rail collapses whatever pill is open.
-    document.addEventListener('click', function(e){
-      if(!e.target.closest('#bottom-nav .bnav-btn')) closeAll();
-    });
-
-    // Arrow-key navigation across the rail (keyboard users).
-    if(wrap){
-      wrap.addEventListener('keydown', function(e){
-        var list = Array.from(wrap.querySelectorAll('.bnav-btn'));
-        var i = list.indexOf(document.activeElement);
-        if(i < 0) return;
-        if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
-          e.preventDefault();
-          list[(i + (e.key === 'ArrowRight' ? 1 : -1) + list.length) % list.length].focus();
-        }
-      });
-    }
-
-    // ── Press-and-drag across the rail ──────────────────────────────────
-    // Press anywhere on the rail and slide a finger left/right: whichever
-    // pill is under the touch point expands as it passes (following the
-    // finger), and releasing commits that pill as the destination — same
-    // navigation the existing tap flow already triggers, just reached via
-    // one continuous gesture instead of two taps.
-    if(wrap){
-      var DRAG_THRESHOLD = 8;
-      var drag = null; // {pointerId, startX, startY, startScrollLeft, dragging, activeItem, layout, raf}
-      var items = Array.from(wrap.querySelectorAll('.bnav-btn'));
-
-      // Hit-testing against LIVE getBoundingClientRect() would feed back on
-      // itself: opening a pill reflows the row, which moves the very
-      // boundary being tested, which can flip the active pill again. So we
-      // snapshot every pill's rest position once, at the start of the
-      // gesture, and test against that fixed layout for the whole drag.
-      function snapshotLayout(){
-        return items.map(function(it){
-          var r = it.getBoundingClientRect();
-          return { item: it, left: r.left, right: r.right, center: (r.left + r.right) / 2 };
-        });
-      }
-      function layoutItemAt(session, x){
-        // Compensate for any auto-scroll since the snapshot was taken, so
-        // it still lines up with the live finger position.
-        var adjX = x + (wrap.scrollLeft - session.startScrollLeft);
-        var best = null, bestDist = Infinity;
-        for(var k = 0; k < session.layout.length; k++){
-          var seg = session.layout[k];
-          if(adjX >= seg.left && adjX <= seg.right) return seg.item;
-          var d = Math.abs(seg.center - adjX);
-          if(d < bestDist){ bestDist = d; best = seg.item; }
-        }
-        return best;
-      }
-      function setDragActive(item){
-        if(!item || drag.activeItem === item) return;
-        items.forEach(function(i){ i.classList.toggle('is-open', i === item); });
-        drag.activeItem = item;
-        // Keep the expanding pill on-screen — the rail scrolls itself
-        // rather than letting the pill push past the edge of the screen.
-        item.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'auto' });
-      }
-
-      wrap.addEventListener('pointerdown', function(e){
-        // Hover-capable pointers already get the richer hover+click flow;
-        // don't hijack them into drag tracking.
-        if(canHover && e.pointerType === 'mouse') return;
-
-        var d = {
-          pointerId: e.pointerId,
-          startX: e.clientX,
-          startY: e.clientY,
-          startScrollLeft: wrap.scrollLeft,
-          dragging: false,
-          activeItem: null,
-          raf: null,
-          layout: snapshotLayout()
-        };
-        d.startItem = e.target.closest('.bnav-btn') || layoutItemAt(d, e.clientX);
-        drag = d;
-        // Deliberately NO setPointerCapture here. Capturing a touch pointer on
-        // pointerdown takes the gesture away from the browser's scroller before
-        // we know which way the finger is going — and this bar is fixed at the
-        // bottom centre of the screen, exactly where a thumb starts a scroll.
-        // The result was that any swipe beginning on the nav scrolled nothing
-        // at all (measured: 0px), so you had to lift and re-press higher up.
-        // Capture is now taken in pointermove, only once the gesture is
-        // confirmed horizontal — vertical swipes stay with the page.
-      }, { passive: true });
-
-      wrap.addEventListener('pointermove', function(e){
-        if(!drag || e.pointerId !== drag.pointerId) return;
-        var session = drag; // pin this gesture — `drag` may be nulled by pointerup before a queued rAF runs
-
-        var dx = e.clientX - session.startX;
-        var dy = e.clientY - session.startY;
-
-        // ── vertical: hand it back to the page ──
-        if(!session.dragging && (session.vscroll || (Math.abs(dy) > 6 && Math.abs(dy) > Math.abs(dx)))){
-          if(!session.vscroll){
-            session.vscroll = true;
-            session.lastY = session.startY;
-            session.vel = 0;
-            session.lastT = e.timeStamp || performance.now();
-            try { wrap.setPointerCapture(e.pointerId); } catch(_) {}
-          }
-          var sc = appScroller();
-          if(sc){
-            var now = e.timeStamp || performance.now();
-            var step = session.lastY - e.clientY;
-            sc.scrollTop += step;
-            var dt = Math.max(1, now - session.lastT);
-            // low-pass the velocity so one jittery sample can't fling the page
-            session.vel = session.vel * 0.7 + (step / dt) * 0.3;
-            session.lastY = e.clientY;
-            session.lastT = now;
-          }
-          e.preventDefault();
-          return;
-        }
-        if(session.vscroll) return;
-
-        if(!session.dragging){
-          if(Math.abs(dx) < DRAG_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return;
-          session.dragging = true;
-          // Horizontal intent confirmed — now it's safe to own the pointer.
-          try { wrap.setPointerCapture(e.pointerId); } catch(_) {}
-          bar.classList.add('is-dragging');
-          closeAll();
-          setDragActive(session.startItem);
-        }
-
-        e.preventDefault(); // we own horizontal movement now — no page scroll fighting it
-
-        var events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
-        var latestX = events.length ? events[events.length - 1].clientX : e.clientX;
-
-        if(session.raf) return;
-        session.raf = requestAnimationFrame(function(){
-          session.raf = null;
-          if(drag === session) setDragActive(layoutItemAt(session, latestX));
-        });
-      }, { passive: false });
-
-      function endDrag(e){
-        if(!drag || e.pointerId !== drag.pointerId) return;
-        if(drag.vscroll){
-          // Carry the flick, matching native momentum closely enough that the
-          // bar doesn't feel like a dead zone on the screen.
-          var sc = appScroller();
-          var v  = drag.vel * 16;               // px per frame
-          drag = null;
-          dragSuppressClick = true;             // a swipe must never fire a nav button
-          if(sc && Math.abs(v) > 0.5){
-            var glide = function(){
-              sc.scrollTop += v;
-              v *= 0.94;
-              if(Math.abs(v) > 0.4) requestAnimationFrame(glide);
-            };
-            requestAnimationFrame(glide);
-          }
-          return;
-        }
-        if(drag.dragging){
-          var item = drag.activeItem || layoutItemAt(drag, e.clientX);
-          bar.classList.remove('is-dragging');
-          startSettle();
-          if(item){
-            item.classList.remove('is-open'); // mirrors the tap flow's own close-before-navigate
-            dragSuppressClick = true; // the touch ghost-click that follows this pointerup must not reopen it
-            if(typeof item.onclick === 'function') item.onclick.call(item);
-            else item.click();
-          }
-        }
-        drag = null;
-      }
-      // Swap the 1:1 drag timing for the spring settle, then drop back to the
-      // normal curve once it has finished.
-      function startSettle(){
-        bar.classList.add('is-settling');
-        clearTimeout(bar._settleT);
-        bar._settleT = setTimeout(function(){ bar.classList.remove('is-settling'); }, 480);
-      }
-      // A plain tap gets the same easing as a drag release.
-      wrap.addEventListener('pointerup', function(){ if(!drag || !drag.vscroll) startSettle(); }, { passive:true });
-      wrap.addEventListener('pointerup', endDrag);
-      wrap.addEventListener('pointercancel', function(){
-        if(drag && drag.dragging){ closeAll(); bar.classList.remove('is-dragging'); startSettle(); }
-        drag = null;
-      });
-    }
-  })();
+  // BOTTOM NAV — behaviour lives in the liquid-glass engine at the end of <body>.
 });
 
 function printInvoice() {
@@ -19051,85 +18892,7 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
   .dash-panel{ animation:none; }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LIQUID GLASS BOTTOM BAR (mobile) — iOS 26 "Liquid Glass" material.
-   Apple's version isn't a tinted white panel; it's a genuinely transparent
-   lens: low fill, heavy blur+saturation so colour underneath still reads,
-   a bright edge where the "glass" catches light, a soft dark underside for
-   thickness, and a big soft floating shadow that separates it from the page.
-   The v1 attempt leaned on a high-opacity white gradient, which is why it
-   read as a painted pill instead of glass — this rebuild drops the fill way
-   down and puts the definition into the rim light and shadow instead.
-   ═══════════════════════════════════════════════════════════════ */
-#bottom-nav .bnav-items{
-  /* CLEAR liquid glass — no blur at all, per request. Without frosting, the
-     glass has to be sold entirely by its edges: a bright rim where light
-     catches the bevel, a faint specular sheen across the top, and a soft
-     drop shadow so it visibly floats. saturate/brightness are kept because
-     they are lens effects, not blur — and they cost almost nothing.
-     Dropping the 22px blur also removes the per-frame re-rasterise that a
-     fixed blurred surface forces during scrolling, so this is faster too. */
-  background-color: rgba(255,255,255,.10);
-  background-image:
-    linear-gradient(180deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.05) 42%,
-                             rgba(255,255,255,.02) 62%, rgba(255,255,255,.14) 100%);
-  border:1px solid rgba(255,255,255,.55);
-  border-top-color:rgba(255,255,255,.92);
-  border-bottom-color:rgba(255,255,255,.28);
-  box-shadow:
-    0 16px 40px -6px rgba(15,35,70,.22),
-    0 4px 12px -2px rgba(15,35,70,.10),
-    inset 0 1px 0 rgba(255,255,255,.90),
-    inset 0 -1px 0 rgba(10,31,61,.05);
-  backdrop-filter:saturate(170%) brightness(1.03);
-  -webkit-backdrop-filter:saturate(170%) brightness(1.03);
-}
-/* Clear glass means page content shows straight through, so the glyphs carry
-   their own contrast instead of relying on a frosted backing. */
-#bottom-nav .bnav-btn:not(.active){
-  text-shadow:0 1px 2px rgba(255,255,255,.9);
-}
-#bottom-nav .bnav-btn:not(.active) svg{
-  filter:drop-shadow(0 1px 1.5px rgba(255,255,255,.95)) drop-shadow(0 0 1px rgba(255,255,255,.8));
-}
-#bottom-nav .bnav-btn{ color:#2f3f58; }
-#bottom-nav .bnav-label{ color:#0f2a4d; text-shadow:0 1px 1px rgba(255,255,255,.6); }
-#bottom-nav .bnav-btn.is-open{
-  background:rgba(10,31,61,.10);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 0 0 1px rgba(255,255,255,.45);
-}
-/* Current page — navy lens with its own glass highlight, per spec. */
-#bottom-nav .bnav-btn.active{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,0) 52%),
-    linear-gradient(135deg,#0a1f3d 0%,#1c3a63 100%);
-  box-shadow:0 6px 16px rgba(10,31,61,.38), inset 0 1px 0 rgba(255,255,255,.26);
-}
-
-/* No backdrop-filter (older embedded WebViews): real glass can't be faked, so
-   fall back to a frosted-but-opaque panel rather than something transparent
-   and unreadable. */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  #bottom-nav .bnav-items{
-    background-color:rgba(255,255,255,.22);
-    border-color:rgba(255,255,255,.7);
-  }
-}
-body.dark-mode #bottom-nav .bnav-items{
-  background-color:rgba(16,28,48,.34);
-  border-color:rgba(255,255,255,.20);
-  border-top-color:rgba(255,255,255,.30);
-  border-bottom-color:rgba(255,255,255,.07);
-  box-shadow:
-    0 16px 40px -6px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.24),
-    inset 0 -1px 0 rgba(0,0,0,.28);
-}
-body.dark-mode #bottom-nav .bnav-btn{ color:rgba(255,255,255,.74); }
-body.dark-mode #bottom-nav .bnav-label{ color:#eaf1ff; text-shadow:none; }
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  body.dark-mode #bottom-nav .bnav-items{ background:linear-gradient(180deg, rgba(20,34,58,.92), rgba(14,24,44,.90)); }
-}
+/* Liquid-glass bottom bar styling now lives with the main #bottom-nav rules. */
 
 /* ═══════════════════════════════════════════════════════════════
    GENERAL SMOOTHNESS
@@ -19144,6 +18907,548 @@ body.dark-mode #bottom-nav .bnav-label{ color:#eaf1ff; text-shadow:none; }
 @media (prefers-reduced-motion:reduce){
   .chq-days-range, #bottom-nav .bnav-btn{ transition-duration:1ms; }
 }
+
+/* ── Overlay motion ── */
+.modal-overlay { animation: ovIn .16s ease both; }
+.modal-overlay .modal { animation: modalPop .24s cubic-bezier(.22,1,.36,1) both; }
+@keyframes ovIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalPop { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) {
+  /* bottom-sheet layout — rise from the bottom edge instead */
+  @keyframes modalPop { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+}
+#scrim { transition: opacity .28s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay, .modal-overlay .modal, .page.active { animation: none !important; }
+}
 </style>
+<!-- ═══════════════════════════════════════════════════════════════
+     LIQUID GLASS BOTTOM NAV
+     Refraction is produced by a gradient displacement map (two ramps
+     combined with "difference", interior neutralised by a blurred grey
+     rounded rect) fed to three staggered feDisplacementMap passes for the
+     prism fringe — the cheap method, not a per-pixel loop, so it costs one
+     canvas per size change instead of one per frame. The capsule moves with
+     transform only, so it never regenerates its map while sliding.
+     Technique: github.com/deepika-builds/liquid-glass
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var uid = 0, svgDefs = null;
+
+  // Chromium can run an SVG filter through backdrop-filter; Safari and
+  // Firefox silently no-op, so they get a frosted panel instead.
+  var supported = (function () {
+    try {
+      var ua = navigator.userAgent;
+      if (/Firefox/.test(ua)) return false;
+      if (/Safari/.test(ua) && !/Chrome|Chromium|Edg/.test(ua)) return false;
+      if (!(window.CSS && CSS.supports && CSS.supports('backdrop-filter', 'url(#lg)'))) return false;
+      var c = document.createElement('canvas');
+      c.width = c.height = 4;
+      c.getContext('2d').getImageData(0, 0, 1, 1);
+      return typeof c.getContext('2d').roundRect === 'function';
+    } catch (_) { return false; }
+  })();
+
+  function ensureDefs() {
+    if (svgDefs && document.documentElement.contains(svgDefs)) return svgDefs;
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('width', '0');
+    svg.setAttribute('height', '0');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none';
+    svgDefs = document.createElementNS(SVG_NS, 'defs');
+    svg.appendChild(svgDefs);
+    document.body.appendChild(svg);
+    return svgDefs;
+  }
+
+  function makeMap(w, h, radius, border, mapBlur) {
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+
+    var gx = ctx.createLinearGradient(0, 0, w, 0);
+    gx.addColorStop(0, 'rgb(0,0,0)'); gx.addColorStop(1, 'rgb(255,0,0)');
+    ctx.fillStyle = gx; ctx.fillRect(0, 0, w, h);
+
+    var gy = ctx.createLinearGradient(0, 0, 0, h);
+    gy.addColorStop(0, 'rgb(0,0,0)'); gy.addColorStop(1, 'rgb(0,0,255)');
+    ctx.globalCompositeOperation = 'difference';
+    ctx.fillStyle = gy; ctx.fillRect(0, 0, w, h);
+
+    ctx.globalCompositeOperation = 'source-over';
+    var inset = border * Math.min(w, h);
+    ctx.filter = 'blur(' + mapBlur + 'px)';
+    ctx.fillStyle = 'rgba(128,128,128,0.93)';
+    ctx.beginPath();
+    ctx.roundRect(inset, inset, w - inset * 2, h - inset * 2, Math.max(radius - inset, 2));
+    ctx.fill();
+    ctx.filter = 'none';
+    return canvas.toDataURL();
+  }
+
+  function buildFilter(id, scales) {
+    var filter = document.createElementNS(SVG_NS, 'filter');
+    filter.setAttribute('id', id);
+    filter.setAttribute('x', '0'); filter.setAttribute('y', '0');
+    filter.setAttribute('width', '100%'); filter.setAttribute('height', '100%');
+    // Load-bearing: filters default to linearRGB, which re-maps the map's
+    // neutral grey and injects a constant phantom displacement.
+    filter.setAttribute('color-interpolation-filters', 'sRGB');
+
+    var feImage = document.createElementNS(SVG_NS, 'feImage');
+    feImage.setAttribute('x', '0'); feImage.setAttribute('y', '0');
+    feImage.setAttribute('result', 'map');
+    feImage.setAttribute('preserveAspectRatio', 'none');
+    filter.appendChild(feImage);
+
+    var keep = [
+      '1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0',
+      '0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0',
+      '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0'
+    ];
+    for (var i = 0; i < 3; i++) {
+      var disp = document.createElementNS(SVG_NS, 'feDisplacementMap');
+      disp.setAttribute('in', 'SourceGraphic');
+      disp.setAttribute('in2', 'map');
+      disp.setAttribute('scale', scales[i]);
+      disp.setAttribute('xChannelSelector', 'R');
+      disp.setAttribute('yChannelSelector', 'B');
+      disp.setAttribute('result', 'd' + i);
+      filter.appendChild(disp);
+
+      var cm = document.createElementNS(SVG_NS, 'feColorMatrix');
+      cm.setAttribute('in', 'd' + i);
+      cm.setAttribute('type', 'matrix');
+      cm.setAttribute('values', keep[i]);
+      cm.setAttribute('result', 'c' + i);
+      filter.appendChild(cm);
+    }
+    var b1 = document.createElementNS(SVG_NS, 'feBlend');
+    b1.setAttribute('in', 'c0'); b1.setAttribute('in2', 'c1');
+    b1.setAttribute('mode', 'screen'); b1.setAttribute('result', 'c01');
+    filter.appendChild(b1);
+    var b2 = document.createElementNS(SVG_NS, 'feBlend');
+    b2.setAttribute('in', 'c01'); b2.setAttribute('in2', 'c2');
+    b2.setAttribute('mode', 'screen');
+    filter.appendChild(b2);
+
+    ensureDefs().appendChild(filter);
+    return { filter: filter, feImage: feImage };
+  }
+
+  function liquidGlass(el, opts) {
+    var o = Object.assign({
+      scale: -90, chroma: 5, border: 0.09, mapBlur: 9,
+      blur: 2, saturate: 1.5, radius: null, fallbackBlur: 14
+    }, opts || {});
+
+    if (!supported) {
+      var frosted = 'blur(' + o.fallbackBlur + 'px) saturate(' + o.saturate + ')';
+      el.style.backdropFilter = frosted;
+      el.style.webkitBackdropFilter = frosted;
+      el.classList.add('lg-fallback');
+      return { supported: false, refresh: function () {}, destroy: function () {} };
+    }
+
+    var id = 'bnav-lg-' + (++uid);
+    var parts = buildFilter(id, [o.scale, o.scale + o.chroma, o.scale + 2 * o.chroma]);
+    var lastW = 0, lastH = 0;
+
+    function refresh(force) {
+      var w = el.offsetWidth, h = el.offsetHeight;
+      if (!w || !h) return;
+      if (!force && w === lastW && h === lastH) return;   // size unchanged — reuse the map
+      lastW = w; lastH = h;
+      var radius = o.radius != null ? o.radius : (parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0);
+      if (radius > Math.min(w, h) / 2) radius = Math.min(w, h) / 2;
+      parts.feImage.setAttribute('href', makeMap(w, h, radius, o.border, o.mapBlur));
+      parts.feImage.setAttribute('width', w);
+      parts.feImage.setAttribute('height', h);
+    }
+
+    refresh(true);
+    var fx = 'url(#' + id + ') blur(' + o.blur + 'px) saturate(' + o.saturate + ')';
+    el.style.backdropFilter = fx;
+    el.style.webkitBackdropFilter = fx;
+
+    var timer = null;
+    var ro = new ResizeObserver(function () {
+      clearTimeout(timer);
+      timer = setTimeout(refresh, 100);
+    });
+    ro.observe(el);
+
+    return {
+      supported: true,
+      refresh: refresh,
+      destroy: function () { ro.disconnect(); clearTimeout(timer); parts.filter.remove(); el.style.backdropFilter = ''; }
+    };
+  }
+
+  // ── Nav behaviour ──────────────────────────────────────────────────────
+  function bindNav() {
+    var shell = document.getElementById('bnav-shell');
+    var rail = document.getElementById('bnav-inner');
+    var indicator = document.getElementById('bnav-indicator');
+    if (!shell || !rail || !indicator) return;
+    var items = Array.prototype.slice.call(rail.querySelectorAll('.bnav-btn'));
+    if (!items.length) return;
+
+    var lens = document.getElementById('bnav-lens');
+    var lensGlass = lens ? liquidGlass(lens, { scale: -70, chroma: 5, border: 0.10, mapBlur: 8, blur: 2, saturate: 1.6 }) : null;
+    var pillGlass = liquidGlass(indicator, { scale: -40, chroma: 3, border: 0.16, mapBlur: 5, blur: 0, saturate: 1.4 });
+
+    var DRAG_THRESHOLD = 6, VSCROLL_THRESHOLD = 8;
+    var geo = [];                       // rest position of every item
+    var active = 0, targetIndex = 0;
+    var pointerId = null, dragMode = false, vscroll = false;
+    var pressX = 0, pressY = 0, lastY = 0, lastT = 0, vel = 0;
+    var syncing = false;
+
+    function measure() {
+      if (!shell.offsetWidth) return false;
+      var rr = rail.getBoundingClientRect();
+      geo = items.map(function (el) {
+        var r = el.getBoundingClientRect();
+        return { left: r.left - rr.left, width: r.width, center: r.left - rr.left + r.width / 2 };
+      });
+      // The capsule sits just inside its cell so it can never touch the rim.
+      indicator.style.width = Math.max(26, geo[0].width - 10) + 'px';
+      // Each map is built from its own box, so both have to be rebuilt once
+      // the real sizes are known — otherwise they render flat.
+      if (pillGlass) pillGlass.refresh(true);
+      if (lensGlass) lensGlass.refresh(true);
+      return true;
+    }
+    var pillScale = 1;
+    function paint(x) {
+      indicator.style.transform = 'translate3d(' + x + 'px,0,0) scale(' + pillScale + ')';
+    }
+    var lastX = 0;
+    function placeAt(x, animate) {
+      lastX = x;
+      paint(x);
+      if (!animate) { void indicator.offsetWidth; }
+    }
+    function setLift(on) {
+      // Blows up while you hold it, exactly like the reference's 1.5 — just
+      // scaled to this slimmer capsule so it stays inside the rail:
+      // 36px * 1.45 = 52px inside a 56px bar.
+      pillScale = on ? 1.45 : 1;
+      indicator.classList.toggle('interacting', on);
+      paint(lastX);
+    }
+    function snap(i, animate) {
+      if (!geo.length && !measure()) return;
+      if (!geo[i]) return;
+      var w = parseFloat(indicator.style.width) || geo[i].width;
+      placeAt(geo[i].left + (geo[i].width - w) / 2, animate);
+    }
+    function clamp(n, a, b) { return Math.min(b, Math.max(a, n)); }
+    function nearest(localX) {
+      var best = 0, bd = Infinity;
+      for (var i = 0; i < geo.length; i++) {
+        var d = Math.abs(localX - geo[i].center);
+        if (d < bd) { bd = d; best = i; }
+      }
+      return best;
+    }
+    function setGlow(clientX, clientY, alpha) {
+      var rr = rail.getBoundingClientRect();
+      rail.style.setProperty('--gx', (clientX - rr.left) + 'px');
+      rail.style.setProperty('--gy', (clientY - rr.top) + 'px');
+      rail.style.setProperty('--ga', String(alpha));
+    }
+
+    function syncFromDom(animate) {
+      var i = items.findIndex(function (x) { return x.classList.contains('active'); });
+      indicator.classList.toggle('is-hidden', i < 0);
+      if (i < 0) return;
+      active = i; targetIndex = i;
+      snap(i, animate !== false);
+    }
+    window.bnavSync = function () { measure(); syncFromDom(true); };
+
+    var mo = new MutationObserver(function () {
+      if (syncing || pointerId !== null) return;
+      syncing = true;
+      requestAnimationFrame(function () { syncing = false; syncFromDom(true); });
+    });
+    items.forEach(function (b) { mo.observe(b, { attributes: true, attributeFilter: ['class'] }); });
+
+    function navigate(i) {
+      var btn = items[i];
+      if (!btn) return;
+      if (btn.id === 'bnav-dashboard' && typeof navMain === 'function') { navMain('dashboard-fixed'); return; }
+      if (btn.dataset.page && typeof showPage === 'function') showPage(btn.dataset.page);
+    }
+
+    function release() {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+    }
+    function settle() {
+      rail.classList.remove('dragging');
+      shell.classList.remove('engaged');
+      setLift(false);
+      rail.style.setProperty('--ga', '0');
+    }
+
+    function onMove(e) {
+      if (e.pointerId !== pointerId) return;
+      var dx = Math.abs(e.clientX - pressX), dy = Math.abs(e.clientY - pressY);
+
+      // A vertical swipe starting on the bar should still scroll the page.
+      if (!dragMode && (vscroll || (dy > VSCROLL_THRESHOLD && dy > dx))) {
+        if (!vscroll) {
+          vscroll = true; lastY = e.clientY; lastT = e.timeStamp || performance.now(); vel = 0;
+          settle();
+        }
+        var sc = (typeof appScroller === 'function') ? appScroller() : null;
+        if (sc) {
+          var now = e.timeStamp || performance.now();
+          var step = lastY - e.clientY;
+          sc.scrollTop += step;
+          vel = vel * 0.7 + (step / Math.max(1, now - lastT)) * 0.3;
+          lastY = e.clientY; lastT = now;
+        }
+        return;
+      }
+      if (vscroll) return;
+
+      if (!dragMode && (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD)) {
+        dragMode = true;
+        rail.classList.add('dragging');
+      }
+      setGlow(e.clientX, e.clientY, dragMode ? 0.20 : 0.24);
+      if (dragMode) {
+        var rr = rail.getBoundingClientRect();
+        var localX = e.clientX - rr.left;
+        var w = parseFloat(indicator.style.width) || geo[active].width;
+        // Clamped to the padding box — the capsule never leaves the rail.
+        var min = geo[0].left + (geo[0].width - w) / 2;
+        var last = geo[geo.length - 1];
+        var max = last.left + (last.width - w) / 2;
+        placeAt(clamp(localX - w / 2, min, max), false);
+        targetIndex = nearest(localX);
+      }
+    }
+
+    function onUp(e) {
+      if (e.pointerId !== pointerId) return;
+      release();
+      if (vscroll) {
+        var sc = (typeof appScroller === 'function') ? appScroller() : null;
+        var v = vel * 16;
+        if (sc && Math.abs(v) > 0.5) {
+          var glide = function () { sc.scrollTop += v; v *= 0.94; if (Math.abs(v) > 0.4) requestAnimationFrame(glide); };
+          requestAnimationFrame(glide);
+        }
+        snap(active, true);
+      } else {
+        rail.classList.remove('dragging');
+        active = targetIndex;
+        items.forEach(function (b, idx) { b.classList.toggle('active', idx === targetIndex); });
+        indicator.classList.remove('is-hidden');
+        settle();
+        snap(targetIndex, true);
+        navigate(targetIndex);
+        pointerId = null; dragMode = false; vscroll = false;
+        return;
+      }
+      settle();
+      pointerId = null; dragMode = false; vscroll = false;
+    }
+
+    function onCancel(e) {
+      if (e.pointerId !== pointerId) return;
+      release();
+      snap(active, true);
+      settle();
+      pointerId = null; dragMode = false; vscroll = false;
+    }
+
+    items.forEach(function (btn, idx) {
+      btn.addEventListener('pointerdown', function (e) {
+        if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        if (pointerId !== null) return;
+        e.preventDefault();
+        if (!geo.length) measure();
+        pointerId = e.pointerId;
+        dragMode = false; vscroll = false;
+        targetIndex = idx;
+        pressX = e.clientX; pressY = e.clientY;
+        shell.classList.add('engaged');
+        setLift(true);
+        setGlow(e.clientX, e.clientY, 0.24);
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onCancel);
+      });
+      btn.addEventListener('click', function (e) { if (e.detail === 0) navigate(idx); });   // keyboard
+      btn.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        items[(idx + (e.key === 'ArrowRight' ? 1 : -1) + items.length) % items.length].focus();
+      });
+    });
+
+    function remeasure() { if (measure()) snap(active, false); }
+    remeasure();
+    syncFromDom(false);
+    // Hidden on tablet/desktop, so it can measure 0 on load — re-measure the
+    // moment it actually has a size.
+    new ResizeObserver(remeasure).observe(shell);
+    window.addEventListener('resize', remeasure, { passive: true });
+    window.addEventListener('orientationchange', function () { setTimeout(remeasure, 160); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindNav);
+  else bindNav();
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     KEYBOARD LAYER — page history (Esc = back), and shortcuts for
+     everything reachable from the nav. Deliberately silent: no hint text
+     anywhere in the UI.
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+  if (typeof showPage !== 'function') return;
+
+  // ── history ──────────────────────────────────────────────────────────
+  var _showPage = showPage;
+  var back = [], fwd = [], cur = 'dashboard';
+
+  window.showPage = function (id) {
+    if (id && id !== cur) {
+      back.push(cur);
+      if (back.length > 40) back.shift();
+      fwd.length = 0;
+      cur = id;
+    }
+    return _showPage.apply(this, arguments);
+  };
+
+  function goBack() {
+    if (!back.length) return false;
+    fwd.push(cur);
+    cur = back.pop();
+    _showPage(cur);
+    return true;
+  }
+  function goForward() {
+    if (!fwd.length) return false;
+    back.push(cur);
+    cur = fwd.pop();
+    _showPage(cur);
+    return true;
+  }
+  // Android hardware back / browser back behaves the same way.
+  try {
+    history.replaceState({ bnav: true }, '');
+    window.addEventListener('popstate', function () {
+      if (closeTopLayer() || goBack()) history.pushState({ bnav: true }, '');
+    });
+    history.pushState({ bnav: true }, '');
+  } catch (_) {}
+
+  // ── overlays ─────────────────────────────────────────────────────────
+  function openModals() {
+    return Array.prototype.filter.call(document.querySelectorAll('.modal-overlay'), function (m) {
+      return m.offsetParent !== null && getComputedStyle(m).display !== 'none';
+    });
+  }
+  function closeModal(m) {
+    var btn = m.querySelector('.modal-close') || m.querySelector('[onclick*="close"], [data-action="close"]');
+    if (btn) { btn.click(); return; }
+    m.style.display = 'none';
+  }
+  // Closes whatever is layered on top of the page, topmost first.
+  function closeTopLayer() {
+    var gs = document.getElementById('gsearch-modal');
+    if (gs && gs.classList.contains('open')) {
+      if (typeof closeGlobalSearch === 'function') closeGlobalSearch(); else gs.classList.remove('open');
+      return true;
+    }
+    var mods = openModals();
+    if (mods.length) { closeModal(mods[mods.length - 1]); return true; }
+    var dr = document.getElementById('drawer');
+    if (dr && dr.classList.contains('open')) {
+      if (typeof closeDrawer === 'function') closeDrawer(); else dr.classList.remove('open');
+      return true;
+    }
+    var open = document.querySelector('.drange-menu.open, .dropdown.open');
+    if (open) { open.classList.remove('open'); return true; }
+    return false;
+  }
+
+  // ── shortcuts ────────────────────────────────────────────────────────
+  var PAGES = {
+    '1': 'dashboard', '2': 'records', '3': 'entry', '4': 'search', '5': 'payments',
+    '6': 'parties', '7': 'cheques', '8': 'expenses', '9': 'quotation',
+    h: 'dashboard', r: 'records', n: 'entry', s: 'search', p: 'payments',
+    y: 'parties', c: 'cheques', e: 'expenses', q: 'quotation'
+  };
+
+  function isTyping(el) {
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    var t = el.tagName;
+    return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT';
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      // First Esc leaves the field you're in, the next one navigates.
+      if (isTyping(e.target)) { e.target.blur(); return; }
+      e.preventDefault();
+      if (closeTopLayer()) return;
+      goBack();
+      return;
+    }
+
+    if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault();
+      if (e.key === 'ArrowLeft') goBack(); else goForward();
+      return;
+    }
+
+    // Ctrl/Cmd+Enter submits the form you're in.
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      var form = e.target && e.target.closest ? e.target.closest('.page.active, .modal') : null;
+      var submit = form && form.querySelector('.btn-success, .btn-primary, button[onclick*="save"], button[onclick*="Save"]');
+      if (submit) { e.preventDefault(); submit.click(); }
+      return;
+    }
+
+    if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
+    if (openModals().length) return;                 // a modal owns the keyboard
+
+    if (e.key === '/') {
+      if (typeof openGlobalSearch === 'function') { e.preventDefault(); openGlobalSearch(); }
+      return;
+    }
+    if (e.key === 'm' || e.key === 'M') {
+      if (typeof toggleDrawer === 'function') { e.preventDefault(); toggleDrawer(); }
+      return;
+    }
+    var page = PAGES[e.key] || PAGES[String(e.key).toLowerCase()];
+    if (page && document.getElementById('page-' + page)) {
+      e.preventDefault();
+      showPage(page);
+      if (typeof closeDrawer === 'function') closeDrawer();
+    }
+  });
+})();
+</script>
 </body>
 </html>
