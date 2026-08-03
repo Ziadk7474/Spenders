@@ -405,8 +405,16 @@ body {
 
 #app-scroll {
   flex: 1;
-  overflow-y: auto;
+  /* "scroll", not "auto". Styling ::-webkit-scrollbar with a width turns it
+     into a CLASSIC scrollbar that occupies layout width, so with "auto" the
+     bar appeared the moment the dashboard finished rendering and every
+     child re-laid-out a few px narrower — that is the shrink-then-expand,
+     and because #app-scroll is the container-query container it also
+     re-evaluated every card breakpoint. Reserving the track permanently
+     means the width never changes. */
+  overflow-y: scroll;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   container-type: inline-size;
@@ -417,6 +425,19 @@ body {
 #app-scroll::-webkit-scrollbar { width: 4px; }
 #app-scroll::-webkit-scrollbar-track { background: transparent; }
 #app-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 4px; }
+
+/* On touch screens there is nothing to grab, so take the track away entirely:
+   no reserved gutter, no stray line down the right edge, no width change. */
+@media (hover: none), (pointer: coarse), (max-width: 1100px) {
+  #app-scroll {
+    scrollbar-gutter: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  #app-scroll::-webkit-scrollbar { width: 0; height: 0; }
+  html, body, .page { scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar, .page::-webkit-scrollbar { width: 0; }
+}
 
 /* ══════════════════════════════════════
    TOPBAR — BLACK + GOLD
@@ -1869,7 +1890,8 @@ tbody tr:hover {
 #bottom-nav {
   --bnav-h:        56px;
   --bnav-pill-h:   40px;
-  --bnav-cap-h:    36px;
+  --bnav-cap-h:    44px;
+  --bnav-orb-gap:  8px;
   --bnav-pad-x:    7px;
   --bnav-pad-y:    8px;
   --bnav-gap:      2px;
@@ -1889,15 +1911,26 @@ tbody tr:hover {
 
 #bottom-nav .bnav-shell {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--bnav-orb-gap);
   width: auto;
-  max-width: calc(100vw - 26px);
+  max-width: calc(100vw - 22px);
   height: var(--bnav-h);
   pointer-events: auto;
+}
+/* The pill. Nothing clips here, so the capsule may spill past the rim while
+   it's held — that overhang is the whole trick in the reference shots. */
+#bottom-nav .bnav-group {
+  position: relative;
+  height: 100%;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 /* No transform on the shell: a transformed ancestor can cut a backdrop-filter
    off from the page behind it, which would kill the refraction mid-press.
    The "engaged" feel comes from the rail's own light instead. */
-#bottom-nav .bnav-shell.engaged .bnav-lens {
+#bottom-nav .bnav-shell.engaged #bnav-lens {
   box-shadow:
     0 22px 46px -8px rgba(15, 35, 70, .32),
     0 4px 12px -4px rgba(15, 35, 70, .16),
@@ -1958,7 +1991,7 @@ tbody tr:hover {
   position: absolute;
   left: 0; top: calc((var(--bnav-h) - var(--bnav-cap-h)) / 2);
   height: var(--bnav-cap-h);
-  width: 48px;
+  width: 66px;
   border-radius: 999px;
   z-index: 1;
   pointer-events: none;
@@ -1979,7 +2012,15 @@ tbody tr:hover {
 }
 #bottom-nav .bnav-indicator.is-hidden { opacity: 0; }
 /* While a finger is on it: no transition, it tracks the touch 1:1. */
-#bottom-nav .bnav-items.dragging .bnav-indicator { transition: opacity .2s ease, background .2s ease; }
+/* The capsule sits OUTSIDE .bnav-items now, so the old descendant selector
+   stopped matching and the 0.44s settle transition stayed live during the
+   drag — that was the lag. The class goes on the capsule itself. */
+#bottom-nav .bnav-indicator.dragging { transition: opacity .2s ease, background .2s ease, box-shadow .2s ease; }
+/* Rubber band: past the last item the glass stretches toward that side. */
+#bottom-nav .bnav-lens { transform-origin: 50% 50%; }
+#bottom-nav .bnav-lens.springing,
+#bottom-nav .bnav-items.springing { transition: transform .48s cubic-bezier(.2, 1.25, .42, 1), box-shadow .18s var(--bnav-ease); }
+#bottom-nav .bnav-items { transform-origin: 50% 50%; }
 /* Held or dragged: the capsule lifts off the rail — brighter glass, a real
    shadow under it and a small scale-up. It settles back down over whichever
    button you release on. */
@@ -2037,6 +2078,69 @@ tbody tr:hover {
   #bottom-nav .bnav-btn:hover { color: var(--bnav-accent); }
 }
 #bottom-nav .bnav-btn:focus-visible { outline: 2px solid var(--bnav-accent); outline-offset: 2px; }
+
+/* ── Detached orb (Statement) ──────────────────────────────────────────
+   Its own circle of glass, sitting apart from the pill — the pattern from
+   the last reference shot, minus the black fill. */
+#bottom-nav .bnav-orb {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--bnav-h);
+  height: var(--bnav-h);
+  border: none; outline: none; padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--bnav-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+#bottom-nav .bnav-orb-lens {
+  border-radius: 50%;
+  inset: 0;
+}
+#bottom-nav .bnav-orb-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .42), rgba(255, 255, 255, .20));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .90),
+    inset 0 0 0 1px rgba(255, 255, 255, .50);
+  transition: opacity .34s ease;
+}
+#bottom-nav .bnav-orb.active .bnav-orb-fill { opacity: 1; }
+#bottom-nav .bnav-orb.active { color: var(--bnav-accent); }
+#bottom-nav .bnav-orb svg {
+  position: relative;
+  z-index: 2;
+  width: 21px; height: 21px;
+  fill: none;
+  stroke: currentColor;
+  filter: drop-shadow(0 1px 1.5px rgba(255, 255, 255, .85));
+}
+/* Press = it goes down and away from you, then springs back past 1.0 on
+   release. Fast in, slow out — the asymmetry is what makes it feel physical. */
+#bottom-nav .bnav-orb { transition: color .22s ease, transform .42s var(--bnav-spring), filter .2s ease; }
+#bottom-nav .bnav-orb.pressed {
+  transform: scale(.86);
+  filter: brightness(1.06);
+  transition: transform .11s cubic-bezier(.4, 0, .5, 1), filter .11s ease;
+}
+#bottom-nav .bnav-orb.pressed .bnav-orb-fill { opacity: .55; }
+body.dark-mode #bottom-nav .bnav-orb svg { filter: none; }
+body.dark-mode #bottom-nav .bnav-orb-fill {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .18), rgba(255, 255, 255, .07));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .30),
+    inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
 
 /* Dark mode — same material, dark glass. */
 body.dark-mode #bottom-nav {
@@ -5773,32 +5877,40 @@ _syncSbControls();
 <!-- BOTTOM NAV — liquid glass dock -->
 <div id="bottom-nav">
   <div class="bnav-shell" id="bnav-shell">
-    <div class="bnav-lens" id="bnav-lens"></div>
-    <div class="bnav-indicator" id="bnav-indicator"></div>
-    <nav class="bnav-items" id="bnav-inner" aria-label="Main">
-      <div class="bnav-glow" id="bnav-glow"></div>
 
-      <button class="bnav-btn active" type="button" id="bnav-dashboard" data-page="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
-        <span class="bnav-label">Home</span>
-      </button>
-      <button class="bnav-btn" type="button" id="bnav-records" data-page="records">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
-        <span class="bnav-label">Records</span>
-      </button>
-      <button class="bnav-btn" type="button" id="bnav-entry" data-page="entry">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span class="bnav-label">New</span>
-      </button>
-      <button class="bnav-btn" type="button" id="bnav-search" data-page="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span class="bnav-label">Statement</span>
-      </button>
-      <button class="bnav-btn" type="button" id="bnav-payments" data-page="payments">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M21 12h-5a2 2 0 0 0 0 4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/></svg>
-        <span class="bnav-label">Payments</span>
-      </button>
-    </nav>
+    <!-- main pill: four items + the sliding capsule -->
+    <div class="bnav-group" id="bnav-group">
+      <div class="bnav-lens" id="bnav-lens"></div>
+      <div class="bnav-indicator" id="bnav-indicator"></div>
+      <nav class="bnav-items" id="bnav-inner" aria-label="Main">
+        <div class="bnav-glow" id="bnav-glow"></div>
+
+        <button class="bnav-btn active" type="button" id="bnav-dashboard" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+          <span class="bnav-label">Home</span>
+        </button>
+        <button class="bnav-btn" type="button" id="bnav-records" data-page="records">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
+          <span class="bnav-label">Records</span>
+        </button>
+        <button class="bnav-btn" type="button" id="bnav-entry" data-page="entry">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span class="bnav-label">New</span>
+        </button>
+        <button class="bnav-btn" type="button" id="bnav-payments" data-page="payments">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M21 12h-5a2 2 0 0 0 0 4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/></svg>
+          <span class="bnav-label">Payments</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- detached orb, same glass -->
+    <button class="bnav-btn bnav-orb" type="button" id="bnav-search" data-page="search" aria-label="Statement">
+      <div class="bnav-lens bnav-orb-lens" id="bnav-orb-lens"></div>
+      <span class="bnav-orb-fill"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+
   </div>
 </div>
 
@@ -10782,6 +10894,37 @@ setTimeout(_initEntryKeyboard, 500);
 // ═══════════════════════════════════════════════════════════
 // ALL RECORDS
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// CHUNKED TABLE RENDER
+// Building 280 rows in one pass locks the main thread for the whole
+// paint — that is the "harsh" feel when Records or Payments opens. The
+// first screenful goes in immediately, the rest is appended a frame at a
+// time, so the page is interactive straight away and each batch fades in.
+// ═══════════════════════════════════════════════════════════
+var _chunkJobs = {};
+function chunkRows(tbody, arr, build, first, size) {
+  if (!tbody) return;
+  first = first || 25; size = size || 50;
+  var key = tbody.__ckey || (tbody.__ckey = 'ck' + Math.random().toString(36).slice(2, 8));
+  if (_chunkJobs[key]) { cancelAnimationFrame(_chunkJobs[key]); delete _chunkJobs[key]; }
+
+  var head = '', n = Math.min(first, arr.length);
+  for (var i = 0; i < n; i++) head += build(arr[i], i);
+  tbody.innerHTML = head;
+  if (n >= arr.length) return;
+
+  var idx = n;
+  function step() {
+    var end = Math.min(idx + size, arr.length), buf = '';
+    for (var j = idx; j < end; j++) buf += build(arr[j], j);
+    tbody.insertAdjacentHTML('beforeend', buf);
+    idx = end;
+    if (idx < arr.length) _chunkJobs[key] = requestAnimationFrame(step);
+    else delete _chunkJobs[key];
+  }
+  _chunkJobs[key] = requestAnimationFrame(step);
+}
+
 function filterRecords() {
   if(typeof clearLedgerCache==="function") clearLedgerCache();
   const party   = document.getElementById('rec-party-filter').value;
@@ -10802,7 +10945,7 @@ function filterRecords() {
   document.getElementById('rec-count').innerHTML = `${filtered.length} records | Total: <svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><use href="#aed-glyph"/></svg> ${fmt(total)}`;
   document.getElementById('records-subtitle').textContent = party ? `Records for ${party}` : `All ${filtered.length} transactions`;
 
-  document.querySelector('#all-records-table tbody').innerHTML = filtered.map((r,i) => {
+  chunkRows(document.querySelector('#all-records-table tbody'), filtered, (r,i) => {
     const descLabel = r.items && r.items.length > 1 ? `${r.items[0].desc} +${r.items.length-1} more` : (r.desc||'—');
     const _st = invoiceRow(r).status;
     return `<tr onclick="viewRecord(${r.id})" style="cursor:pointer">
@@ -10820,7 +10963,7 @@ function filterRecords() {
         <div class="row-menu-panel"><button type="button" class="row-menu-item" onclick="viewRecord(${r.id})">View</button></div>
       </div></td>
     </tr>`;
-  }).join('');
+  });
 }
 
 function clearRecordFilters() {
@@ -11335,7 +11478,7 @@ function filterPayments() {
   }).sort((a,b) => (b.date||'').localeCompare(a.date||''));
 
   document.getElementById('pay-count').innerHTML = `${filtered.length} payments | Total: <svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><use href="#aed-glyph"/></svg> ${fmt(filtered.reduce((s,p)=>s+p.amount,0))}`;
-  document.querySelector('#pay-table tbody').innerHTML = filtered.map((p,i) => {
+  chunkRows(document.querySelector('#pay-table tbody'), filtered, (p,i) => {
     const _map = partyAllocationMap(p.party);
     const _bp  = _map.byPayment[p.id] || [];
     const _adv = _map.advanceByPayment[p.id] || 0;
@@ -11359,7 +11502,7 @@ function filterPayments() {
         <div class="row-menu-panel"><button type="button" class="row-menu-item" onclick="openEditPayment('${p.id}')">Edit</button></div>
       </div></td>
     </tr>`;
-  }).join('');
+  });
 }
 
 
@@ -18908,6 +19051,22 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
   .chq-days-range, #bottom-nav .bnav-btn{ transition-duration:1ms; }
 }
 
+/* ── Table + card entrance ──
+   Each chunk of rows arrives on its own frame, so the stagger comes free —
+   no per-row delay, which would cost more than it's worth at 280 rows. */
+@keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+#all-records-table tbody tr,
+#pay-table tbody tr { animation: rowIn .26s cubic-bezier(.22,1,.36,1) both; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+#page-records .card, #page-payments .card,
+#pay-kpis .pay-combined { animation: cardIn .3s cubic-bezier(.22,1,.36,1) both; }
+#page-records .card:nth-of-type(2), #page-payments .card:nth-of-type(2) { animation-delay: .05s; }
+#page-records .card:nth-of-type(3), #page-payments .card:nth-of-type(3) { animation-delay: .09s; }
+@media (prefers-reduced-motion: reduce) {
+  #all-records-table tbody tr, #pay-table tbody tr,
+  #page-records .card, #page-payments .card, #pay-kpis .pay-combined { animation: none !important; }
+}
+
 /* ── Overlay motion ── */
 .modal-overlay { animation: ovIn .16s ease both; }
 .modal-overlay .modal { animation: modalPop .24s cubic-bezier(.22,1,.36,1) both; }
@@ -19098,16 +19257,20 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
     if (!shell || !rail || !indicator) return;
     var items = Array.prototype.slice.call(rail.querySelectorAll('.bnav-btn'));
     if (!items.length) return;
+    var orb = document.getElementById('bnav-search');
+    var orbLens = document.getElementById('bnav-orb-lens');
 
     var lens = document.getElementById('bnav-lens');
     var lensGlass = lens ? liquidGlass(lens, { scale: -70, chroma: 5, border: 0.10, mapBlur: 8, blur: 2, saturate: 1.6 }) : null;
     var pillGlass = liquidGlass(indicator, { scale: -40, chroma: 3, border: 0.16, mapBlur: 5, blur: 0, saturate: 1.4 });
+    var orbGlass = orbLens ? liquidGlass(orbLens, { scale: -52, chroma: 4, border: 0.16, mapBlur: 7, blur: 2, saturate: 1.6 }) : null;
 
     var DRAG_THRESHOLD = 6, VSCROLL_THRESHOLD = 8;
     var geo = [];                       // rest position of every item
     var active = 0, targetIndex = 0;
     var pointerId = null, dragMode = false, vscroll = false;
     var pressX = 0, pressY = 0, lastY = 0, lastT = 0, vel = 0;
+    var dragX = 0, dragT = 0;
     var syncing = false;
 
     function measure() {
@@ -19118,16 +19281,44 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
         return { left: r.left - rr.left, width: r.width, center: r.left - rr.left + r.width / 2 };
       });
       // The capsule sits just inside its cell so it can never touch the rim.
-      indicator.style.width = Math.max(26, geo[0].width - 10) + 'px';
+      indicator.style.width = Math.max(26, geo[0].width + 8) + 'px';
       // Each map is built from its own box, so both have to be rebuilt once
       // the real sizes are known — otherwise they render flat.
       if (pillGlass) pillGlass.refresh(true);
       if (lensGlass) lensGlass.refresh(true);
+      if (orbGlass) orbGlass.refresh(true);
       return true;
     }
     var pillScale = 1;
+    var stretch = 0;          // current elongation, 0 = round capsule
+    var stretchTarget = 0;    // where the finger's speed wants it
+    var stretchRaf = null;
     function paint(x) {
-      indicator.style.transform = 'translate3d(' + x + 'px,0,0) scale(' + pillScale + ')';
+      var sx = 1 + stretch, sy = 1 - stretch * 0.38;
+      indicator.style.transform =
+        'translate3d(' + x + 'px,0,0) scale(' + pillScale + ') scale(' + sx + ',' + sy + ')';
+    }
+    // The capsule is liquid: it elongates along the direction of travel in
+    // proportion to how fast you're moving it, and relaxes back to round the
+    // moment your finger slows or stops. Driven per-frame, not per-event, so
+    // it keeps easing even when no pointermove arrives.
+    function stretchTick() {
+      stretchRaf = null;
+      stretch += (stretchTarget - stretch) * 0.34;
+      stretchTarget *= 0.86;
+      if (stretch < 0.002) { stretch = 0; }
+      paint(lastX);
+      if (dragMode && (stretch > 0.002 || stretchTarget > 0.002)) {
+        stretchRaf = requestAnimationFrame(stretchTick);
+      }
+    }
+    function kickStretch(v) {
+      stretchTarget = Math.max(stretchTarget, Math.min(Math.abs(v) * 0.17, 0.52));
+      if (!stretchRaf) stretchRaf = requestAnimationFrame(stretchTick);
+    }
+    function dropStretch() {
+      if (stretchRaf) { cancelAnimationFrame(stretchRaf); stretchRaf = null; }
+      stretch = 0; stretchTarget = 0;
     }
     var lastX = 0;
     function placeAt(x, animate) {
@@ -19139,7 +19330,7 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
       // Blows up while you hold it, exactly like the reference's 1.5 — just
       // scaled to this slimmer capsule so it stays inside the rail:
       // 36px * 1.45 = 52px inside a 56px bar.
-      pillScale = on ? 1.45 : 1;
+      pillScale = on ? 1.12 : 1;   // the reference barely grows: 210px pill -> 232px held
       indicator.classList.toggle('interacting', on);
       paint(lastX);
     }
@@ -19158,6 +19349,39 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
       }
       return best;
     }
+    // The whole pill gives a little when you pull past either end — glass and
+    // buttons together, anchored at the opposite edge. Capped at 3.5%: enough
+    // to feel elastic, small enough that the labels don't visibly smear.
+    var stretchParts = [lens, rail];
+    var stretchOn = false;
+    function setStretch(over, spring) {
+      if (!lens) return;
+      if (!over) {
+        if (!stretchOn) return;
+        stretchOn = false;
+        stretchParts.forEach(function (el) {
+          if (!el) return;
+          if (spring) {
+            el.classList.add('springing');
+            setTimeout(function () { el.classList.remove('springing'); }, 520);
+          }
+          el.style.transform = '';
+        });
+        return;
+      }
+      stretchOn = true;
+      var w = rail.clientWidth || 1;
+      var k = Math.min(Math.abs(over) / w * 0.5, 0.035);
+      var origin = (over < 0 ? '100%' : '0%') + ' 50%';
+      var t = 'scaleX(' + (1 + k) + ') scaleY(' + (1 - k * 0.45) + ')';
+      stretchParts.forEach(function (el) {
+        if (!el) return;
+        el.classList.remove('springing');
+        el.style.transformOrigin = origin;
+        el.style.transform = t;
+      });
+    }
+
     function setGlow(clientX, clientY, alpha) {
       var rr = rail.getBoundingClientRect();
       rail.style.setProperty('--gx', (clientX - rr.left) + 'px');
@@ -19168,7 +19392,7 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
     function syncFromDom(animate) {
       var i = items.findIndex(function (x) { return x.classList.contains('active'); });
       indicator.classList.toggle('is-hidden', i < 0);
-      if (i < 0) return;
+      if (i < 0) return;   // Statement (the orb) or an off-rail page
       active = i; targetIndex = i;
       snap(i, animate !== false);
     }
@@ -19180,12 +19404,22 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
       requestAnimationFrame(function () { syncing = false; syncFromDom(true); });
     });
     items.forEach(function (b) { mo.observe(b, { attributes: true, attributeFilter: ['class'] }); });
+    if (orb) mo.observe(orb, { attributes: true, attributeFilter: ['class'] });
 
-    function navigate(i) {
-      var btn = items[i];
+    function run(btn) {
       if (!btn) return;
       if (btn.id === 'bnav-dashboard' && typeof navMain === 'function') { navMain('dashboard-fixed'); return; }
       if (btn.dataset.page && typeof showPage === 'function') showPage(btn.dataset.page);
+    }
+    // Records and Payments are expensive to build. Handing the browser two
+    // frames first means the capsule and the press state are already on
+    // screen before the main thread goes busy — the move stops stuttering.
+    function navigate(i) {
+      var btn = typeof i === 'number' ? items[i] : i;
+      if (!btn) return;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { run(btn); });
+      });
     }
 
     function release() {
@@ -19195,6 +19429,10 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
     }
     function settle() {
       rail.classList.remove('dragging');
+      indicator.classList.remove('dragging');
+      dropStretch();
+      paint(lastX);
+      setStretch(0, true);
       shell.classList.remove('engaged');
       setLift(false);
       rail.style.setProperty('--ga', '0');
@@ -19224,18 +19462,35 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
 
       if (!dragMode && (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD)) {
         dragMode = true;
+        dragX = e.clientX; dragT = e.timeStamp || performance.now();
         rail.classList.add('dragging');
+        indicator.classList.add('dragging');
       }
       setGlow(e.clientX, e.clientY, dragMode ? 0.20 : 0.24);
       if (dragMode) {
         var rr = rail.getBoundingClientRect();
         var localX = e.clientX - rr.left;
         var w = parseFloat(indicator.style.width) || geo[active].width;
-        // Clamped to the padding box — the capsule never leaves the rail.
-        var min = geo[0].left + (geo[0].width - w) / 2;
-        var last = geo[geo.length - 1];
-        var max = last.left + (last.width - w) / 2;
-        placeAt(clamp(localX - w / 2, min, max), false);
+        // Travel limit is the PILL's inner edge, not the first/last button —
+        // the capsule should be able to slide right up against the border.
+        // The lift scale is centred, so half the extra width has to be kept
+        // as clearance or the scaled capsule would poke out at the extremes.
+        var pad = (w * 1.12 - w) / 2 + 1;
+        var railW = rail.clientWidth || (geo[geo.length - 1].left + geo[geo.length - 1].width);
+        var min = pad;
+        var max = railW - w - pad;
+        if (max < min) max = min;
+        var tnow = e.timeStamp || performance.now();
+        var dt = Math.max(1, tnow - dragT);
+        kickStretch((e.clientX - dragX) / dt);      // px per ms
+        dragX = e.clientX; dragT = tnow;
+
+        var raw = localX - w / 2;
+        // The capsule is hard-clamped — it never leaves the pill. Whatever you
+        // pull past the end goes into stretching the pill instead.
+        var over = raw < min ? raw - min : raw > max ? raw - max : 0;
+        placeAt(clamp(raw, min, max), false);
+        setStretch(over, false);
         targetIndex = nearest(localX);
       }
     }
@@ -19253,8 +19508,10 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
         snap(active, true);
       } else {
         rail.classList.remove('dragging');
+        indicator.classList.remove('dragging');
         active = targetIndex;
         items.forEach(function (b, idx) { b.classList.toggle('active', idx === targetIndex); });
+        if (orb) orb.classList.remove('active');
         indicator.classList.remove('is-hidden');
         settle();
         snap(targetIndex, true);
@@ -19298,6 +19555,32 @@ html.in-frame #app-scroll{ overflow:visible; height:auto; flex:none; }
         items[(idx + (e.key === 'ArrowRight' ? 1 : -1) + items.length) % items.length].focus();
       });
     });
+
+    if (orb) {
+      var orbId = null;
+      orb.addEventListener('pointerdown', function (e) {
+        if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        e.preventDefault();
+        orbId = e.pointerId;
+        orb.classList.add('pressed');
+        if (navigator.vibrate) { try { navigator.vibrate(8); } catch (_) {} }
+      });
+      var orbEnd = function (e) {
+        if (orbId === null || e.pointerId !== orbId) return;
+        orbId = null;
+        orb.classList.remove('pressed');
+        if (e.type !== 'pointerup') return;
+        var r = orb.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+        items.forEach(function (b) { b.classList.remove('active'); });
+        orb.classList.add('active');
+        indicator.classList.add('is-hidden');
+        navigate(orb);
+      };
+      window.addEventListener('pointerup', orbEnd);
+      window.addEventListener('pointercancel', orbEnd);
+      orb.addEventListener('click', function (e) { if (e.detail === 0) navigate(orb); });
+    }
 
     function remeasure() { if (measure()) snap(active, false); }
     remeasure();
