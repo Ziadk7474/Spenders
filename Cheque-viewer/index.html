@@ -72,6 +72,15 @@ header.topbar {
 .tb-sub-text { color: var(--gold3); font-size: 10.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; }
 .tb-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
 .theme-btn { background: rgba(255,255,255,.09); border:none; border-radius:8px; width:34px; height:34px; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.install-btn {
+  display:none; align-items:center; gap:5px; height:34px; padding:0 12px;
+  border:none; border-radius:8px; cursor:pointer;
+  background:linear-gradient(135deg,var(--gold3),var(--gold2) 55%,var(--gold));
+  color:#1a1200; font-family:var(--font); font-weight:800; font-size:12.5px;
+  box-shadow:0 2px 10px rgba(220,174,53,.35);
+  -webkit-tap-highlight-color:transparent;
+}
+.install-btn:active { transform:scale(.96); }
 
 .wrap { max-width: 1200px; margin: 0 auto; padding: 14px; }
 
@@ -244,6 +253,10 @@ tbody tr:hover { background: var(--surface2); }
     </div>
   </div>
   <div class="tb-right">
+    <button class="install-btn" id="install-btn" onclick="installApp()" title="Install app" style="display:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Install
+    </button>
     <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
@@ -386,6 +399,8 @@ tbody tr:hover { background: var(--surface2); }
       <tbody id="table-body"></tbody>
     </table>
   </div>
+
+  <div class="card" id="diag" style="display:none;padding:14px 16px;margin-top:14px"></div>
 
   <div class="footer-note">View only — data entered and updated from the main Cheque Register app. Updates here appear automatically, in real time.</div>
 </div>
@@ -705,11 +720,99 @@ window.clearDaySlider = clearDaySlider;
 window.toggleTheme = toggleTheme;
 window.filterByStatus = filterByStatus;
 
+// ═══════════ SERVICE WORKER + INSTALL ═══════════
+// Registration errors used to be swallowed silently, which made a failed
+// install impossible to diagnose from the phone. Now every outcome is
+// recorded in _diag and surfaced by the #debug panel below.
+window._diag = { sw: 'not started', swScope: '—', manifest: 'not checked', bip: 'not fired' };
+
 if('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js?v=3').catch(function(){});
+    navigator.serviceWorker.register('sw.js?v=3').then(function(reg) {
+      window._diag.sw = 'registered';
+      window._diag.swScope = reg.scope;
+      const w = reg.installing || reg.waiting || reg.active;
+      if(w) window._diag.sw = 'registered · ' + w.state;
+      paintDiag();
+    }).catch(function(err) {
+      window._diag.sw = 'FAILED — ' + (err && err.message ? err.message : err);
+      paintDiag();
+    });
   });
+} else {
+  window._diag.sw = 'not supported by this browser';
 }
+
+// Chrome and Samsung Internet fire this only when every install requirement
+// is met. Catching it gives us a real in-page Install button — far more
+// reliable than hunting through the browser menu.
+let _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _deferredPrompt = e;
+  window._diag.bip = 'fired — installable';
+  const btn = document.getElementById('install-btn');
+  if(btn) btn.style.display = 'flex';
+  paintDiag();
+});
+
+window.addEventListener('appinstalled', function() {
+  window._diag.bip = 'installed';
+  const btn = document.getElementById('install-btn');
+  if(btn) btn.style.display = 'none';
+});
+
+function installApp() {
+  if(!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.finally(function(){ _deferredPrompt = null; });
+}
+
+// ═══════════ #debug PANEL ═══════════
+// Add #debug to the URL to see exactly which install requirement is failing.
+// Invisible otherwise, so it costs normal users nothing.
+function paintDiag() {
+  const el = document.getElementById('diag');
+  if(!el || location.hash !== '#debug') return;
+  const d = window._diag;
+  const rows = [
+    ['Secure origin (https)', location.protocol === 'https:' ? 'yes' : 'NO — install needs https'],
+    ['Display mode', window.matchMedia('(display-mode: standalone)').matches ? 'standalone (already installed)' : 'browser tab'],
+    ['Service worker', d.sw],
+    ['SW scope', d.swScope],
+    ['Manifest', d.manifest],
+    ['Install prompt event', d.bip],
+    ['Page URL', location.href]
+  ];
+  el.innerHTML = '<div style="font-weight:800;margin-bottom:8px">Install diagnostics</div>' +
+    rows.map(function(r){
+      const bad = /NO|FAIL|not fired|not supported|missing/i.test(r[1]);
+      return '<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">' +
+        '<span style="flex:0 0 130px;color:var(--t3);font-weight:700">' + r[0] + '</span>' +
+        '<span style="flex:1;word-break:break-all;color:' + (bad ? 'var(--red)' : 'var(--t1)') + '">' + esc(r[1]) + '</span></div>';
+    }).join('');
+  el.style.display = 'block';
+}
+
+// Fetch the manifest ourselves so a 404 or a JSON typo shows up plainly
+// instead of the browser just quietly refusing to offer an install.
+fetch('manifest.json?v=3').then(function(r) {
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}).then(function(m) {
+  const has192 = (m.icons||[]).some(function(i){ return /(^|\s)192x192(\s|$)/.test(i.sizes||''); });
+  const has512 = (m.icons||[]).some(function(i){ return /(^|\s)512x512(\s|$)/.test(i.sizes||''); });
+  window._diag.manifest = 'loaded · ' + (m.icons||[]).length + ' icons' +
+    (has192 && has512 ? '' : ' — missing ' + (has192?'':'192px ') + (has512?'':'512px'));
+  paintDiag();
+}).catch(function(err) {
+  window._diag.manifest = 'FAILED — ' + (err && err.message ? err.message : err);
+  paintDiag();
+});
+
+window.addEventListener('hashchange', paintDiag);
+window.addEventListener('load', paintDiag);
+window.installApp = installApp;
 </script>
 </body>
 </html>
