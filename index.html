@@ -24290,6 +24290,247 @@ html:not(#_) body:not(#_) button > .m9i:only-child{ margin-right:0; }
 
 /* party search: hidden rows stay hidden in card view too */
 html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch > td{ display:none !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   M10 · premium layer — glass dock, page motion, calm numbers, status dots,
+   soft glow + glass, round logos, tidy list cards, month picker.
+   Presentation only: no data, no saving, no Firebase.
+   html:not(#_) body:not(#_) / html:not(#_#_#_) body:not(#_#_#_) are replaced at build time (see build.py).
+   ══════════════════════════════════════════════════════════════════════ */
+#m10-dock, #m10-mp{ display:none; }
+
+@media screen{
+
+/* ── 0 · TOKENS ── */
+html:not(#_) body:not(#_), html:not(#_) body:not(#_).mode-sales, html:not(#_) body:not(#_).mode-purchase, html:not(#_) body:not(#_).mode-neutral{
+  --m10-glass:rgba(255,255,255,.80);
+  --m10-glass-hi:rgba(255,255,255,.92);
+  --m10-glass-b:rgba(255,255,255,.78);
+  --m10-edge:rgba(18,18,18,.06);
+  --m10-lift:0 22px 44px -22px rgba(24,24,32,.38), 0 3px 10px -4px rgba(24,24,32,.10);
+  --m10-glow:0 0 0 1px rgba(232,97,58,.10), 0 10px 26px -12px rgba(232,97,58,.55);
+  --m10-acc-g:linear-gradient(145deg, #f58a5f 0%, #e8613a 48%, #d84e28 100%);
+  --m10-spring:cubic-bezier(.34,1.32,.52,1);
+  --m10-ease:cubic-bezier(.22,.9,.24,1);
+}
+html:not(#_) body:not(#_).dark-mode, html:not(#_) body:not(#_).dark-mode.mode-sales, html:not(#_) body:not(#_).dark-mode.mode-purchase, html:not(#_) body:not(#_).dark-mode.mode-neutral{
+  --m10-glass:rgba(30,30,34,.80);
+  --m10-glass-hi:rgba(255,255,255,.11);
+  --m10-glass-b:rgba(255,255,255,.10);
+  --m10-edge:rgba(255,255,255,.06);
+  --m10-lift:0 22px 44px -18px rgba(0,0,0,.85), 0 2px 8px -2px rgba(0,0,0,.5);
+  --m10-glow:0 0 0 1px rgba(240,106,66,.16), 0 10px 28px -10px rgba(240,106,66,.6);
+  --m10-acc-g:linear-gradient(145deg, #ff9468 0%, #f06a42 50%, #dc5530 100%);
+}
+
+/* ── 1 · AMBIENT GLOW behind the app (fixed, one layer, no repaint on scroll) ── */
+html:not(#_) body:not(#_)::before{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(60vmax 40vmax at 100% -6%, rgba(232,97,58,.13), rgba(232,97,58,0) 62%),
+    radial-gradient(50vmax 34vmax at -10% 108%, rgba(232,97,58,.07), rgba(232,97,58,0) 60%); }
+html:not(#_) body:not(#_).dark-mode::before{
+  background:
+    radial-gradient(60vmax 40vmax at 100% -6%, rgba(240,106,66,.16), rgba(240,106,66,0) 60%),
+    radial-gradient(50vmax 34vmax at -10% 108%, rgba(240,106,66,.07), rgba(240,106,66,0) 60%); }
+
+/* ── 2 · GLASS on the floating layers (small areas only, so it stays fast) ── */
+html:not(#_) body:not(#_) .m8-switch{ background:var(--m10-glass) !important; border:1px solid var(--m10-glass-b) !important;
+  box-shadow:0 1px 0 var(--m10-glass-hi) inset, 0 8px 20px -14px rgba(0,0,0,.35) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-switch{ -webkit-backdrop-filter:blur(18px) saturate(1.7) !important; backdrop-filter:blur(18px) saturate(1.7) !important; }
+html:not(#_) body:not(#_) .m8-menu, html:not(#_) body:not(#_) #m9-rmenu, html:not(#_) body:not(#_) .row-menu-panel.open{
+  background:var(--m10-glass) !important; border:1px solid var(--m10-glass-b) !important; box-shadow:0 1px 0 var(--m10-glass-hi) inset, var(--m10-lift) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-menu, html:not(#_#_#_) body:not(#_#_#_) #m9-rmenu, html:not(#_#_#_) body:not(#_#_#_) .row-menu-panel.open{ -webkit-backdrop-filter:blur(24px) saturate(1.8) !important; backdrop-filter:blur(24px) saturate(1.8) !important; }
+html:not(#_) body:not(#_).dark-mode .m8-menu, html:not(#_) body:not(#_).dark-mode #m9-rmenu, html:not(#_) body:not(#_).dark-mode .row-menu-panel.open{ background:rgba(34,34,38,.82) !important; }
+/* modal backdrops: a soft frosted dim instead of a flat grey */
+html:not(#_) body:not(#_) .modal-overlay[style*="flex"], html:not(#_) body:not(#_) .m8-ov.open, html:not(#_) body:not(#_) .m8-menu-scrim.open, html:not(#_) body:not(#_) #m5-create.open{ background:rgba(18,18,22,.26) !important; }
+html:not(#_) body:not(#_).dark-mode .modal-overlay[style*="flex"], html:not(#_) body:not(#_).dark-mode .m8-ov.open, html:not(#_) body:not(#_).dark-mode .m8-menu-scrim.open, html:not(#_) body:not(#_).dark-mode #m5-create.open{ background:rgba(0,0,0,.5) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"], html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open, html:not(#_#_#_) body:not(#_#_#_) .m8-menu-scrim.open, html:not(#_#_#_) body:not(#_#_#_) #m5-create.open{ -webkit-backdrop-filter:blur(7px) saturate(1.2) !important; backdrop-filter:blur(7px) saturate(1.2) !important; }
+html:not(#_) body:not(#_) .modal-overlay[style*="flex"] > .modal, html:not(#_) body:not(#_) .m8-ov.open > .m8-sheet{ box-shadow:0 1px 0 var(--m10-glass-hi) inset, 0 40px 90px -40px rgba(0,0,0,.55), 0 0 0 1px var(--m10-edge) !important; }
+
+/* cards: a fine top highlight so they read as soft glass panes */
+html:not(#_) body:not(#_) .m5-card, html:not(#_) body:not(#_) .m8-pcard, html:not(#_) body:not(#_) .m5-tile{ box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 0 0 1px var(--m10-edge), 0 14px 30px -26px rgba(0,0,0,.35) !important; }
+html:not(#_) body:not(#_).dark-mode .m5-card, html:not(#_) body:not(#_).dark-mode .m8-pcard, html:not(#_) body:not(#_).dark-mode .m5-tile{ box-shadow:0 1px 0 rgba(255,255,255,.05) inset, 0 0 0 1px var(--m10-edge) !important; }
+/* the main orange buttons get a soft glow + a light top edge */
+html:not(#_) body:not(#_) .m5-cta, html:not(#_) body:not(#_) .m8-btn.acc, html:not(#_) body:not(#_) .m8-btn.pri, html:not(#_) body:not(#_) .btn-primary, html:not(#_) body:not(#_) .btn.gold, html:not(#_) body:not(#_) .m5-btn.acc{ background-image:var(--m10-acc-g) !important; box-shadow:0 1px 0 rgba(255,255,255,.35) inset, var(--m10-glow) !important; }
+
+/* ── 3 · CALMER NUMBERS in the small dashboard tiles ── */
+html:not(#_) body:not(#_) .m8-tile-h em{ font-size:12px !important; font-weight:500 !important; color:var(--k-ink3) !important; letter-spacing:0 !important; }
+html:not(#_) body:not(#_) .m8-tile-h .m5-h4{ white-space:nowrap; }
+html:not(#_) body:not(#_) .m8-age-r b, html:not(#_) body:not(#_) .m8-top-a{ font-size:12.5px !important; font-weight:550 !important; letter-spacing:-.005em; font-variant-numeric:tabular-nums; color:var(--k-ink) !important; }
+html:not(#_) body:not(#_) .m8-age-r.hot b{ color:var(--k-acc) !important; }
+html:not(#_) body:not(#_) .m8-top-n b{ font-weight:550 !important; }
+html:not(#_) body:not(#_) .m5-bk b{ font-size:14px !important; font-weight:600 !important; }
+html:not(#_) body:not(#_) .m5-wstats b, html:not(#_) body:not(#_) .m5-cmpbars b{ font-weight:600 !important; }
+html:not(#_) body:not(#_) .m5-ci-side > b, html:not(#_) body:not(#_) .m5-fi .m5-ci-side > b{ font-weight:600 !important; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m8-cq-s > b, html:not(#_) body:not(#_) .m8-le-s > b{ font-weight:600 !important; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m8-age-b, html:not(#_) body:not(#_) .m8-top-b{ height:5px !important; }
+
+/* the three activity tiles only sit side by side when there is room; otherwise 2 + 1 */
+@media (min-width:901px) and (max-width:1599px){
+  html:not(#_) body:not(#_) .m5-act-grid{ grid-template-columns:1fr 1fr !important; }
+  html:not(#_) body:not(#_) .m5-act-grid .m5-bars{ grid-column:1 / -1 !important; }
+}
+html:not(#_) body:not(#_) .m5-wstats b{ font-size:14px !important; white-space:nowrap !important; overflow:visible !important; text-overflow:clip !important; }
+html:not(#_) body:not(#_) .m5-wstats small{ white-space:normal !important; }
+
+/* ── 4 · STATUS: a small glowing dot + text instead of a coloured capsule ── */
+html:not(#_) body:not(#_) .m5-st, html:not(#_) body:not(#_) .m8-st{ display:inline-flex !important; align-items:center; gap:6px; height:auto !important; padding:0 !important; border-radius:0 !important;
+  background:none !important; box-shadow:none !important; font:500 11.5px/1.25 var(--k-font) !important; letter-spacing:0; color:var(--k-ink2) !important; white-space:nowrap; }
+html:not(#_) body:not(#_) .m5-st::before, html:not(#_) body:not(#_) .m8-st::before{ content:""; flex:0 0 6px; width:6px; height:6px; border-radius:50%; background:var(--k-ink3); }
+html:not(#_) body:not(#_) .m5-st.late, html:not(#_) body:not(#_) .m8-st.late{ color:var(--k-neg) !important; }
+html:not(#_) body:not(#_) .m5-st.late::before, html:not(#_) body:not(#_) .m8-st.late::before{ background:var(--k-neg); box-shadow:0 0 0 3px rgba(229,72,77,.14), 0 0 8px rgba(229,72,77,.55); }
+html:not(#_) body:not(#_) .m5-st.due, html:not(#_) body:not(#_) .m8-st.due{ color:var(--k-acc) !important; font-weight:600 !important; }
+html:not(#_) body:not(#_) .m5-st.due::before, html:not(#_) body:not(#_) .m8-st.due::before{ background:var(--k-acc); box-shadow:0 0 0 3px rgba(232,97,58,.16), 0 0 10px rgba(232,97,58,.7); }
+html:not(#_#_#_) body:not(#_#_#_) .m5-st.due::before, html:not(#_#_#_) body:not(#_#_#_) .m8-st.due::before{ animation:m10Beat 1.8s ease-in-out infinite !important; animation-duration:1.8s !important; }
+html:not(#_) body:not(#_) .m5-st.wait::before, html:not(#_) body:not(#_) .m8-st.wait::before{ background:var(--k-wait); box-shadow:0 0 0 3px rgba(194,122,26,.14); }
+html:not(#_) body:not(#_) .m5-st.done::before, html:not(#_) body:not(#_) .m8-st.ok::before, html:not(#_) body:not(#_) .m5-st.pay::before, html:not(#_) body:not(#_) .m8-st.pay::before{ background:var(--k-pos); box-shadow:0 0 0 3px rgba(31,157,85,.14); }
+html:not(#_) body:not(#_) .m5-st.done, html:not(#_) body:not(#_) .m8-st.ok, html:not(#_) body:not(#_) .m5-st.pay, html:not(#_) body:not(#_) .m8-st.pay{ color:var(--k-ink2) !important; }
+@keyframes m10Beat{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(.72); opacity:.65; } }
+/* record cards: the status built inline — same dot style */
+html:not(#_) body:not(#_) .m5c-st{ padding:0 !important; background:none !important; border-radius:0 !important; gap:6px; }
+html:not(#_#_#_) body:not(#_#_#_) .m5c-st span[style*="border-radius:50%"]{ background:currentColor !important; box-shadow:0 0 0 3px color-mix(in srgb, currentColor 15%, transparent); }
+
+/* ── 5 · SIDE MENU: soft rounded glass highlight, never a solid block (was white in dark mode) ── */
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on){
+  background:linear-gradient(180deg, rgba(232,97,58,.13), rgba(232,97,58,.07)) !important; color:var(--k-ink) !important;
+  border-radius:999px !important; box-shadow:0 0 0 1px rgba(232,97,58,.16) inset, 0 8px 20px -14px rgba(232,97,58,.7) !important; font-weight:600 !important; }
+html:not(#_#_#_) body:not(#_#_#_).dark-mode :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on){
+  background:linear-gradient(180deg, rgba(240,106,66,.22), rgba(240,106,66,.12)) !important; color:#fff !important;
+  box-shadow:0 0 0 1px rgba(240,106,66,.26) inset, 0 8px 22px -12px rgba(240,106,66,.6) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on) :is(svg, .zm-ic){
+  color:var(--k-acc) !important; stroke:var(--k-acc) !important; background:transparent !important; border-color:transparent !important; box-shadow:none !important; filter:drop-shadow(0 0 6px rgba(232,97,58,.45)); }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-item .zm-ic, html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-subitem .m8-subic{ background:transparent !important; border-color:transparent !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-subitem)::before{ display:none !important; }
+html:not(#_) body:not(#_) #sidebar .zm-item, html:not(#_) body:not(#_) #drawer .zm-item, html:not(#_) body:not(#_) #sidebar .zm-subitem, html:not(#_) body:not(#_) #drawer .zm-subitem, html:not(#_) body:not(#_) #sidebar .zm-ghead, html:not(#_) body:not(#_) #drawer .zm-ghead{ border-radius:999px !important; outline:none !important; -webkit-tap-highlight-color:transparent !important; }
+html:not(#_) body:not(#_) .zm-item:focus, html:not(#_) body:not(#_) .zm-subitem:focus, html:not(#_) body:not(#_) .zm-ghead:focus{ outline:none !important; }
+html:not(#_) body:not(#_) .zm-item:focus-visible, html:not(#_) body:not(#_) .zm-subitem:focus-visible{ box-shadow:0 0 0 2px rgba(232,97,58,.45) inset !important; }
+html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu .zm-item.active > .zsb-plus{ background:rgba(232,97,58,.16) !important; color:var(--k-acc) !important; }
+
+/* ── 6 · ROUND LOGOS: splash + lock are always a perfect circle ── */
+html:not(#_) body:not(#_) .flo-logo, html:not(#_) body:not(#_) #firebase-loading-overlay .flo-logo{ width:84px !important; height:84px !important; aspect-ratio:1 / 1; }
+html:not(#_) body:not(#_) #firebase-loading-overlay .flo-logo svg, html:not(#_) body:not(#_) .flo-logo svg{ width:84px !important; height:84px !important; aspect-ratio:1 / 1; border-radius:50% !important; object-fit:cover; }
+html:not(#_) body:not(#_) .lock-logo-wrap svg, html:not(#_) body:not(#_) #lock-overlay .lock-logo-wrap svg{ width:80px !important; height:80px !important; aspect-ratio:1 / 1; border-radius:50% !important; }
+
+/* ── 7 · DATE / MONTH FIELDS: the calendar button sits inside the field ── */
+html:not(#_) body:not(#_) .m8-dw > .m8-dbtn{ right:8px !important; width:34px !important; height:34px !important; min-height:0 !important; padding:0 !important; border:0 !important; border-radius:50% !important;
+  background:transparent !important; box-shadow:none !important; color:var(--k-ink3) !important; }
+html:not(#_) body:not(#_) .m8-dw > .m8-dbtn:hover, html:not(#_) body:not(#_) .m8-dw.m10-open > .m8-dbtn{ background:var(--k-card) !important; color:var(--k-acc) !important; }
+
+/* month picker (opens under the field, or as a sheet on phones) */
+html:not(#_) body:not(#_) #m10-mp{ display:none; position:fixed; z-index:13050; width:288px; padding:14px; border-radius:26px; color:var(--k-ink);
+  background:rgba(255,255,255,.95); border:1px solid var(--m10-glass-b); box-shadow:0 1px 0 var(--m10-glass-hi) inset, var(--m10-lift); font-family:var(--k-font); }
+html:not(#_#_#_) body:not(#_#_#_) #m10-mp{ -webkit-backdrop-filter:blur(26px) saturate(1.8) !important; backdrop-filter:blur(26px) saturate(1.8) !important; }
+html:not(#_) body:not(#_).dark-mode #m10-mp{ background:rgba(32,32,36,.96); }
+html:not(#_) body:not(#_) #m10-mp.open{ display:block; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-mp.open{ animation:m8Pop 220ms var(--m10-spring) both !important; animation-duration:220ms !important; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-h b{ font-size:16px; font-weight:650; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-h button{ width:36px; height:36px; border-radius:50%; border:0; background:var(--k-card); color:var(--k-ink); display:grid; place-items:center; cursor:pointer; padding:0; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-h button svg{ width:18px; height:18px; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-g{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-g button{ height:44px; border-radius:999px; border:0; background:transparent; color:var(--k-ink); font:500 14px var(--k-font); cursor:pointer; position:relative; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-g button:hover{ background:var(--k-card); }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-g button.now{ color:var(--k-acc); font-weight:650; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-g button.on{ background:var(--m10-acc-g); color:#fff; font-weight:600; box-shadow:var(--m10-glow); }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-f{ display:flex; justify-content:space-between; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--k-line); }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-f button{ height:36px; padding:0 14px; border-radius:999px; border:0; background:var(--k-card); color:var(--k-ink); font:600 13px var(--k-font); cursor:pointer; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-f button.clr{ background:transparent; color:var(--k-ink2); }
+html:not(#_) body:not(#_) #m10-mp-scrim{ display:none; position:fixed; inset:0; z-index:13040; background:transparent; }
+html:not(#_) body:not(#_) #m10-mp-scrim.open{ display:block; }
+
+/* ── 8 · PAGE MOTION: a short glide + fade in the direction you moved ── */
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-r{ animation:m10InR 320ms var(--m10-ease) both !important; animation-duration:320ms !important; }
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-l{ animation:m10InL 320ms var(--m10-ease) both !important; animation-duration:320ms !important; }
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms var(--m10-ease) both !important; animation-duration:300ms !important; }
+@keyframes m10InR{ from{ opacity:.25; transform:translate3d(22px,0,0); } to{ opacity:1; transform:none; } }
+@keyframes m10InL{ from{ opacity:.25; transform:translate3d(-22px,0,0); } to{ opacity:1; transform:none; } }
+@keyframes m10InU{ from{ opacity:.3; transform:translate3d(0,12px,0); } to{ opacity:1; transform:none; } }
+
+} /* end screen */
+
+/* ══ PHONE + TABLET (≤ 900): the new glass dock ══ */
+@media screen and (max-width:900px){
+  html:not(#_) body:not(#_) #m8-dock{ display:none !important; }
+  html:not(#_) body:not(#_) #m10-dock{ display:block; position:fixed; left:0; right:0; bottom:0; z-index:8000; pointer-events:none;
+    padding:0 14px calc(12px + env(safe-area-inset-bottom)); }
+  /* a soft veil so lists fade out under the bar instead of colliding with it */
+  html:not(#_) body:not(#_) #m10-dock::before{ content:""; position:absolute; left:0; right:0; bottom:0; height:120px; pointer-events:none;
+    background:linear-gradient(180deg, rgba(239,239,239,0), rgba(239,239,239,.72) 62%, rgba(239,239,239,.9)); }
+  html:not(#_) body:not(#_).dark-mode #m10-dock::before{ background:linear-gradient(180deg, rgba(12,12,13,0), rgba(12,12,13,.72) 62%, rgba(12,12,13,.92)); }
+
+  html:not(#_) body:not(#_) .m10-bar{ pointer-events:auto; position:relative; margin:0 auto; width:100%; max-width:430px; height:68px; padding:6px;
+    display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); align-items:center; border-radius:34px;
+    background:var(--m10-glass); border:1px solid var(--m10-glass-b);
+    box-shadow:0 1px 0 var(--m10-glass-hi) inset, 0 -1px 0 rgba(0,0,0,.03) inset, var(--m10-lift);
+    touch-action:pan-y; -webkit-user-select:none; user-select:none; isolation:isolate; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-bar{ -webkit-backdrop-filter:blur(26px) saturate(1.9) !important; backdrop-filter:blur(26px) saturate(1.9) !important; }
+  html:not(#_) body:not(#_).dark-mode .m10-bar{ box-shadow:0 1px 0 rgba(255,255,255,.08) inset, var(--m10-lift); }
+
+  /* the lens: one fixed-size glass capsule that glides under the active tab */
+  html:not(#_) body:not(#_) .m10-lens{ position:absolute; z-index:0; top:6px; left:6px; height:56px; width:calc((100% - 12px) / 5);
+    transform:translate3d(calc(var(--i, 0) * 100%), 0, 0); pointer-events:none; opacity:0; }
+  html:not(#_) body:not(#_) .m10-lens::before{ content:""; position:absolute; inset:0 3px; border-radius:28px;
+    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.74));
+    box-shadow:0 1px 0 #fff inset, 0 0 0 1px rgba(18,18,18,.05), 0 10px 22px -12px rgba(0,0,0,.35); }
+  html:not(#_) body:not(#_).dark-mode .m10-lens::before{ background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.07)); box-shadow:0 1px 0 rgba(255,255,255,.14) inset, 0 0 0 1px rgba(255,255,255,.06), 0 10px 24px -12px rgba(0,0,0,.8); }
+  /* glowing dot under the active label */
+  html:not(#_) body:not(#_) .m10-lens::after{ content:""; position:absolute; left:50%; bottom:5px; width:4px; height:4px; margin-left:-2px; border-radius:50%;
+    background:var(--k-acc); box-shadow:0 0 6px 1px rgba(232,97,58,.75); }
+  html:not(#_) body:not(#_) .m10-bar.has-on .m10-lens{ opacity:1; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-lens{ transition:transform 460ms var(--m10-spring), opacity 200ms var(--m10-ease) !important; transition-property:transform, opacity !important; transition-duration:460ms, 200ms !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-lens.instant{ transition:none !important; }
+
+  html:not(#_) body:not(#_) .m10-t{ position:relative; z-index:1; height:56px; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    border:0; padding:0 2px 6px; margin:0; background:transparent !important; color:var(--k-ink3); cursor:pointer; border-radius:28px; box-shadow:none !important;
+    -webkit-tap-highlight-color:transparent; font-family:var(--k-font); }
+  html:not(#_) body:not(#_) .m10-t svg{ width:23px; height:23px; flex:0 0 auto; stroke-width:1.75; }
+  html:not(#_) body:not(#_) .m10-l{ font:500 10.5px/1 var(--k-font); letter-spacing:.01em; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+  html:not(#_) body:not(#_) .m10-t.on{ color:var(--k-ink); }
+  html:not(#_) body:not(#_) .m10-t.on svg{ color:var(--k-acc); }
+  html:not(#_) body:not(#_) .m10-t.on .m10-l{ font-weight:650; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-t{ transition:color 220ms var(--m10-ease) !important; transition-property:color !important; transition-duration:220ms !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-t svg{ transition:transform 260ms var(--m10-spring) !important; transition-property:transform !important; transition-duration:260ms !important; }
+  html:not(#_) body:not(#_) .m10-t:active svg{ transform:scale(.86) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-t.pop svg{ animation:m10Pop 420ms var(--m10-spring) both !important; animation-duration:420ms !important; }
+  @keyframes m10Pop{ 0%{ transform:scale(.8) translateY(2px); } 55%{ transform:scale(1.14) translateY(-1px); } 100%{ transform:none; } }
+  html:not(#_) body:not(#_) .m10-t:active, html:not(#_) body:not(#_) .m10-t:focus{ transform:none !important; outline:none !important; }
+  html:not(#_) body:not(#_) .m10-t:focus-visible{ outline:2px solid rgba(232,97,58,.5) !important; outline-offset:-4px; }
+
+  /* the create button: a glowing orange gem in the middle slot */
+  html:not(#_) body:not(#_) .m10-plus{ position:relative; z-index:2; justify-self:center; width:54px; height:54px; border-radius:50%; border:0; padding:0; cursor:pointer; color:#fff;
+    background:var(--m10-acc-g) !important; display:grid; place-items:center;
+    box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(0,0,0,.12) inset, 0 12px 24px -10px rgba(232,97,58,.85), 0 0 0 4px rgba(232,97,58,.10) !important;
+    -webkit-tap-highlight-color:transparent; }
+  html:not(#_) body:not(#_) .m10-plus svg{ width:24px; height:24px; stroke-width:2.3; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-plus svg{ transition:transform 360ms var(--m10-spring) !important; transition-property:transform !important; transition-duration:360ms !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-plus{ transition:transform 200ms var(--m10-ease), box-shadow 200ms var(--m10-ease) !important; transition-property:transform, box-shadow !important; transition-duration:200ms !important; }
+  html:not(#_) body:not(#_) .m10-plus:active{ transform:scale(.92) !important; }
+  html:not(#_) body:not(#_).m10-create .m10-plus svg{ transform:rotate(45deg); }
+
+  html:not(#_) body:not(#_) .page{ padding-bottom:calc(124px + env(safe-area-inset-bottom)) !important; }
+  html:not(#_) body:not(#_) #m8-savebar{ bottom:calc(92px + env(safe-area-inset-bottom)) !important; }
+  html:not(#_) body:not(#_) #m8-hud{ bottom:calc(98px + env(safe-area-inset-bottom)) !important; }
+}
+@media screen and (min-width:600px) and (max-width:900px){
+  html:not(#_) body:not(#_) .m10-bar{ max-width:480px; height:70px; }
+  html:not(#_) body:not(#_) .m10-l{ font-size:11px; }
+}
+@media (prefers-reduced-motion: reduce){
+  html:not(#_#_#_) body:not(#_#_#_) .m10-lens, html:not(#_#_#_) body:not(#_#_#_) .m10-t svg, html:not(#_#_#_) body:not(#_#_#_) .m10-plus svg, html:not(#_#_#_) body:not(#_#_#_) .page.active{ transition:none !important; animation:none !important; }
+}
+
+/* ══ LIST CARDS (phone + tablet): the ⋯ button sits beside the details, no empty row ══ */
+@media screen and (max-width:900px){
+  html:not(#_) body:not(#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody td.m5-act{ top:44px !important; bottom:auto !important; right:12px !important; }
+  html:not(#_) body:not(#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody td.m5-act .row-menu-btn{ width:34px !important; height:34px !important; min-height:0 !important; border-radius:50% !important;
+    background:var(--k-card) !important; border:0 !important; box-shadow:none !important; display:grid !important; place-items:center !important; padding:0 !important; }
+  html:not(#_) body:not(#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) .m5c-meta{ padding-right:44px; }
+  html:not(#_) body:not(#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) .m5c-foot{ min-height:0 !important; padding-right:0 !important; margin-top:8px !important; }
+  html:not(#_) body:not(#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) .m5c-foot:empty{ display:none !important; }
+  html:not(#_) body:not(#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) .m5c-amt{ font-weight:600 !important; font-variant-numeric:tabular-nums; }
+}
+
+@media print{ #m10-dock, #m10-mp, #m10-mp-scrim{ display:none !important; } body::before{ display:none !important; } }
 </style>
 <script id="m5-js">/* ══════════════════════════════════════════════════════════════════════
    M8 · CORE — one icon set, safe printing, real document previews.
@@ -24733,9 +24974,11 @@ html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html
     src.tabIndex = -1;
     src._m8proxy = px; px._m8src = src;
 
-    var paint = function(){
+    var paint = function(force){
       var v = DESC.get.call(src);
-      if(document.activeElement !== px) px.value = show(v, month);
+      /* a value picked from the calendar must show even while the box has focus —
+         otherwise the old text is written back on blur and the pick is lost */
+      if(force === true || document.activeElement !== px) px.value = show(v, month);
       hintEl.textContent = document.activeElement === px ? '' : '';
       wrap.classList.toggle('has-v', !!v);
     };
@@ -24748,8 +24991,8 @@ html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html
         get:function(){ return DESC_D.get.call(src); },
         set:function(v){ DESC_D.set.call(src, v); paint(); } });
     }catch(e){}
-    src.addEventListener('change', paint);
-    src.addEventListener('input', paint);
+    src.addEventListener('change', function(){ paint(true); });
+    src.addEventListener('input', function(){ paint(true); });
     src.addEventListener('focus', function(){ if(!px.readOnly && !px.disabled) px.focus(); });
 
     var commit = function(fromEnter){
@@ -28836,6 +29079,236 @@ html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html
   window.amqFit = function(){ fitZoom(); };
   window.amqPrint = function(){ print(); };
   M8.quote = { open:open, print:print, save:saveRec, lib:openLib, doc:function(){ return serialize(); }, paginate:paginate, newDoc:newDoc, undo:undo, redo:redo, _fromOld:fromOldHTML };
+})();
+</script>
+<script>/* ══════════════════════════════════════════════════════════════════════
+   M10 · premium layer — glass dock, page motion, menu highlight, month
+   picker. Presentation only: it calls the app's own navigation functions
+   (showPage / navMain / M8.openCreate) and never touches data.
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var M8 = window.M8; if(!M8) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var icon = M8.icon;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var DOCKQ = window.matchMedia('(max-width:900px)');
+  function mode(){ return DB.mode === 'sales' ? 'sales' : 'purchase'; }
+
+  /* ── 1 · DOCK ─────────────────────────────────────────────────────────
+     Five equal slots, so the bar never changes size. A single glass lens
+     glides under the active tab (transform only, on the GPU). */
+  var SLOTS = ['dashboard', 'records', 'plus', 'payments', 'parties'];
+  var IC = { dashboard:'home', records:'invoice', payments:'pay', parties:'parties' };
+  function label(t){
+    var L = M8.labels ? M8.labels() : { records:'Bills', payments:'Paid', parties:'Vendors' };
+    return t === 'dashboard' ? 'Home' : L[t];
+  }
+  function buildDock(){
+    if($('m10-dock')) return;
+    var nav = document.createElement('nav');
+    nav.id = 'm10-dock'; nav.setAttribute('aria-label', 'Main');
+    nav.innerHTML = '<div class="m10-bar" id="m10-bar"><span class="m10-lens" id="m10-lens" aria-hidden="true"></span>' +
+      SLOTS.map(function(t){
+        if(t === 'plus') return '<button type="button" class="m10-plus" id="m10-plus" aria-label="Create new">' + icon('plus') + '</button>';
+        return '<button type="button" class="m10-t" data-tab="' + t + '">' + icon(IC[t]) + '<span class="m10-l"></span></button>';
+      }).join('') + '</div>';
+    document.body.appendChild(nav);
+    var bar = $('m10-bar');
+    var swiped = false;
+    bar.addEventListener('click', function(e){
+      if(swiped){ swiped = false; return; }
+      var b = e.target.closest('.m10-t'); if(!b) return;
+      goTab(b.dataset.tab, b);
+    });
+    var plus = $('m10-plus');
+    plus.addEventListener('click', function(){
+      if(Date.now() - (window.__m10HoldAt || 0) < 600) return;
+      M8.vibe && M8.vibe(6);
+      if(M8.openCreate) M8.openCreate();
+      watchSheet();
+    });
+    if(M8.pressHold) M8.pressHold(plus, function(){ window.__m10HoldAt = Date.now(); M8.vibe && M8.vibe(16); navMain(mode(), 'entry'); });
+    /* swipe the bar sideways to flip Purchase ⇄ Sales (same as before) */
+    var sx = 0, sy = 0, tracking = false;
+    bar.addEventListener('touchstart', function(e){ var t = e.touches[0]; sx = t.clientX; sy = t.clientY; tracking = true; swiped = false; }, { passive:true });
+    bar.addEventListener('touchmove', function(e){
+      if(!tracking) return; var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if(Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.6){ tracking = false; swiped = true; if(M8.switchMode) M8.switchMode(dx < 0 ? 'sales' : 'purchase'); }
+    }, { passive:true });
+    bar.addEventListener('touchend', function(){ tracking = false; setTimeout(function(){ swiped = false; }, 350); }, { passive:true });
+    watchSheet();
+    syncDock(true);
+  }
+  /* the + turns into × while the create sheet is open (the sheet is built on first use) */
+  var sheetSeen = null;
+  function watchSheet(){
+    var c = $('m5-create'); if(!c || c === sheetSeen) { if(c) document.body.classList.toggle('m10-create', c.classList.contains('open')); return; }
+    sheetSeen = c;
+    new MutationObserver(function(){ document.body.classList.toggle('m10-create', c.classList.contains('open')); }).observe(c, { attributes:true, attributeFilter:['class'] });
+    document.body.classList.toggle('m10-create', c.classList.contains('open'));
+  }
+  function goTab(t, btn){
+    var pg = M8.page();
+    M8.vibe && M8.vibe(4);
+    if(btn){ btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
+    /* move the lens straight away, before the page work starts */
+    setLens(SLOTS.indexOf(t), false);
+    if(t === 'dashboard'){
+      if(pg === 'dashboard'){ var sc = $('app-scroll'); if(sc) sc.scrollTo({ top:0, behavior:'smooth' }); return; }
+      window._heroView = mode();
+      requestAnimationFrame(function(){ showPage('dashboard'); });
+    } else if(pg === t){
+      var sc2 = $('app-scroll'); if(sc2) sc2.scrollTo({ top:0, behavior:'smooth' });
+    } else {
+      requestAnimationFrame(function(){ navMain(mode(), t); });
+    }
+  }
+  function setLens(i, instant){
+    var bar = $('m10-bar'), lens = $('m10-lens'); if(!bar || !lens) return;
+    var on = i >= 0 && SLOTS[i] !== 'plus';
+    if(instant) lens.classList.add('instant');
+    if(on) lens.style.setProperty('--i', i);
+    bar.classList.toggle('has-on', on);
+    bar.querySelectorAll('.m10-t').forEach(function(b){
+      var hit = on && b.dataset.tab === SLOTS[i];
+      b.classList.toggle('on', hit);
+      if(hit) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    if(instant) requestAnimationFrame(function(){ requestAnimationFrame(function(){ lens.classList.remove('instant'); }); });
+  }
+  function syncDock(instant){
+    document.querySelectorAll('#m10-dock .m10-t').forEach(function(b){
+      var l = b.querySelector('.m10-l'), txt = label(b.dataset.tab);
+      if(l.textContent !== txt) l.textContent = txt;
+      b.setAttribute('aria-label', txt);
+    });
+    var pg = M8.page(); if(pg === 'party') pg = 'parties';
+    setLens(SLOTS.indexOf(pg), instant);
+  }
+
+  /* ── 2 · PAGE MOTION ──────────────────────────────────────────────────
+     Tabs glide sideways in the direction you moved; pages opened from the
+     menu rise a few pixels. Transform + opacity only. */
+  var ORDER = { dashboard:0, records:1, entry:2, payments:3, parties:4, party:5 };
+  var lastPage = null;
+  function motion(id){
+    var p = $('page-' + id); if(!p || reduce.matches) { lastPage = id; return; }
+    if(id === lastPage || id === 'party'){ lastPage = id; return; }
+    var a = ORDER[lastPage], b = ORDER[id];
+    var cls = (a !== undefined && b !== undefined) ? (b > a ? 'm10-in-r' : 'm10-in-l') : 'm10-in-u';
+    lastPage = id;
+    p.classList.remove('m10-in-r', 'm10-in-l', 'm10-in-u'); void p.offsetWidth; p.classList.add(cls);
+    clearTimeout(p._m10t); p._m10t = setTimeout(function(){ p.classList.remove(cls); }, 360);
+  }
+
+  /* ── 3 · MENU: Items & lists lights up its own row ── */
+  function syncMenu(id){
+    document.querySelectorAll('.zm-item[data-nav="manage:items"]').forEach(function(it){ it.classList.toggle('m10-on', id === 'manage'); });
+  }
+
+  /* ── 4 · MONTH PICKER ─────────────────────────────────────────────────
+     The phone's own month wheel was unreliable (and on some phones the
+     pick was lost). This one works the same everywhere: tap a month. */
+  var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var MON_L = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var mp = null, scrim = null, cur = null, year = 0;
+  var coarse = window.matchMedia('(pointer:coarse)');
+  function ensurePicker(){
+    if(mp) return;
+    scrim = document.createElement('div'); scrim.id = 'm10-mp-scrim';
+    mp = document.createElement('div'); mp.id = 'm10-mp'; mp.setAttribute('role', 'dialog'); mp.setAttribute('aria-label', 'Pick a month');
+    document.body.appendChild(scrim); document.body.appendChild(mp);
+    scrim.addEventListener('click', closePicker);
+    mp.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if(!b) return;
+      e.preventDefault(); e.stopPropagation();
+      if(b.dataset.y){ year += +b.dataset.y; paintPicker(); return; }
+      if(b.dataset.m){ pick(year + '-' + b.dataset.m); return; }
+      if(b.dataset.a === 'now'){ var d = new Date(); pick(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); return; }
+      if(b.dataset.a === 'clear'){ pick(''); return; }
+    });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && mp.classList.contains('open')) closePicker(); });
+    window.addEventListener('resize', closePicker, { passive:true });
+  }
+  function paintPicker(){
+    var v = cur ? cur.src.value : '', d = new Date(), nowK = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    mp.innerHTML =
+      '<div class="m10-mp-h"><button type="button" data-y="-1" aria-label="Previous year">' + icon('left') + '</button><b>' + year + '</b>' +
+      '<button type="button" data-y="1" aria-label="Next year">' + icon('right') + '</button></div>' +
+      '<div class="m10-mp-g">' + MON.map(function(m, i){
+        var k = year + '-' + String(i + 1).padStart(2, '0');
+        return '<button type="button" data-m="' + String(i + 1).padStart(2, '0') + '" class="' + (k === v ? 'on' : '') + (k === nowK ? ' now' : '') + '" aria-label="' + MON_L[i] + ' ' + year + '">' + m + '</button>';
+      }).join('') + '</div>' +
+      '<div class="m10-mp-f"><button type="button" class="clr" data-a="clear">Clear</button><button type="button" data-a="now">This month</button></div>';
+  }
+  function openPicker(wrap){
+    ensurePicker();
+    var src = wrap.querySelector('input.m8-dsrc'), px = wrap.querySelector('input.m8-date');
+    if(!src || !px || px.disabled) return;
+    cur = { wrap:wrap, src:src, px:px };
+    var v = src.value; year = v ? +v.slice(0, 4) : new Date().getFullYear();
+    paintPicker();
+    wrap.classList.add('m10-open');
+    mp.classList.add('open'); scrim.classList.add('open');
+    var r = wrap.getBoundingClientRect(), w = mp.offsetWidth, h = mp.offsetHeight;
+    var left = Math.min(Math.max(10, r.right - w), window.innerWidth - w - 10);
+    var top = r.bottom + 8; if(top + h > window.innerHeight - 10) top = Math.max(10, r.top - h - 8);
+    mp.style.left = left + 'px'; mp.style.top = top + 'px';
+    M8.vibe && M8.vibe(4);
+  }
+  function closePicker(){
+    if(!mp) return;
+    mp.classList.remove('open'); scrim.classList.remove('open');
+    if(cur) cur.wrap.classList.remove('m10-open');
+    cur = null;
+  }
+  function pick(v){
+    if(!cur) return;
+    var c = cur;
+    if(document.activeElement === c.px) c.px.blur();
+    c.src.value = v;
+    c.px.value = v ? MON[+v.slice(5, 7) - 1] + ' ' + v.slice(0, 4) : '';
+    c.wrap.classList.toggle('has-v', !!v);
+    c.wrap.classList.remove('bad');
+    c.src.dispatchEvent(new Event('input', { bubbles:true }));
+    c.src.dispatchEvent(new Event('change', { bubbles:true }));
+    closePicker();
+    M8.vibe && M8.vibe(8);
+  }
+  function monthWrap(el){ var w = el && el.closest ? el.closest('.m8-dw.is-month') : null; return w; }
+  /* calendar button on a month field → our picker (runs before the old handler) */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.m8-dw.is-month .m8-dbtn');
+    if(btn){ e.preventDefault(); e.stopImmediatePropagation(); openPicker(monthWrap(btn)); return; }
+    /* on touch screens tapping the month box opens the picker instead of the keyboard */
+    var px = e.target.closest && e.target.closest('.m8-dw.is-month > input.m8-date');
+    if(px && coarse.matches){ e.preventDefault(); openPicker(monthWrap(px)); }
+  }, true);
+  function lockMonthTyping(){
+    if(!coarse.matches) return;
+    document.querySelectorAll('.m8-dw.is-month > input.m8-date').forEach(function(px){
+      if(px.dataset.m10) return; px.dataset.m10 = '1';
+      px.readOnly = true; px.setAttribute('inputmode', 'none');
+    });
+  }
+
+  /* ── BOOT ── */
+  function boot(){
+    buildDock();
+    lastPage = M8.page();
+    M8.after('showPage', function(id){ syncDock(false); motion(id); syncMenu(id); closePicker(); setTimeout(lockMonthTyping, 60); });
+    M8.after('setAppMode', function(){ syncDock(false); });
+    if(M8.switchMode && !M8.switchMode.__m10){
+      var sw = M8.switchMode; M8.switchMode = function(){ var r = sw.apply(this, arguments); syncDock(false); return r; }; M8.switchMode.__m10 = true;
+    }
+    DOCKQ.addEventListener ? DOCKQ.addEventListener('change', function(){ syncDock(true); }) : null;
+    syncMenu(M8.page());
+    setTimeout(function(){ lockMonthTyping(); syncDock(true); }, 400);
+    new MutationObserver(function(){ lockMonthTyping(); }).observe(document.body, { childList:true });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
+  else setTimeout(boot, 0);
 })();
 </script>
 </body>
