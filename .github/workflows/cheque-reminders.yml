@@ -1,0 +1,23 @@
+name: Cheque reminders
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 minutes (GitHub may run it a few minutes late)
+  workflow_dispatch: {}      # lets you press "Run workflow" to test
+concurrency: { group: cheque-reminders, cancel-in-progress: false }
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install --omit=dev --no-audit --no-fund
+        working-directory: reminders
+      - run: node send.js
+        working-directory: reminders
+        env:
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          FIREBASE_DB_URL: https://al-madhi-ledger-default-rtdb.firebaseio.com
+          FIREBASE_AUTH: ${{ secrets.FIREBASE_AUTH }}
