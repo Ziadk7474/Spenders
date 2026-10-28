@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#EFEFEF">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="Al Madhi">
@@ -24292,68 +24292,39 @@ html:not(#_) body:not(#_) button > .m9i:only-child{ margin-right:0; }
 html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch > td{ display:none !important; }
 
 /* ══════════════════════════════════════════════════════════════════════
-   M10 · premium layer — glass dock, page motion, calm numbers, status dots,
-   soft glow + glass, round logos, tidy list cards, month picker.
+   M10 · finishing layer — solid surfaces, one glass nav pill, orange glow,
+   solid side menu, calm numbers, text statuses, round logos, quiet motion,
+   transparent header, full-screen, month picker, haptics sheet.
    Presentation only: no data, no saving, no Firebase.
    html:not(#_) body:not(#_) / html:not(#_#_#_) body:not(#_#_#_) are replaced at build time (see build.py).
    ══════════════════════════════════════════════════════════════════════ */
-#m10-dock, #m10-mp{ display:none; }
+#m10-dock, #m10-mp, #m10-hs{ display:none; }
 
 @media screen{
 
-/* ── 0 · TOKENS ── */
-html:not(#_) body:not(#_), html:not(#_) body:not(#_).mode-sales, html:not(#_) body:not(#_).mode-purchase, html:not(#_) body:not(#_).mode-neutral{
-  --m10-glass:rgba(255,255,255,.80);
-  --m10-glass-hi:rgba(255,255,255,.92);
-  --m10-glass-b:rgba(255,255,255,.78);
-  --m10-edge:rgba(18,18,18,.06);
-  --m10-lift:0 22px 44px -22px rgba(24,24,32,.38), 0 3px 10px -4px rgba(24,24,32,.10);
-  --m10-glow:0 0 0 1px rgba(232,97,58,.10), 0 10px 26px -12px rgba(232,97,58,.55);
-  --m10-acc-g:linear-gradient(145deg, #f58a5f 0%, #e8613a 48%, #d84e28 100%);
-  --m10-spring:cubic-bezier(.34,1.32,.52,1);
-  --m10-ease:cubic-bezier(.22,.9,.24,1);
+/* ── 0 · SOLID SURFACES: no frosted glass anywhere except the nav pill ── */
+html:not(#_#_#_) body:not(#_#_#_) *, html:not(#_#_#_) body:not(#_#_#_) *::before, html:not(#_#_#_) body:not(#_#_#_) *::after{ -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+html:not(#_) body:not(#_), html:not(#_) body:not(#_).mode-sales, html:not(#_) body:not(#_).mode-purchase, html:not(#_) body:not(#_).mode-neutral, html:not(#_) body:not(#_).md-sales, html:not(#_) body:not(#_).md-purchase{
+  --m8-glass:#ffffff !important; --m8-glass-b:var(--k-line) !important; --m8-scrim:rgba(18,18,22,.34) !important;
+  --m10-ease:cubic-bezier(.22,.9,.24,1); --m10-spring:cubic-bezier(.32,1.18,.5,1);
 }
-html:not(#_) body:not(#_).dark-mode, html:not(#_) body:not(#_).dark-mode.mode-sales, html:not(#_) body:not(#_).dark-mode.mode-purchase, html:not(#_) body:not(#_).dark-mode.mode-neutral{
-  --m10-glass:rgba(30,30,34,.80);
-  --m10-glass-hi:rgba(255,255,255,.11);
-  --m10-glass-b:rgba(255,255,255,.10);
-  --m10-edge:rgba(255,255,255,.06);
-  --m10-lift:0 22px 44px -18px rgba(0,0,0,.85), 0 2px 8px -2px rgba(0,0,0,.5);
-  --m10-glow:0 0 0 1px rgba(240,106,66,.16), 0 10px 28px -10px rgba(240,106,66,.6);
-  --m10-acc-g:linear-gradient(145deg, #ff9468 0%, #f06a42 50%, #dc5530 100%);
+html:not(#_) body:not(#_).dark-mode, html:not(#_) body:not(#_).dark-mode.mode-sales, html:not(#_) body:not(#_).dark-mode.mode-purchase, html:not(#_) body:not(#_).dark-mode.mode-neutral, html:not(#_) body:not(#_).dark-mode.md-sales, html:not(#_) body:not(#_).dark-mode.md-purchase{
+  --m8-glass:#1d1d20 !important; --m8-glass-b:var(--k-line) !important; --m8-scrim:rgba(0,0,0,.55) !important;
 }
 
-/* ── 1 · AMBIENT GLOW behind the app (fixed, one layer, no repaint on scroll) ── */
+/* ── 1 · ORANGE GLOW behind the app — strongest at the top right ── */
 html:not(#_) body:not(#_)::before{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
   background:
-    radial-gradient(60vmax 40vmax at 100% -6%, rgba(232,97,58,.13), rgba(232,97,58,0) 62%),
+    radial-gradient(34vmax 26vmax at 96% 0%, rgba(240,112,70,.30), rgba(240,112,70,0) 70%),
+    radial-gradient(70vmax 46vmax at 100% -4%, rgba(232,97,58,.18), rgba(232,97,58,0) 64%),
     radial-gradient(50vmax 34vmax at -10% 108%, rgba(232,97,58,.07), rgba(232,97,58,0) 60%); }
 html:not(#_) body:not(#_).dark-mode::before{
   background:
-    radial-gradient(60vmax 40vmax at 100% -6%, rgba(240,106,66,.16), rgba(240,106,66,0) 60%),
+    radial-gradient(34vmax 26vmax at 96% 0%, rgba(240,106,66,.30), rgba(240,106,66,0) 70%),
+    radial-gradient(70vmax 46vmax at 100% -4%, rgba(240,106,66,.16), rgba(240,106,66,0) 62%),
     radial-gradient(50vmax 34vmax at -10% 108%, rgba(240,106,66,.07), rgba(240,106,66,0) 60%); }
 
-/* ── 2 · GLASS on the floating layers (small areas only, so it stays fast) ── */
-html:not(#_) body:not(#_) .m8-switch{ background:var(--m10-glass) !important; border:1px solid var(--m10-glass-b) !important;
-  box-shadow:0 1px 0 var(--m10-glass-hi) inset, 0 8px 20px -14px rgba(0,0,0,.35) !important; }
-html:not(#_#_#_) body:not(#_#_#_) .m8-switch{ -webkit-backdrop-filter:blur(18px) saturate(1.7) !important; backdrop-filter:blur(18px) saturate(1.7) !important; }
-html:not(#_) body:not(#_) .m8-menu, html:not(#_) body:not(#_) #m9-rmenu, html:not(#_) body:not(#_) .row-menu-panel.open{
-  background:var(--m10-glass) !important; border:1px solid var(--m10-glass-b) !important; box-shadow:0 1px 0 var(--m10-glass-hi) inset, var(--m10-lift) !important; }
-html:not(#_#_#_) body:not(#_#_#_) .m8-menu, html:not(#_#_#_) body:not(#_#_#_) #m9-rmenu, html:not(#_#_#_) body:not(#_#_#_) .row-menu-panel.open{ -webkit-backdrop-filter:blur(24px) saturate(1.8) !important; backdrop-filter:blur(24px) saturate(1.8) !important; }
-html:not(#_) body:not(#_).dark-mode .m8-menu, html:not(#_) body:not(#_).dark-mode #m9-rmenu, html:not(#_) body:not(#_).dark-mode .row-menu-panel.open{ background:rgba(34,34,38,.82) !important; }
-/* modal backdrops: a soft frosted dim instead of a flat grey */
-html:not(#_) body:not(#_) .modal-overlay[style*="flex"], html:not(#_) body:not(#_) .m8-ov.open, html:not(#_) body:not(#_) .m8-menu-scrim.open, html:not(#_) body:not(#_) #m5-create.open{ background:rgba(18,18,22,.26) !important; }
-html:not(#_) body:not(#_).dark-mode .modal-overlay[style*="flex"], html:not(#_) body:not(#_).dark-mode .m8-ov.open, html:not(#_) body:not(#_).dark-mode .m8-menu-scrim.open, html:not(#_) body:not(#_).dark-mode #m5-create.open{ background:rgba(0,0,0,.5) !important; }
-html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"], html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open, html:not(#_#_#_) body:not(#_#_#_) .m8-menu-scrim.open, html:not(#_#_#_) body:not(#_#_#_) #m5-create.open{ -webkit-backdrop-filter:blur(7px) saturate(1.2) !important; backdrop-filter:blur(7px) saturate(1.2) !important; }
-html:not(#_) body:not(#_) .modal-overlay[style*="flex"] > .modal, html:not(#_) body:not(#_) .m8-ov.open > .m8-sheet{ box-shadow:0 1px 0 var(--m10-glass-hi) inset, 0 40px 90px -40px rgba(0,0,0,.55), 0 0 0 1px var(--m10-edge) !important; }
-
-/* cards: a fine top highlight so they read as soft glass panes */
-html:not(#_) body:not(#_) .m5-card, html:not(#_) body:not(#_) .m8-pcard, html:not(#_) body:not(#_) .m5-tile{ box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 0 0 1px var(--m10-edge), 0 14px 30px -26px rgba(0,0,0,.35) !important; }
-html:not(#_) body:not(#_).dark-mode .m5-card, html:not(#_) body:not(#_).dark-mode .m8-pcard, html:not(#_) body:not(#_).dark-mode .m5-tile{ box-shadow:0 1px 0 rgba(255,255,255,.05) inset, 0 0 0 1px var(--m10-edge) !important; }
-/* the main orange buttons get a soft glow + a light top edge */
-html:not(#_) body:not(#_) .m5-cta, html:not(#_) body:not(#_) .m8-btn.acc, html:not(#_) body:not(#_) .m8-btn.pri, html:not(#_) body:not(#_) .btn-primary, html:not(#_) body:not(#_) .btn.gold, html:not(#_) body:not(#_) .m5-btn.acc{ background-image:var(--m10-acc-g) !important; box-shadow:0 1px 0 rgba(255,255,255,.35) inset, var(--m10-glow) !important; }
-
-/* ── 3 · CALMER NUMBERS in the small dashboard tiles ── */
+/* ── 2 · CALMER NUMBERS in the small dashboard tiles ── */
 html:not(#_) body:not(#_) .m8-tile-h em{ font-size:12px !important; font-weight:500 !important; color:var(--k-ink3) !important; letter-spacing:0 !important; }
 html:not(#_) body:not(#_) .m8-tile-h .m5-h4{ white-space:nowrap; }
 html:not(#_) body:not(#_) .m8-age-r b, html:not(#_) body:not(#_) .m8-top-a{ font-size:12.5px !important; font-weight:550 !important; letter-spacing:-.005em; font-variant-numeric:tabular-nums; color:var(--k-ink) !important; }
@@ -24361,11 +24332,8 @@ html:not(#_) body:not(#_) .m8-age-r.hot b{ color:var(--k-acc) !important; }
 html:not(#_) body:not(#_) .m8-top-n b{ font-weight:550 !important; }
 html:not(#_) body:not(#_) .m5-bk b{ font-size:14px !important; font-weight:600 !important; }
 html:not(#_) body:not(#_) .m5-wstats b, html:not(#_) body:not(#_) .m5-cmpbars b{ font-weight:600 !important; }
-html:not(#_) body:not(#_) .m5-ci-side > b, html:not(#_) body:not(#_) .m5-fi .m5-ci-side > b{ font-weight:600 !important; font-variant-numeric:tabular-nums; }
-html:not(#_) body:not(#_) .m8-cq-s > b, html:not(#_) body:not(#_) .m8-le-s > b{ font-weight:600 !important; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m5-ci-side > b, html:not(#_) body:not(#_) .m5-fi .m5-ci-side > b, html:not(#_) body:not(#_) .m8-cq-s > b, html:not(#_) body:not(#_) .m8-le-s > b{ font-weight:600 !important; font-variant-numeric:tabular-nums; }
 html:not(#_) body:not(#_) .m8-age-b, html:not(#_) body:not(#_) .m8-top-b{ height:5px !important; }
-
-/* the three activity tiles only sit side by side when there is room; otherwise 2 + 1 */
 @media (min-width:901px) and (max-width:1599px){
   html:not(#_) body:not(#_) .m5-act-grid{ grid-template-columns:1fr 1fr !important; }
   html:not(#_) body:not(#_) .m5-act-grid .m5-bars{ grid-column:1 / -1 !important; }
@@ -24373,150 +24341,160 @@ html:not(#_) body:not(#_) .m8-age-b, html:not(#_) body:not(#_) .m8-top-b{ height
 html:not(#_) body:not(#_) .m5-wstats b{ font-size:14px !important; white-space:nowrap !important; overflow:visible !important; text-overflow:clip !important; }
 html:not(#_) body:not(#_) .m5-wstats small{ white-space:normal !important; }
 
-/* ── 4 · STATUS: a small glowing dot + text instead of a coloured capsule ── */
-html:not(#_) body:not(#_) .m5-st, html:not(#_) body:not(#_) .m8-st{ display:inline-flex !important; align-items:center; gap:6px; height:auto !important; padding:0 !important; border-radius:0 !important;
-  background:none !important; box-shadow:none !important; font:500 11.5px/1.25 var(--k-font) !important; letter-spacing:0; color:var(--k-ink2) !important; white-space:nowrap; }
-html:not(#_) body:not(#_) .m5-st::before, html:not(#_) body:not(#_) .m8-st::before{ content:""; flex:0 0 6px; width:6px; height:6px; border-radius:50%; background:var(--k-ink3); }
+/* ── 3 · STATUS: plain coloured text — no capsule, no dot ── */
+html:not(#_) body:not(#_) .m5-st, html:not(#_) body:not(#_) .m8-st{ display:inline-flex !important; align-items:center; height:auto !important; padding:0 !important; border-radius:0 !important;
+  background:none !important; box-shadow:none !important; font:550 11.5px/1.25 var(--k-font) !important; letter-spacing:0; color:var(--k-ink2) !important; white-space:nowrap; }
 html:not(#_) body:not(#_) .m5-st.late, html:not(#_) body:not(#_) .m8-st.late{ color:var(--k-neg) !important; }
-html:not(#_) body:not(#_) .m5-st.late::before, html:not(#_) body:not(#_) .m8-st.late::before{ background:var(--k-neg); box-shadow:0 0 0 3px rgba(229,72,77,.14), 0 0 8px rgba(229,72,77,.55); }
-html:not(#_) body:not(#_) .m5-st.due, html:not(#_) body:not(#_) .m8-st.due{ color:var(--k-acc) !important; font-weight:600 !important; }
-html:not(#_) body:not(#_) .m5-st.due::before, html:not(#_) body:not(#_) .m8-st.due::before{ background:var(--k-acc); box-shadow:0 0 0 3px rgba(232,97,58,.16), 0 0 10px rgba(232,97,58,.7); }
-html:not(#_#_#_) body:not(#_#_#_) .m5-st.due::before, html:not(#_#_#_) body:not(#_#_#_) .m8-st.due::before{ animation:m10Beat 1.8s ease-in-out infinite !important; animation-duration:1.8s !important; }
-html:not(#_) body:not(#_) .m5-st.wait::before, html:not(#_) body:not(#_) .m8-st.wait::before{ background:var(--k-wait); box-shadow:0 0 0 3px rgba(194,122,26,.14); }
-html:not(#_) body:not(#_) .m5-st.done::before, html:not(#_) body:not(#_) .m8-st.ok::before, html:not(#_) body:not(#_) .m5-st.pay::before, html:not(#_) body:not(#_) .m8-st.pay::before{ background:var(--k-pos); box-shadow:0 0 0 3px rgba(31,157,85,.14); }
-html:not(#_) body:not(#_) .m5-st.done, html:not(#_) body:not(#_) .m8-st.ok, html:not(#_) body:not(#_) .m5-st.pay, html:not(#_) body:not(#_) .m8-st.pay{ color:var(--k-ink2) !important; }
-@keyframes m10Beat{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(.72); opacity:.65; } }
-/* record cards: the status built inline — same dot style */
-html:not(#_) body:not(#_) .m5c-st{ padding:0 !important; background:none !important; border-radius:0 !important; gap:6px; }
-html:not(#_#_#_) body:not(#_#_#_) .m5c-st span[style*="border-radius:50%"]{ background:currentColor !important; box-shadow:0 0 0 3px color-mix(in srgb, currentColor 15%, transparent); }
+html:not(#_) body:not(#_) .m5-st.due, html:not(#_) body:not(#_) .m8-st.due{ color:var(--k-acc) !important; font-weight:650 !important; }
+html:not(#_) body:not(#_) .m5-st.wait, html:not(#_) body:not(#_) .m8-st.wait{ color:var(--k-wait) !important; }
+html:not(#_) body:not(#_) .m5-st.done, html:not(#_) body:not(#_) .m8-st.ok, html:not(#_) body:not(#_) .m5-st.pay, html:not(#_) body:not(#_) .m8-st.pay{ color:var(--k-pos) !important; }
+html:not(#_) body:not(#_) .m5c-st{ padding:0 !important; background:none !important; border-radius:0 !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m5c-st span[style*="border-radius:50%"], html:not(#_#_#_) body:not(#_#_#_) td span[style*="border-radius:50%"][style*="width:6px"]{ display:none !important; }
 
-/* ── 5 · SIDE MENU: soft rounded glass highlight, never a solid block (was white in dark mode) ── */
+/* ── 4 · SIDE MENU: clean rows, solid orange for the page you are on ── */
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-ghead, .zm-subitem){ border-radius:999px !important; background:transparent !important; box-shadow:none !important; outline:none !important; -webkit-tap-highlight-color:transparent !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-ghead){ color:var(--k-ink) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-ghead, .zm-subitem)::before, html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-ghead)::after{ display:none !important; }
+/* icons never sit in a box */
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-ghead) .zm-ic, html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-group.open .zm-ic, html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-subitem .m8-subic{
+  background:transparent !important; border:0 !important; border-color:transparent !important; box-shadow:none !important; border-radius:0 !important; filter:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-ghead) .zm-ic{ color:var(--k-ink2) !important; stroke:currentColor !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-group.open > .zm-ghead{ font-weight:600 !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-group.open > .zm-ghead .zm-ic{ color:var(--k-ink) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-subitem{ color:var(--k-ink2) !important; font-weight:500 !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-subitem .m8-subic{ color:var(--k-ink3) !important; }
+@media (hover:hover){
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem):hover:not(.active):not(.m10-on){ background:var(--k-card) !important; }
+}
+html:not(#_#_#_) body:not(#_#_#_) #drawer .zmenu :is(.zm-item, .zm-ghead, .zm-subitem):active:not(.active){ background:var(--k-card) !important; }
+/* the page you are on: solid orange, like the New entry button */
 html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on){
-  background:linear-gradient(180deg, rgba(232,97,58,.13), rgba(232,97,58,.07)) !important; color:var(--k-ink) !important;
-  border-radius:999px !important; box-shadow:0 0 0 1px rgba(232,97,58,.16) inset, 0 8px 20px -14px rgba(232,97,58,.7) !important; font-weight:600 !important; }
-html:not(#_#_#_) body:not(#_#_#_).dark-mode :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on){
-  background:linear-gradient(180deg, rgba(240,106,66,.22), rgba(240,106,66,.12)) !important; color:#fff !important;
-  box-shadow:0 0 0 1px rgba(240,106,66,.26) inset, 0 8px 22px -12px rgba(240,106,66,.6) !important; }
-html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on) :is(svg, .zm-ic){
-  color:var(--k-acc) !important; stroke:var(--k-acc) !important; background:transparent !important; border-color:transparent !important; box-shadow:none !important; filter:drop-shadow(0 0 6px rgba(232,97,58,.45)); }
-html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-item .zm-ic, html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-subitem .m8-subic{ background:transparent !important; border-color:transparent !important; box-shadow:none !important; }
-html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item, .zm-subitem)::before{ display:none !important; }
-html:not(#_) body:not(#_) #sidebar .zm-item, html:not(#_) body:not(#_) #drawer .zm-item, html:not(#_) body:not(#_) #sidebar .zm-subitem, html:not(#_) body:not(#_) #drawer .zm-subitem, html:not(#_) body:not(#_) #sidebar .zm-ghead, html:not(#_) body:not(#_) #drawer .zm-ghead{ border-radius:999px !important; outline:none !important; -webkit-tap-highlight-color:transparent !important; }
-html:not(#_) body:not(#_) .zm-item:focus, html:not(#_) body:not(#_) .zm-subitem:focus, html:not(#_) body:not(#_) .zm-ghead:focus{ outline:none !important; }
-html:not(#_) body:not(#_) .zm-item:focus-visible, html:not(#_) body:not(#_) .zm-subitem:focus-visible{ box-shadow:0 0 0 2px rgba(232,97,58,.45) inset !important; }
-html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu .zm-item.active > .zsb-plus{ background:rgba(232,97,58,.16) !important; color:var(--k-acc) !important; }
+  background:var(--k-acc) !important; background-image:none !important; color:#fff !important; font-weight:600 !important;
+  box-shadow:0 1px 0 rgba(255,255,255,.22) inset, var(--m8-glow-sm) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on) :is(svg, .zm-ic, .m8-subic, span){
+  color:#fff !important; stroke:#fff !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-item.active > .zsb-plus{ background:rgba(255,255,255,.22) !important; color:#fff !important; }
 
-/* ── 6 · ROUND LOGOS: splash + lock are always a perfect circle ── */
+/* ── 5 · ROUND LOGOS: splash + lock are always a perfect circle ── */
 html:not(#_) body:not(#_) .flo-logo, html:not(#_) body:not(#_) #firebase-loading-overlay .flo-logo{ width:84px !important; height:84px !important; aspect-ratio:1 / 1; }
-html:not(#_) body:not(#_) #firebase-loading-overlay .flo-logo svg, html:not(#_) body:not(#_) .flo-logo svg{ width:84px !important; height:84px !important; aspect-ratio:1 / 1; border-radius:50% !important; object-fit:cover; }
+html:not(#_) body:not(#_) #firebase-loading-overlay .flo-logo svg, html:not(#_) body:not(#_) .flo-logo svg{ width:84px !important; height:84px !important; aspect-ratio:1 / 1; border-radius:50% !important; }
 html:not(#_) body:not(#_) .lock-logo-wrap svg, html:not(#_) body:not(#_) #lock-overlay .lock-logo-wrap svg{ width:80px !important; height:80px !important; aspect-ratio:1 / 1; border-radius:50% !important; }
+
+/* ── 6 · QUIET MOTION: buttons don't jump; only real buttons get a soft press ── */
+html:not(#_) body:not(#_) button:active:not(:disabled), html:not(#_) body:not(#_) .btn:active, html:not(#_) body:not(#_) [role=button]:active, html:not(#_) body:not(#_) .m5-chip:active, html:not(#_) body:not(#_) .chq-chip:active, html:not(#_) body:not(#_) .m8-chip:active, html:not(#_) body:not(#_) .m8-ib:active, html:not(#_) body:not(#_) .m8-day:active, html:not(#_) body:not(#_) .m8-stat:active{ transform:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m5-cta:active, html:not(#_#_#_) body:not(#_#_#_) .m8-btn:active:not(:disabled), html:not(#_#_#_) body:not(#_#_#_) .m5-btn:active, html:not(#_#_#_) body:not(#_#_#_) .btn-primary:active, html:not(#_#_#_) body:not(#_#_#_) .m8-pact:active, html:not(#_#_#_) body:not(#_#_#_) .m5-create-it:active{ transform:scale(.97) !important; }
+html:not(#_) body:not(#_) .m8-dw > .m8-dbtn, html:not(#_) body:not(#_) .m8-dw > .m8-dbtn:active, html:not(#_) body:not(#_) .m8-dw > .m8-dbtn:hover{ transform:translateY(-50%) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-dw > .m8-dbtn{ transition:background-color .15s ease, color .15s ease !important; transition-property:background-color, color !important; }
+/* tab switch: a short, quiet fade — no sliding */
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-fade{ animation:m10Fade 170ms ease-out both !important; animation-duration:170ms !important; }
+@keyframes m10Fade{ from{ opacity:.55; } to{ opacity:1; } }
 
 /* ── 7 · DATE / MONTH FIELDS: the calendar button sits inside the field ── */
 html:not(#_) body:not(#_) .m8-dw > .m8-dbtn{ right:8px !important; width:34px !important; height:34px !important; min-height:0 !important; padding:0 !important; border:0 !important; border-radius:50% !important;
   background:transparent !important; box-shadow:none !important; color:var(--k-ink3) !important; }
 html:not(#_) body:not(#_) .m8-dw > .m8-dbtn:hover, html:not(#_) body:not(#_) .m8-dw.m10-open > .m8-dbtn{ background:var(--k-card) !important; color:var(--k-acc) !important; }
-
-/* month picker (opens under the field, or as a sheet on phones) */
+/* month picker */
 html:not(#_) body:not(#_) #m10-mp{ display:none; position:fixed; z-index:13050; width:288px; padding:14px; border-radius:26px; color:var(--k-ink);
-  background:rgba(255,255,255,.95); border:1px solid var(--m10-glass-b); box-shadow:0 1px 0 var(--m10-glass-hi) inset, var(--m10-lift); font-family:var(--k-font); }
-html:not(#_#_#_) body:not(#_#_#_) #m10-mp{ -webkit-backdrop-filter:blur(26px) saturate(1.8) !important; backdrop-filter:blur(26px) saturate(1.8) !important; }
-html:not(#_) body:not(#_).dark-mode #m10-mp{ background:rgba(32,32,36,.96); }
+  background:var(--k-sheet); border:1px solid var(--k-line); box-shadow:0 24px 50px -22px rgba(0,0,0,.45); font-family:var(--k-font); }
 html:not(#_) body:not(#_) #m10-mp.open{ display:block; }
-html:not(#_#_#_) body:not(#_#_#_) #m10-mp.open{ animation:m8Pop 220ms var(--m10-spring) both !important; animation-duration:220ms !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-mp.open{ animation:m8Fade 160ms ease-out both !important; animation-duration:160ms !important; }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-h b{ font-size:16px; font-weight:650; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-h button{ width:36px; height:36px; border-radius:50%; border:0; background:var(--k-card); color:var(--k-ink); display:grid; place-items:center; cursor:pointer; padding:0; }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-h button svg{ width:18px; height:18px; }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-g{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-html:not(#_) body:not(#_) #m10-mp .m10-mp-g button{ height:44px; border-radius:999px; border:0; background:transparent; color:var(--k-ink); font:500 14px var(--k-font); cursor:pointer; position:relative; }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-g button{ height:44px; border-radius:999px; border:0; background:transparent; color:var(--k-ink); font:500 14px var(--k-font); cursor:pointer; }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-g button:hover{ background:var(--k-card); }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-g button.now{ color:var(--k-acc); font-weight:650; }
-html:not(#_) body:not(#_) #m10-mp .m10-mp-g button.on{ background:var(--m10-acc-g); color:#fff; font-weight:600; box-shadow:var(--m10-glow); }
+html:not(#_) body:not(#_) #m10-mp .m10-mp-g button.on{ background:var(--k-acc); color:#fff; font-weight:600; box-shadow:var(--m8-glow-sm); }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-f{ display:flex; justify-content:space-between; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--k-line); }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-f button{ height:36px; padding:0 14px; border-radius:999px; border:0; background:var(--k-card); color:var(--k-ink); font:600 13px var(--k-font); cursor:pointer; }
 html:not(#_) body:not(#_) #m10-mp .m10-mp-f button.clr{ background:transparent; color:var(--k-ink2); }
 html:not(#_) body:not(#_) #m10-mp-scrim{ display:none; position:fixed; inset:0; z-index:13040; background:transparent; }
 html:not(#_) body:not(#_) #m10-mp-scrim.open{ display:block; }
 
-/* ── 8 · PAGE MOTION: a short glide + fade in the direction you moved ── */
-html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-r{ animation:m10InR 320ms var(--m10-ease) both !important; animation-duration:320ms !important; }
-html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-l{ animation:m10InL 320ms var(--m10-ease) both !important; animation-duration:320ms !important; }
-html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms var(--m10-ease) both !important; animation-duration:300ms !important; }
-@keyframes m10InR{ from{ opacity:.25; transform:translate3d(22px,0,0); } to{ opacity:1; transform:none; } }
-@keyframes m10InL{ from{ opacity:.25; transform:translate3d(-22px,0,0); } to{ opacity:1; transform:none; } }
-@keyframes m10InU{ from{ opacity:.3; transform:translate3d(0,12px,0); } to{ opacity:1; transform:none; } }
+/* ── 8 · HAPTICS & SCREEN sheet ── */
+html:not(#_) body:not(#_) #m10-hs.open{ display:flex; }
+html:not(#_) body:not(#_) .m10-row{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; border-radius:20px; background:var(--k-card); margin-bottom:8px; }
+html:not(#_) body:not(#_) .m10-row b{ display:block; font-size:15px; font-weight:600; }
+html:not(#_) body:not(#_) .m10-row small{ display:block; font-size:12.5px; color:var(--k-ink3); margin-top:2px; line-height:1.35; }
+html:not(#_) body:not(#_) .m10-sw{ position:relative; flex:0 0 52px; width:52px; height:32px; border-radius:999px; border:0; padding:0; cursor:pointer; background:var(--k-line2); }
+html:not(#_) body:not(#_) .m10-sw::after{ content:""; position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+html:not(#_) body:not(#_) .m10-sw[aria-checked="true"]{ background:var(--k-acc); }
+html:not(#_) body:not(#_) .m10-sw[aria-checked="true"]::after{ transform:translateX(20px); }
+html:not(#_#_#_) body:not(#_#_#_) .m10-sw::after{ transition:transform 220ms var(--m10-spring) !important; transition-property:transform !important; transition-duration:220ms !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m10-sw{ transition:background-color 200ms ease !important; transition-property:background-color !important; transition-duration:200ms !important; }
+html:not(#_) body:not(#_) .m10-seg{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; border-radius:999px; background:var(--k-card); margin:4px 0 8px; }
+html:not(#_) body:not(#_) .m10-seg button{ height:40px; border-radius:999px; border:0; background:transparent; color:var(--k-ink2); font:600 13.5px var(--k-font); cursor:pointer; }
+html:not(#_) body:not(#_) .m10-seg button.on{ background:var(--k-tile); color:var(--k-ink); box-shadow:0 1px 3px rgba(0,0,0,.12); }
+html:not(#_) body:not(#_).dark-mode .m10-seg button.on{ background:var(--k-line2); }
+html:not(#_) body:not(#_) .m10-row.off{ opacity:.45; pointer-events:none; }
+html:not(#_) body:not(#_) .m10-note{ font-size:12px; color:var(--k-ink3); line-height:1.45; margin:10px 4px 0; }
 
 } /* end screen */
 
-/* ══ PHONE + TABLET (≤ 900): the new glass dock ══ */
+/* ══ PHONE + TABLET (≤ 900) ══ */
 @media screen and (max-width:900px){
+  /* transparent header that floats over the page — no band, no separate bar */
+  html:not(#_) body:not(#_) #topbar{ position:fixed !important; top:0; left:0; right:0; z-index:7000 !important; background:transparent !important; box-shadow:none !important; border:0 !important;
+    padding-top:calc(10px + env(safe-area-inset-top)) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #topbar::before{ display:block !important; content:"" !important; position:absolute; left:0; right:0; top:0; bottom:-22px; z-index:-1; pointer-events:none; opacity:0;
+    background:linear-gradient(180deg, var(--k-sheet) 0%, var(--k-sheet) 58%, rgba(255,255,255,0) 100%); }
+  html:not(#_#_#_) body:not(#_#_#_).dark-mode #topbar::before{ background:linear-gradient(180deg, var(--k-sheet) 0%, var(--k-sheet) 58%, rgba(21,21,23,0) 100%); }
+  html:not(#_#_#_) body:not(#_#_#_).m10-scrolled #topbar::before{ opacity:1; }
+  html:not(#_#_#_) body:not(#_#_#_) #topbar::before{ transition:opacity 200ms ease !important; transition-property:opacity !important; transition-duration:200ms !important; }
+  html:not(#_) body:not(#_) #app-scroll{ padding-top:var(--m10-hdr, calc(66px + env(safe-area-inset-top))) !important; }
+
   html:not(#_) body:not(#_) #m8-dock{ display:none !important; }
-  html:not(#_) body:not(#_) #m10-dock{ display:block; position:fixed; left:0; right:0; bottom:0; z-index:8000; pointer-events:none;
-    padding:0 14px calc(12px + env(safe-area-inset-bottom)); }
-  /* a soft veil so lists fade out under the bar instead of colliding with it */
-  html:not(#_) body:not(#_) #m10-dock::before{ content:""; position:absolute; left:0; right:0; bottom:0; height:120px; pointer-events:none;
-    background:linear-gradient(180deg, rgba(239,239,239,0), rgba(239,239,239,.72) 62%, rgba(239,239,239,.9)); }
-  html:not(#_) body:not(#_).dark-mode #m10-dock::before{ background:linear-gradient(180deg, rgba(12,12,13,0), rgba(12,12,13,.72) 62%, rgba(12,12,13,.92)); }
 
-  html:not(#_) body:not(#_) .m10-bar{ pointer-events:auto; position:relative; margin:0 auto; width:100%; max-width:430px; height:68px; padding:6px;
-    display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); align-items:center; border-radius:34px;
-    background:var(--m10-glass); border:1px solid var(--m10-glass-b);
-    box-shadow:0 1px 0 var(--m10-glass-hi) inset, 0 -1px 0 rgba(0,0,0,.03) inset, var(--m10-lift);
+  /* ── the nav: one glass pill (4 tabs) + a solid orange create button ── */
+  html:not(#_) body:not(#_) #m10-dock{ display:flex; align-items:center; justify-content:center; gap:10px; position:fixed; left:0; right:0; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:8000; pointer-events:none; }
+  html:not(#_) body:not(#_) .m10-bar{ pointer-events:auto; position:relative; display:grid; grid-template-columns:repeat(4, 58px); align-items:center; height:62px; padding:6px; border-radius:31px;
+    background:rgba(255,255,255,.74); border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 1px 0 rgba(255,255,255,.95) inset, 0 0 0 .5px rgba(18,18,18,.06), 0 18px 36px -18px rgba(24,24,32,.42), 0 2px 8px -3px rgba(24,24,32,.10);
     touch-action:pan-y; -webkit-user-select:none; user-select:none; isolation:isolate; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-bar{ -webkit-backdrop-filter:blur(26px) saturate(1.9) !important; backdrop-filter:blur(26px) saturate(1.9) !important; }
-  html:not(#_) body:not(#_).dark-mode .m10-bar{ box-shadow:0 1px 0 rgba(255,255,255,.08) inset, var(--m10-lift); }
-
-  /* the lens: one fixed-size glass capsule that glides under the active tab */
-  html:not(#_) body:not(#_) .m10-lens{ position:absolute; z-index:0; top:6px; left:6px; height:56px; width:calc((100% - 12px) / 5);
-    transform:translate3d(calc(var(--i, 0) * 100%), 0, 0); pointer-events:none; opacity:0; }
-  html:not(#_) body:not(#_) .m10-lens::before{ content:""; position:absolute; inset:0 3px; border-radius:28px;
-    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.74));
-    box-shadow:0 1px 0 #fff inset, 0 0 0 1px rgba(18,18,18,.05), 0 10px 22px -12px rgba(0,0,0,.35); }
-  html:not(#_) body:not(#_).dark-mode .m10-lens::before{ background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.07)); box-shadow:0 1px 0 rgba(255,255,255,.14) inset, 0 0 0 1px rgba(255,255,255,.06), 0 10px 24px -12px rgba(0,0,0,.8); }
-  /* glowing dot under the active label */
-  html:not(#_) body:not(#_) .m10-lens::after{ content:""; position:absolute; left:50%; bottom:5px; width:4px; height:4px; margin-left:-2px; border-radius:50%;
-    background:var(--k-acc); box-shadow:0 0 6px 1px rgba(232,97,58,.75); }
+  html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-bar{ -webkit-backdrop-filter:blur(24px) saturate(1.9) !important; backdrop-filter:blur(24px) saturate(1.9) !important; }
+  html:not(#_) body:not(#_).dark-mode .m10-bar{ background:rgba(36,36,40,.72); border-color:rgba(255,255,255,.09); box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 18px 36px -16px rgba(0,0,0,.85); }
+  /* one solid capsule slides under the active tab — fixed size, so nothing moves around */
+  html:not(#_) body:not(#_) .m10-lens{ position:absolute; z-index:0; top:6px; left:6px; width:58px; height:50px; border-radius:25px; background:var(--k-dark); pointer-events:none; opacity:0;
+    transform:translate3d(calc(var(--i, 0) * 100%), 0, 0); box-shadow:0 6px 14px -8px rgba(0,0,0,.55); }
   html:not(#_) body:not(#_) .m10-bar.has-on .m10-lens{ opacity:1; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-lens{ transition:transform 460ms var(--m10-spring), opacity 200ms var(--m10-ease) !important; transition-property:transform, opacity !important; transition-duration:460ms, 200ms !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-lens{ transition:transform 380ms var(--m10-spring), opacity 180ms ease !important; transition-property:transform, opacity !important; transition-duration:380ms, 180ms !important; }
   html:not(#_#_#_) body:not(#_#_#_) .m10-lens.instant{ transition:none !important; }
-
-  html:not(#_) body:not(#_) .m10-t{ position:relative; z-index:1; height:56px; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-    border:0; padding:0 2px 6px; margin:0; background:transparent !important; color:var(--k-ink3); cursor:pointer; border-radius:28px; box-shadow:none !important;
+  html:not(#_) body:not(#_) .m10-t{ position:relative; z-index:1; width:58px; height:50px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    border:0; padding:0; margin:0; background:transparent !important; color:var(--k-ink2); cursor:pointer; border-radius:25px; box-shadow:none !important;
     -webkit-tap-highlight-color:transparent; font-family:var(--k-font); }
-  html:not(#_) body:not(#_) .m10-t svg{ width:23px; height:23px; flex:0 0 auto; stroke-width:1.75; }
-  html:not(#_) body:not(#_) .m10-l{ font:500 10.5px/1 var(--k-font); letter-spacing:.01em; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
-  html:not(#_) body:not(#_) .m10-t.on{ color:var(--k-ink); }
-  html:not(#_) body:not(#_) .m10-t.on svg{ color:var(--k-acc); }
-  html:not(#_) body:not(#_) .m10-t.on .m10-l{ font-weight:650; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-t{ transition:color 220ms var(--m10-ease) !important; transition-property:color !important; transition-duration:220ms !important; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-t svg{ transition:transform 260ms var(--m10-spring) !important; transition-property:transform !important; transition-duration:260ms !important; }
-  html:not(#_) body:not(#_) .m10-t:active svg{ transform:scale(.86) !important; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-t.pop svg{ animation:m10Pop 420ms var(--m10-spring) both !important; animation-duration:420ms !important; }
-  @keyframes m10Pop{ 0%{ transform:scale(.8) translateY(2px); } 55%{ transform:scale(1.14) translateY(-1px); } 100%{ transform:none; } }
-  html:not(#_) body:not(#_) .m10-t:active, html:not(#_) body:not(#_) .m10-t:focus{ transform:none !important; outline:none !important; }
-  html:not(#_) body:not(#_) .m10-t:focus-visible{ outline:2px solid rgba(232,97,58,.5) !important; outline-offset:-4px; }
+  html:not(#_) body:not(#_) .m10-t svg{ width:21px; height:21px; flex:0 0 auto; }
+  html:not(#_) body:not(#_) .m10-l{ font:550 10px/1 var(--k-font); letter-spacing:.01em; white-space:nowrap; color:var(--k-ink3); }
+  html:not(#_) body:not(#_) .m10-t.on{ color:var(--k-acc); }
+  html:not(#_) body:not(#_) .m10-t.on .m10-l{ color:var(--k-on-dark); font-weight:650; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-t, html:not(#_#_#_) body:not(#_#_#_) .m10-t .m10-l{ transition:color 200ms ease !important; transition-property:color !important; transition-duration:200ms !important; }
+  html:not(#_) body:not(#_) .m10-t:active, html:not(#_) body:not(#_) .m10-t:focus{ outline:none !important; }
+  html:not(#_) body:not(#_) .m10-t:focus-visible{ outline:2px solid rgba(232,97,58,.5) !important; outline-offset:-3px; }
 
-  /* the create button: a glowing orange gem in the middle slot */
-  html:not(#_) body:not(#_) .m10-plus{ position:relative; z-index:2; justify-self:center; width:54px; height:54px; border-radius:50%; border:0; padding:0; cursor:pointer; color:#fff;
-    background:var(--m10-acc-g) !important; display:grid; place-items:center;
-    box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(0,0,0,.12) inset, 0 12px 24px -10px rgba(232,97,58,.85), 0 0 0 4px rgba(232,97,58,.10) !important;
-    -webkit-tap-highlight-color:transparent; }
+  html:not(#_) body:not(#_) .m10-plus{ pointer-events:auto; position:relative; flex:0 0 58px; width:58px; height:58px; border-radius:50%; border:0; padding:0; cursor:pointer; color:#fff;
+    background:var(--k-acc) !important; background-image:none !important; display:grid; place-items:center;
+    box-shadow:0 1px 0 rgba(255,255,255,.3) inset, var(--m8-glow) !important; -webkit-tap-highlight-color:transparent; }
   html:not(#_) body:not(#_) .m10-plus svg{ width:24px; height:24px; stroke-width:2.3; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-plus svg{ transition:transform 360ms var(--m10-spring) !important; transition-property:transform !important; transition-duration:360ms !important; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-plus{ transition:transform 200ms var(--m10-ease), box-shadow 200ms var(--m10-ease) !important; transition-property:transform, box-shadow !important; transition-duration:200ms !important; }
-  html:not(#_) body:not(#_) .m10-plus:active{ transform:scale(.92) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-plus svg{ transition:transform 300ms var(--m10-spring) !important; transition-property:transform !important; transition-duration:300ms !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-plus:active{ transform:scale(.94) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-plus{ transition:transform 160ms ease !important; transition-property:transform !important; transition-duration:160ms !important; }
   html:not(#_) body:not(#_).m10-create .m10-plus svg{ transform:rotate(45deg); }
 
-  html:not(#_) body:not(#_) .page{ padding-bottom:calc(124px + env(safe-area-inset-bottom)) !important; }
-  html:not(#_) body:not(#_) #m8-savebar{ bottom:calc(92px + env(safe-area-inset-bottom)) !important; }
-  html:not(#_) body:not(#_) #m8-hud{ bottom:calc(98px + env(safe-area-inset-bottom)) !important; }
+  html:not(#_) body:not(#_) .page{ padding-bottom:calc(118px + env(safe-area-inset-bottom)) !important; }
+  /* on the new-bill / edit form the save bar takes the nav's place, so two bars never stack */
+  html:not(#_) body:not(#_)[data-m8page="entry"] #m10-dock, html:not(#_) body:not(#_)[data-m8page="edit-invoice"] #m10-dock{ display:none !important; }
+  html:not(#_) body:not(#_)[data-m8page="entry"] #m8-savebar, html:not(#_) body:not(#_)[data-m8page="edit-invoice"] #m8-savebar{ bottom:calc(14px + env(safe-area-inset-bottom)) !important; }
+  html:not(#_) body:not(#_) #m8-savebar{ bottom:calc(86px + env(safe-area-inset-bottom)) !important; }
+  html:not(#_) body:not(#_) #m8-hud{ bottom:calc(92px + env(safe-area-inset-bottom)) !important; }
 }
 @media screen and (min-width:600px) and (max-width:900px){
-  html:not(#_) body:not(#_) .m10-bar{ max-width:480px; height:70px; }
-  html:not(#_) body:not(#_) .m10-l{ font-size:11px; }
+  html:not(#_) body:not(#_) .m10-bar{ grid-template-columns:repeat(4, 66px); height:64px; }
+  html:not(#_) body:not(#_) .m10-lens, html:not(#_) body:not(#_) .m10-t{ width:66px; height:52px; }
+  html:not(#_) body:not(#_) .m10-plus{ width:60px; height:60px; flex-basis:60px; }
 }
 @media (prefers-reduced-motion: reduce){
-  html:not(#_#_#_) body:not(#_#_#_) .m10-lens, html:not(#_#_#_) body:not(#_#_#_) .m10-t svg, html:not(#_#_#_) body:not(#_#_#_) .m10-plus svg, html:not(#_#_#_) body:not(#_#_#_) .page.active{ transition:none !important; animation:none !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-lens, html:not(#_#_#_) body:not(#_#_#_) .m10-plus svg, html:not(#_#_#_) body:not(#_#_#_) .page.active{ transition:none !important; animation:none !important; }
 }
 
 /* ══ LIST CARDS (phone + tablet): the ⋯ button sits beside the details, no empty row ══ */
@@ -24530,7 +24508,11 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
   html:not(#_) body:not(#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) .m5c-amt{ font-weight:600 !important; font-variant-numeric:tabular-nums; }
 }
 
-@media print{ #m10-dock, #m10-mp, #m10-mp-scrim{ display:none !important; } body::before{ display:none !important; } }
+/* iPhone home-screen app: the status bar is see-through, so give the clock a soft shade in light mode */
+html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:fixed; left:0; right:0; top:0; height:env(safe-area-inset-top); z-index:7001; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,0)); }
+
+@media print{ #m10-dock, #m10-mp, #m10-mp-scrim, #m10-hs{ display:none !important; } body::before, body::after{ display:none !important; } }
 </style>
 <script id="m5-js">/* ══════════════════════════════════════════════════════════════════════
    M8 · CORE — one icon set, safe printing, real document previews.
@@ -29082,8 +29064,8 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
 })();
 </script>
 <script>/* ══════════════════════════════════════════════════════════════════════
-   M10 · premium layer — glass dock, page motion, menu highlight, month
-   picker. Presentation only: it calls the app's own navigation functions
+   M10 · nav pill, haptics, full screen, floating header, month picker.
+   Presentation only: it calls the app's own navigation functions
    (showPage / navMain / M8.openCreate) and never touches data.
    ══════════════════════════════════════════════════════════════════════ */
 (function(){
@@ -29092,13 +29074,101 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
   var $ = function(id){ return document.getElementById(id); };
   var icon = M8.icon;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var DOCKQ = window.matchMedia('(max-width:900px)');
+  var coarse = window.matchMedia('(pointer:coarse)');
+  var small = window.matchMedia('(max-width:900px)');
+  var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   function mode(){ return DB.mode === 'sales' ? 'sales' : 'purchase'; }
+  function standalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true; }
 
-  /* ── 1 · DOCK ─────────────────────────────────────────────────────────
-     Five equal slots, so the bar never changes size. A single glass lens
-     glides under the active tab (transform only, on the GPU). */
-  var SLOTS = ['dashboard', 'records', 'plus', 'payments', 'parties'];
+  /* ── 1 · SETTINGS (this device only) ── */
+  var KEY = 'am_m10_prefs';
+  var S = { hap:true, level:'medium', full:true };
+  try{ var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if(raw){ if(typeof raw.hap === 'boolean') S.hap = raw.hap; if(/^(light|medium|strong)$/.test(raw.level)) S.level = raw.level; if(typeof raw.full === 'boolean') S.full = raw.full; } }catch(e){}
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+  /* ── 2 · HAPTICS ──────────────────────────────────────────────────────
+     Every vibration in the app goes through here, so the on/off switch and
+     the strength apply everywhere. Android vibrates; on iPhone (iOS 18+)
+     a hidden system switch gives the native tick. */
+  var SCALE = { light:.55, medium:1, strong:1.75 };
+  var nativeVibrate = typeof navigator.vibrate === 'function' ? navigator.vibrate.bind(navigator) : null;
+  var iosEl = null;
+  function iosTick(){
+    try{
+      if(!iosEl){
+        iosEl = document.createElement('label'); iosEl.setAttribute('aria-hidden', 'true');
+        iosEl.style.cssText = 'position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+        var i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+        iosEl.appendChild(i); document.body.appendChild(iosEl);
+      }
+      iosEl.click();
+    }catch(e){}
+  }
+  var lastBuzz = 0;
+  function vibrate(p){
+    if(!S.hap) return false;
+    var now = Date.now(); if(now - lastBuzz < 35) return false; lastBuzz = now;
+    var k = SCALE[S.level] || 1;
+    var clamp = function(v){ return Math.max(3, Math.min(70, Math.round((+v || 8) * k))); };
+    var pat = Array.isArray(p) ? p.map(function(v, i){ return i % 2 ? v : clamp(v); }) : clamp(p);
+    if(nativeVibrate){ try{ return nativeVibrate(pat); }catch(e){ return false; } }
+    if(isIOS){ iosTick(); return true; }
+    return false;
+  }
+  try{ Object.defineProperty(navigator, 'vibrate', { configurable:true, writable:true, value:vibrate }); }catch(e){}
+  M8.vibe = function(ms){ vibrate(ms || 8); };
+  var PAT = { select:5, tap:9, heavy:22, success:[10, 70, 16], warning:[18, 80, 18], error:[24, 60, 24, 60, 24] };
+  M8.haptic = function(kind){ vibrate(PAT[kind] || 8); };
+  function hookToasts(){
+    var t = window.toast;
+    if(typeof t === 'function' && !t.__m10){
+      var w = function(msg, type){ var r = t.apply(this, arguments); try{ M8.haptic(type === 'error' ? 'error' : type === 'warning' || type === 'warn' ? 'warning' : 'success'); }catch(e){} return r; };
+      w.__m10 = true; window.toast = w;
+    }
+    var u = window.showUndoToast;
+    if(typeof u === 'function' && !u.__m10){
+      var w2 = function(){ var r = u.apply(this, arguments); try{ M8.haptic('warning'); }catch(e){} return r; };
+      w2.__m10 = true; window.showUndoToast = w2;
+    }
+  }
+  /* a light tick when you pick something in the side menu */
+  document.addEventListener('click', function(e){
+    if(e.target.closest && e.target.closest('.zmenu .zm-item, .zmenu .zm-subitem, .zmenu .zm-ghead')) M8.haptic('select');
+  }, true);
+
+  /* ── 3 · FULL SCREEN (Android home-screen app) ──
+     Hides the status bar and the system navigation bar so the app fills the
+     whole screen. Browsers only allow this after a tap, so it switches on at
+     your first touch. Swipe from the top or bottom edge to see the bars. */
+  function canFull(){ return !!(document.fullscreenEnabled && document.documentElement.requestFullscreen) && coarse.matches && !isIOS; }
+  function goFull(){
+    if(!S.full || !canFull() || !standalone() || document.fullscreenElement) return;
+    try{ var r = document.documentElement.requestFullscreen({ navigationUI:'hide' }); if(r && r.catch) r.catch(function(){}); }catch(e){}
+  }
+  document.addEventListener('pointerup', goFull, true);
+  function leaveFull(){ if(document.fullscreenElement && document.exitFullscreen){ try{ var r = document.exitFullscreen(); if(r && r.catch) r.catch(function(){}); }catch(e){} } }
+
+  /* status bar colour follows the theme (light / dark) */
+  function themeColor(){
+    var dark = document.body.classList.contains('dark-mode');
+    var c = dark ? '#0c0c0d' : '#efefef';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){ if(m.getAttribute('content') !== c) m.setAttribute('content', c); });
+  }
+
+  /* ── 4 · FLOATING HEADER: the page scrolls under it; a soft fade appears once you scroll ── */
+  function headerSize(){
+    var tb = $('topbar'); if(!tb) return;
+    if(small.matches) document.documentElement.style.setProperty('--m10-hdr', tb.offsetHeight + 'px');
+  }
+  function onScroll(){
+    var sc = $('app-scroll'); if(!sc) return;
+    document.body.classList.toggle('m10-scrolled', sc.scrollTop > 6);
+  }
+
+  /* ── 5 · NAV PILL ─────────────────────────────────────────────────────
+     Four tabs in one glass pill (fixed width) + a solid orange create
+     button. One dark capsule glides under the active tab. */
+  var TABS = ['dashboard', 'records', 'payments', 'parties'];
   var IC = { dashboard:'home', records:'invoice', payments:'pay', parties:'parties' };
   function label(t){
     var L = M8.labels ? M8.labels() : { records:'Bills', payments:'Paid', parties:'Vendors' };
@@ -29109,27 +29179,23 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
     var nav = document.createElement('nav');
     nav.id = 'm10-dock'; nav.setAttribute('aria-label', 'Main');
     nav.innerHTML = '<div class="m10-bar" id="m10-bar"><span class="m10-lens" id="m10-lens" aria-hidden="true"></span>' +
-      SLOTS.map(function(t){
-        if(t === 'plus') return '<button type="button" class="m10-plus" id="m10-plus" aria-label="Create new">' + icon('plus') + '</button>';
-        return '<button type="button" class="m10-t" data-tab="' + t + '">' + icon(IC[t]) + '<span class="m10-l"></span></button>';
-      }).join('') + '</div>';
+      TABS.map(function(t){ return '<button type="button" class="m10-t" data-tab="' + t + '">' + icon(IC[t]) + '<span class="m10-l"></span></button>'; }).join('') +
+      '</div><button type="button" class="m10-plus" id="m10-plus" aria-label="Create new">' + icon('plus') + '</button>';
     document.body.appendChild(nav);
-    var bar = $('m10-bar');
-    var swiped = false;
+    var bar = $('m10-bar'), swiped = false;
     bar.addEventListener('click', function(e){
       if(swiped){ swiped = false; return; }
-      var b = e.target.closest('.m10-t'); if(!b) return;
-      goTab(b.dataset.tab, b);
+      var b = e.target.closest('.m10-t'); if(b) goTab(b.dataset.tab);
     });
     var plus = $('m10-plus');
     plus.addEventListener('click', function(){
       if(Date.now() - (window.__m10HoldAt || 0) < 600) return;
-      M8.vibe && M8.vibe(6);
+      M8.haptic('tap');
       if(M8.openCreate) M8.openCreate();
       watchSheet();
     });
-    if(M8.pressHold) M8.pressHold(plus, function(){ window.__m10HoldAt = Date.now(); M8.vibe && M8.vibe(16); navMain(mode(), 'entry'); });
-    /* swipe the bar sideways to flip Purchase ⇄ Sales (same as before) */
+    if(M8.pressHold) M8.pressHold(plus, function(){ window.__m10HoldAt = Date.now(); M8.haptic('heavy'); navMain(mode(), 'entry'); });
+    /* swipe the pill sideways to flip Purchase ⇄ Sales */
     var sx = 0, sy = 0, tracking = false;
     bar.addEventListener('touchstart', function(e){ var t = e.touches[0]; sx = t.clientX; sy = t.clientY; tracking = true; swiped = false; }, { passive:true });
     bar.addEventListener('touchmove', function(e){
@@ -29140,20 +29206,19 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
     watchSheet();
     syncDock(true);
   }
-  /* the + turns into × while the create sheet is open (the sheet is built on first use) */
   var sheetSeen = null;
   function watchSheet(){
-    var c = $('m5-create'); if(!c || c === sheetSeen) { if(c) document.body.classList.toggle('m10-create', c.classList.contains('open')); return; }
-    sheetSeen = c;
-    new MutationObserver(function(){ document.body.classList.toggle('m10-create', c.classList.contains('open')); }).observe(c, { attributes:true, attributeFilter:['class'] });
-    document.body.classList.toggle('m10-create', c.classList.contains('open'));
+    var c = $('m5-create');
+    if(c && c !== sheetSeen){
+      sheetSeen = c;
+      new MutationObserver(function(){ document.body.classList.toggle('m10-create', c.classList.contains('open')); }).observe(c, { attributes:true, attributeFilter:['class'] });
+    }
+    if(c) document.body.classList.toggle('m10-create', c.classList.contains('open'));
   }
-  function goTab(t, btn){
+  function goTab(t){
     var pg = M8.page();
-    M8.vibe && M8.vibe(4);
-    if(btn){ btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
-    /* move the lens straight away, before the page work starts */
-    setLens(SLOTS.indexOf(t), false);
+    M8.haptic('select');
+    setLens(TABS.indexOf(t), false);
     if(t === 'dashboard'){
       if(pg === 'dashboard'){ var sc = $('app-scroll'); if(sc) sc.scrollTo({ top:0, behavior:'smooth' }); return; }
       window._heroView = mode();
@@ -29166,12 +29231,12 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
   }
   function setLens(i, instant){
     var bar = $('m10-bar'), lens = $('m10-lens'); if(!bar || !lens) return;
-    var on = i >= 0 && SLOTS[i] !== 'plus';
+    var on = i >= 0;
     if(instant) lens.classList.add('instant');
     if(on) lens.style.setProperty('--i', i);
     bar.classList.toggle('has-on', on);
     bar.querySelectorAll('.m10-t').forEach(function(b){
-      var hit = on && b.dataset.tab === SLOTS[i];
+      var hit = on && b.dataset.tab === TABS[i];
       b.classList.toggle('on', hit);
       if(hit) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
@@ -29184,36 +29249,97 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
       b.setAttribute('aria-label', txt);
     });
     var pg = M8.page(); if(pg === 'party') pg = 'parties';
-    setLens(SLOTS.indexOf(pg), instant);
+    setLens(TABS.indexOf(pg), instant);
   }
 
-  /* ── 2 · PAGE MOTION ──────────────────────────────────────────────────
-     Tabs glide sideways in the direction you moved; pages opened from the
-     menu rise a few pixels. Transform + opacity only. */
-  var ORDER = { dashboard:0, records:1, entry:2, payments:3, parties:4, party:5 };
+  /* ── 6 · QUIET PAGE CHANGE: a short fade, nothing slides ── */
   var lastPage = null;
-  function motion(id){
-    var p = $('page-' + id); if(!p || reduce.matches) { lastPage = id; return; }
-    if(id === lastPage || id === 'party'){ lastPage = id; return; }
-    var a = ORDER[lastPage], b = ORDER[id];
-    var cls = (a !== undefined && b !== undefined) ? (b > a ? 'm10-in-r' : 'm10-in-l') : 'm10-in-u';
+  function fade(id){
+    var p = $('page-' + id);
+    if(!p || reduce.matches || id === lastPage || id === 'party'){ lastPage = id; return; }
     lastPage = id;
-    p.classList.remove('m10-in-r', 'm10-in-l', 'm10-in-u'); void p.offsetWidth; p.classList.add(cls);
-    clearTimeout(p._m10t); p._m10t = setTimeout(function(){ p.classList.remove(cls); }, 360);
+    p.classList.remove('m10-fade'); void p.offsetWidth; p.classList.add('m10-fade');
+    clearTimeout(p._m10t); p._m10t = setTimeout(function(){ p.classList.remove('m10-fade'); }, 220);
   }
 
-  /* ── 3 · MENU: Items & lists lights up its own row ── */
+  /* one style for page titles: "All purchase records", "Payments ledger"… */
+  var TITLE_PAGES = ['records', 'payments', 'parties', 'search', 'entry', 'edit-invoice', 'urdu-stmt'];
+  function sentence(t){
+    return t.split(' ').map(function(w, i){ return i === 0 || /^[A-Z0-9]{2,}$/.test(w) ? w : w.toLowerCase(); }).join(' ');
+  }
+  function tidyTitles(){
+    TITLE_PAGES.forEach(function(id){
+      var p = $('page-' + id); if(!p) return;
+      p.querySelectorAll('.page-header h1, .page-header h2').forEach(function(h){
+        if(h.children.length) return;
+        var t = h.textContent.trim(), n = sentence(t); if(n !== t) h.textContent = n;
+      });
+    });
+  }
+
+  /* ── 7 · MENU: Items & lists lights up its own row; Haptics & screen entry ── */
   function syncMenu(id){
     document.querySelectorAll('.zm-item[data-nav="manage:items"]').forEach(function(it){ it.classList.toggle('m10-on', id === 'manage'); });
   }
+  function addMenuEntry(){
+    document.querySelectorAll('.zmenu .zm-sub').forEach(function(sub){
+      if(sub.querySelector('[data-m10="hs"]')) return;
+      var lock = sub.querySelector('[data-more="2"]') || sub.querySelector('.zm-subitem[onclick*="openLockSettings"]'); if(!lock) return;
+      var inSide = !!sub.closest('#sidebar');
+      var el = document.createElement('div'); el.className = 'zm-subitem'; el.setAttribute('data-m10', 'hs'); el.setAttribute('role', 'button'); el.tabIndex = 0;
+      el.innerHTML = '<span class="m8-subic">' + icon('phone') + '</span>' + (inSide ? '<span class="zm-lbl">Haptics &amp; screen</span>' : '<span>Haptics &amp; screen</span>');
+      el.addEventListener('click', function(e){ e.stopPropagation(); if(typeof closeDrawer === 'function') closeDrawer(); if(typeof zsbCloseFly === 'function') try{ zsbCloseFly(); }catch(err){} setTimeout(openSettings, 60); });
+      lock.parentNode.insertBefore(el, lock.nextSibling);
+    });
+  }
 
-  /* ── 4 · MONTH PICKER ─────────────────────────────────────────────────
-     The phone's own month wheel was unreliable (and on some phones the
-     pick was lost). This one works the same everywhere: tap a month. */
+  /* ── 8 · HAPTICS & SCREEN SHEET ── */
+  function sw(id, on){ return '<button type="button" class="m10-sw" role="switch" data-sw="' + id + '" aria-checked="' + (on ? 'true' : 'false') + '"></button>'; }
+  function paintSettings(){
+    var b = $('m10-hs-b'); if(!b) return;
+    var hasVib = !!nativeVibrate || isIOS;
+    var full = canFull();
+    b.innerHTML =
+      '<div class="m10-row"><div><b>Haptics</b><small>' + (hasVib ? 'A soft tap when you press, save or switch.' : 'This device has no vibration motor for apps.') + '</small></div>' + sw('hap', S.hap) + '</div>' +
+      '<div class="m10-row' + (S.hap ? '' : ' off') + '" style="display:block"><b>Strength</b><small>Tap one to feel it.</small>' +
+        '<div class="m10-seg" role="radiogroup" aria-label="Haptic strength">' + ['light', 'medium', 'strong'].map(function(l){
+          return '<button type="button" role="radio" data-lv="' + l + '" aria-checked="' + (S.level === l) + '" class="' + (S.level === l ? 'on' : '') + '">' + l.charAt(0).toUpperCase() + l.slice(1) + '</button>'; }).join('') + '</div></div>' +
+      (full ? '<div class="m10-row"><div><b>Full screen</b><small>Hide the status bar and the bottom system bar so the app fills the whole screen.</small></div>' + sw('full', S.full) + '</div>' : '') +
+      '<p class="m10-note">' + (isIOS ? 'On iPhone the app already runs under the status bar. Haptics need iOS 18 or newer.' :
+        full ? 'Full screen works when the app is opened from its home-screen icon. Swipe from the top or bottom edge to see the bars for a moment.' : '') + '</p>';
+  }
+  function buildSettings(){
+    if($('m10-hs')) return;
+    var ov = document.createElement('div'); ov.id = 'm10-hs'; ov.className = 'm8-ov';
+    ov.innerHTML = '<div class="m8-sheet" role="dialog" aria-modal="true" aria-labelledby="m10-hs-t">' +
+      '<div class="m8-sheet-h"><div><b id="m10-hs-t">Haptics &amp; screen</b><small>Saved on this device</small></div><button type="button" class="m8-ib" data-x aria-label="Close">' + icon('x') + '</button></div>' +
+      '<div class="m8-sheet-b" id="m10-hs-b"></div></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e){
+      if(e.target === ov || e.target.closest('[data-x]')){ closeSettings(); return; }
+      var s = e.target.closest('[data-sw]');
+      if(s){
+        var k = s.dataset.sw; S[k] = !S[k]; save();
+        if(k === 'hap' && S.hap) M8.haptic('success');
+        if(k === 'full'){ if(S.full) goFull(); else leaveFull(); }
+        if(k !== 'hap') M8.haptic('select');
+        paintSettings(); return;
+      }
+      var lv = e.target.closest('[data-lv]');
+      if(lv){ S.level = lv.dataset.lv; save(); paintSettings(); lastBuzz = 0; M8.haptic('success'); }
+    });
+  }
+  function openSettings(){ buildSettings(); paintSettings(); $('m10-hs').classList.add('open'); document.body.classList.add('m8-lock'); }
+  function closeSettings(){ var o = $('m10-hs'); if(o) o.classList.remove('open'); document.body.classList.remove('m8-lock'); }
+  M8.openHaptics = openSettings;
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && $('m10-hs') && $('m10-hs').classList.contains('open')) closeSettings(); });
+
+  /* ── 9 · MONTH PICKER ─────────────────────────────────────────────────
+     Works the same on every phone: tap a month. (The phone's own month
+     wheel could lose the pick.) */
   var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var MON_L = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var mp = null, scrim = null, cur = null, year = 0;
-  var coarse = window.matchMedia('(pointer:coarse)');
   function ensurePicker(){
     if(mp) return;
     scrim = document.createElement('div'); scrim.id = 'm10-mp-scrim';
@@ -29223,7 +29349,7 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
     mp.addEventListener('click', function(e){
       var b = e.target.closest('button'); if(!b) return;
       e.preventDefault(); e.stopPropagation();
-      if(b.dataset.y){ year += +b.dataset.y; paintPicker(); return; }
+      if(b.dataset.y){ year += +b.dataset.y; paintPicker(); M8.haptic('select'); return; }
       if(b.dataset.m){ pick(year + '-' + b.dataset.m); return; }
       if(b.dataset.a === 'now'){ var d = new Date(); pick(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); return; }
       if(b.dataset.a === 'clear'){ pick(''); return; }
@@ -29243,6 +29369,7 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
       '<div class="m10-mp-f"><button type="button" class="clr" data-a="clear">Clear</button><button type="button" data-a="now">This month</button></div>';
   }
   function openPicker(wrap){
+    if(!wrap) return;
     ensurePicker();
     var src = wrap.querySelector('input.m8-dsrc'), px = wrap.querySelector('input.m8-date');
     if(!src || !px || px.disabled) return;
@@ -29255,7 +29382,7 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
     var left = Math.min(Math.max(10, r.right - w), window.innerWidth - w - 10);
     var top = r.bottom + 8; if(top + h > window.innerHeight - 10) top = Math.max(10, r.top - h - 8);
     mp.style.left = left + 'px'; mp.style.top = top + 'px';
-    M8.vibe && M8.vibe(4);
+    M8.haptic('select');
   }
   function closePicker(){
     if(!mp) return;
@@ -29274,15 +29401,14 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
     c.src.dispatchEvent(new Event('input', { bubbles:true }));
     c.src.dispatchEvent(new Event('change', { bubbles:true }));
     closePicker();
-    M8.vibe && M8.vibe(8);
+    M8.haptic('select');
   }
-  function monthWrap(el){ var w = el && el.closest ? el.closest('.m8-dw.is-month') : null; return w; }
-  /* calendar button on a month field → our picker (runs before the old handler) */
+  function monthWrap(el){ return el && el.closest ? el.closest('.m8-dw.is-month') : null; }
   document.addEventListener('click', function(e){
-    var btn = e.target.closest && e.target.closest('.m8-dw.is-month .m8-dbtn');
+    if(!e.target.closest) return;
+    var btn = e.target.closest('.m8-dw.is-month .m8-dbtn');
     if(btn){ e.preventDefault(); e.stopImmediatePropagation(); openPicker(monthWrap(btn)); return; }
-    /* on touch screens tapping the month box opens the picker instead of the keyboard */
-    var px = e.target.closest && e.target.closest('.m8-dw.is-month > input.m8-date');
+    var px = e.target.closest('.m8-dw.is-month > input.m8-date');
     if(px && coarse.matches){ e.preventDefault(); openPicker(monthWrap(px)); }
   }, true);
   function lockMonthTyping(){
@@ -29295,16 +29421,25 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-in-u{ animation:m10InU 300ms 
 
   /* ── BOOT ── */
   function boot(){
+    if(isIOS && navigator.standalone) document.body.classList.add('m10-ios');
     buildDock();
+    hookToasts();
+    addMenuEntry();
     lastPage = M8.page();
-    M8.after('showPage', function(id){ syncDock(false); motion(id); syncMenu(id); closePicker(); setTimeout(lockMonthTyping, 60); });
-    M8.after('setAppMode', function(){ syncDock(false); });
+    M8.after('showPage', function(id){ tidyTitles(); setTimeout(tidyTitles, 80); syncDock(false); fade(id); syncMenu(id); closePicker(); setTimeout(lockMonthTyping, 60); setTimeout(headerSize, 30); onScroll(); });
+    M8.after('setAppMode', function(){ syncDock(false); tidyTitles(); setTimeout(tidyTitles, 80); });
     if(M8.switchMode && !M8.switchMode.__m10){
-      var sw = M8.switchMode; M8.switchMode = function(){ var r = sw.apply(this, arguments); syncDock(false); return r; }; M8.switchMode.__m10 = true;
+      var swm = M8.switchMode; M8.switchMode = function(){ var r = swm.apply(this, arguments); syncDock(false); return r; }; M8.switchMode.__m10 = true;
     }
-    DOCKQ.addEventListener ? DOCKQ.addEventListener('change', function(){ syncDock(true); }) : null;
+    if(small.addEventListener) small.addEventListener('change', function(){ syncDock(true); headerSize(); });
+    var sc = $('app-scroll'); if(sc) sc.addEventListener('scroll', onScroll, { passive:true });
+    var tb = $('topbar'); if(tb && window.ResizeObserver) new ResizeObserver(headerSize).observe(tb);
+    window.addEventListener('resize', headerSize, { passive:true });
+    themeColor();
+    new MutationObserver(themeColor).observe(document.body, { attributes:true, attributeFilter:['class'] });
     syncMenu(M8.page());
-    setTimeout(function(){ lockMonthTyping(); syncDock(true); }, 400);
+    headerSize();
+    setTimeout(function(){ lockMonthTyping(); syncDock(true); hookToasts(); addMenuEntry(); headerSize(); }, 400);
     new MutationObserver(function(){ lockMonthTyping(); }).observe(document.body, { childList:true });
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
