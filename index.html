@@ -29109,7 +29109,6 @@ html:has(body.dark-mode)::backdrop{ background:#0c0c0d !important; }
      Every vibration in the app goes through here, so the on/off switch and
      the strength apply everywhere. Android vibrates; on iPhone (iOS 18+)
      a hidden system switch gives the native tick. */
-  var SCALE = { light:.55, medium:1, strong:1.75 };
   var nativeVibrate = typeof navigator.vibrate === 'function' ? navigator.vibrate.bind(navigator) : null;
   var iosEl = null;
   function iosTick(){
@@ -29123,21 +29122,40 @@ html:has(body.dark-mode)::backdrop{ background:#0c0c0d !important; }
       iosEl.click();
     }catch(e){}
   }
+  /* Each strength has its own clearly different vibration length. (Phones can't
+     change how hard the motor hits from a web app, only how long it runs —
+     and very short taps all feel the same, so the gaps are big on purpose.) */
+  var LEVEL = { light:0, medium:1, strong:2 };
+  var KINDS = {
+    select:  [ 7, 14, 28 ],
+    tap:     [ 9, 18, 34 ],
+    heavy:   [ 16, 32, 60 ],
+    success: [ [8, 60, 10], [14, 60, 22], [26, 70, 40] ],
+    warning: [ [12, 70, 12], [22, 80, 22], [40, 90, 40] ],
+    error:   [ [14, 50, 14, 50, 14], [24, 60, 24, 60, 24], [42, 70, 42, 70, 42] ]
+  };
   var lastBuzz = 0;
-  function vibrate(p){
+  function lv(){ var l = LEVEL[S.level]; return l === undefined ? 1 : l; }
+  function play(pat){
     if(!S.hap) return false;
     var now = Date.now(); if(now - lastBuzz < 35) return false; lastBuzz = now;
-    var k = SCALE[S.level] || 1;
-    var clamp = function(v){ return Math.max(3, Math.min(70, Math.round((+v || 8) * k))); };
-    var pat = Array.isArray(p) ? p.map(function(v, i){ return i % 2 ? v : clamp(v); }) : clamp(p);
     if(nativeVibrate){ try{ return nativeVibrate(pat); }catch(e){ return false; } }
     if(isIOS){ iosTick(); return true; }
     return false;
   }
+  /* every other vibration in the app (navigator.vibrate / M8.vibe) is mapped onto the same levels */
+  function vibrate(p){
+    if(Array.isArray(p)){
+      var f = [0.6, 1.2, 2.2][lv()];
+      return play(p.map(function(v, i){ return i % 2 ? v : Math.max(6, Math.min(80, Math.round((+v || 8) * f))); }));
+    }
+    var n = +p || 8;
+    if(n <= 0) return play(0);
+    return play(KINDS[n <= 6 ? 'select' : n <= 14 ? 'tap' : 'heavy'][lv()]);
+  }
   try{ Object.defineProperty(navigator, 'vibrate', { configurable:true, writable:true, value:vibrate }); }catch(e){}
   M8.vibe = function(ms){ vibrate(ms || 8); };
-  var PAT = { select:5, tap:9, heavy:22, success:[10, 70, 16], warning:[18, 80, 18], error:[24, 60, 24, 60, 24] };
-  M8.haptic = function(kind){ vibrate(PAT[kind] || 8); };
+  M8.haptic = function(kind){ var k = KINDS[kind] || KINDS.tap; return play(k[lv()]); };
   function hookToasts(){
     var t = window.toast;
     if(typeof t === 'function' && !t.__m10){
@@ -29356,8 +29374,8 @@ html:has(body.dark-mode)::backdrop{ background:#0c0c0d !important; }
         if(k !== 'hap') M8.haptic('select');
         paintSettings(); return;
       }
-      var lv = e.target.closest('[data-lv]');
-      if(lv){ S.level = lv.dataset.lv; save(); paintSettings(); lastBuzz = 0; M8.haptic('success'); }
+      var lvBtn = e.target.closest('[data-lv]');
+      if(lvBtn){ S.level = lvBtn.dataset.lv; save(); paintSettings(); lastBuzz = 0; M8.haptic('heavy'); }
     });
   }
   function openSettings(){ buildSettings(); paintSettings(); $('m10-hs').classList.add('open'); document.body.classList.add('m8-lock'); }
