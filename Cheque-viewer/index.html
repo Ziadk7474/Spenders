@@ -474,6 +474,9 @@ html:not(#_) body:not(#_) .m8-sumline{ display:flex; align-items:center; justify
 html:not(#_) body:not(#_) .m8-sumline b{ display:block; font-size:15px; font-weight:650; }
 html:not(#_) body:not(#_) .m8-sumline small{ display:block; font-size:12.5px; color:var(--k-ink3); margin-top:2px; }
 html:not(#_) body:not(#_) .m8-sumline .m8-chip{ flex:0 0 auto; }
+html:not(#_) body:not(#_) .m8-cq-more{ width:38px; height:38px; flex:0 0 38px; border-radius:50%; border:1px solid var(--k-line); background:var(--k-tile); color:var(--k-ink2); display:grid; place-items:center; padding:0; cursor:pointer; }
+html:not(#_) body:not(#_) .m8-cq-more svg{ width:18px; height:18px; }
+html:not(#_) body:not(#_) .m8-cq-more:hover{ color:var(--k-ink); border-color:var(--k-line2); }
 html:not(#_) body:not(#_) .m8-tick{ width:40px; height:40px; flex:0 0 40px; border-radius:50%; border:2px solid var(--k-line2); background:var(--k-tile); color:transparent; display:grid; place-items:center; padding:0; cursor:pointer; }
 html:not(#_) body:not(#_) .m8-tick svg{ width:20px; height:20px; stroke-width:2.4; }
 html:not(#_) body:not(#_) .m8-tick:hover{ border-color:var(--k-pos); color:var(--k-pos); }
@@ -711,24 +714,29 @@ html:not(#_) body:not(#_) #pin-setup-modal .lock-label{ color:var(--k-ink2) !imp
 /* ══ PHONE + TABLET (≤ 900): dock replaces the old bottom bar ══ */
 @media screen and (max-width:900px){
   html:not(#_) body:not(#_) #bottom-nav{ display:none !important; }
-  html:not(#_) body:not(#_) #m8-dock{ display:block; position:fixed; left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:8000; max-width:520px; margin:0 auto; pointer-events:none; }
-  html:not(#_) body:not(#_) .m8-dock-bar{ pointer-events:auto; position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); align-items:center; height:66px; padding:6px; border-radius:33px;
+  /* dock v9: a compact icon capsule + a separate round "+" — centred, not full width */
+  html:not(#_) body:not(#_) #m8-dock{ display:flex; align-items:center; justify-content:center; gap:10px; position:fixed; left:0; right:0; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:8000; pointer-events:none; }
+  html:not(#_) body:not(#_) .m8-dock-bar{ pointer-events:auto; position:relative; display:flex; align-items:center; gap:2px; height:56px; padding:5px; border-radius:28px;
     background:var(--m8-glass); border:1px solid var(--m8-glass-b);
-    box-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 18px 40px -16px rgba(0,0,0,.32), 0 2px 6px -2px rgba(0,0,0,.08);
-    -webkit-backdrop-filter:blur(20px) saturate(1.7) !important; backdrop-filter:blur(20px) saturate(1.7) !important; touch-action:pan-y; }
-  html:not(#_) body:not(#_).dark-mode .m8-dock-bar{ box-shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 18px 40px -16px rgba(0,0,0,.7); }
-  html:not(#_) body:not(#_) .m8-dock-pill{ position:absolute; left:0; top:6px; height:52px; border-radius:26px; background:var(--k-dark); opacity:0; z-index:0; }
+    box-shadow:0 1px 0 rgba(255,255,255,.75) inset, 0 16px 34px -14px rgba(0,0,0,.30), 0 2px 6px -2px rgba(0,0,0,.08);
+    -webkit-backdrop-filter:blur(22px) saturate(1.8) !important; backdrop-filter:blur(22px) saturate(1.8) !important; touch-action:pan-y; }
+  html:not(#_) body:not(#_).dark-mode .m8-dock-bar{ background:rgba(30,30,34,.9); border-color:rgba(255,255,255,.08); box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 16px 34px -14px rgba(0,0,0,.75); }
+  html:not(#_) body:not(#_) .m8-dock-pill{ position:absolute; left:0; top:5px; height:46px; border-radius:23px; background:var(--k-dark); opacity:0; z-index:0; }
 html:not(#_#_#_) body:not(#_#_#_) .m8-dock-pill{
     transition:transform var(--m8-t3) var(--m8-spring), width var(--m8-t3) var(--m8-spring), opacity var(--m8-t2) var(--m8-ease) !important; transition-duration:var(--m8-t3), var(--m8-t3), var(--m8-t2) !important; transition-property:transform, width, opacity !important; }
   html:not(#_) body:not(#_) .m8-dock-pill.show{ opacity:1; }
   html:not(#_#_#_) body:not(#_#_#_) .m8-dock-pill.instant{ transition:none !important; }
-  html:not(#_) body:not(#_) .m8-dock-t{ position:relative; z-index:1; height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border:0; background:transparent; color:var(--k-ink2); cursor:pointer; border-radius:26px; padding:0; min-width:0; -webkit-tap-highlight-color:transparent; }
-  html:not(#_) body:not(#_) .m8-dock-t svg{ width:22px; height:22px; }
-  html:not(#_) body:not(#_) .m8-dock-l{ font:600 10.5px/1 var(--k-font); letter-spacing:-.005em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; padding:0 2px; }
-  html:not(#_) body:not(#_) .m8-dock-t.on{ color:var(--k-on-dark); }
+  html:not(#_) body:not(#_) .m8-dock-t{ position:relative; z-index:1; height:46px; min-width:46px; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:7px; border:0; background:transparent; color:var(--k-ink2); cursor:pointer; border-radius:23px; padding:0 12px; -webkit-tap-highlight-color:transparent; }
+  html:not(#_) body:not(#_) .m8-dock-t svg{ width:22px; height:22px; flex:0 0 22px; }
+  html:not(#_) body:not(#_) .m8-dock-l{ display:none; font:600 13px/1 var(--k-font); letter-spacing:-.01em; white-space:nowrap; }
+  html:not(#_) body:not(#_) .m8-dock-t.on{ color:var(--k-on-dark); padding:0 15px 0 13px; }
+  html:not(#_) body:not(#_) .m8-dock-t.on .m8-dock-l{ display:inline; }
   html:not(#_) body:not(#_) .m8-dock-t.on svg{ color:var(--k-acc); }
-  html:not(#_) body:not(#_) .m8-dock-plus{ position:relative; z-index:1; justify-self:center; width:54px; height:54px; border-radius:50%; border:0; background:var(--k-acc); color:#fff; display:grid; place-items:center; cursor:pointer; box-shadow:var(--m8-glow); -webkit-tap-highlight-color:transparent; }
-  html:not(#_) body:not(#_) .m8-dock-plus svg{ width:26px; height:26px; stroke-width:2.2; }
+  html:not(#_) body:not(#_) .m8-dock-t:not(.on):active svg{ transform:scale(.9); }
+  html:not(#_) body:not(#_) .m8-dock-plus{ pointer-events:auto; position:relative; z-index:1; flex:0 0 56px; width:56px; height:56px; border-radius:50%; border:0; background:var(--k-acc); color:#fff; display:grid; place-items:center; cursor:pointer;
+    box-shadow:0 1px 0 rgba(255,255,255,.35) inset, var(--m8-glow); -webkit-tap-highlight-color:transparent; }
+  html:not(#_) body:not(#_) .m8-dock-plus svg{ width:24px; height:24px; stroke-width:2.3; }
+  html:not(#_) body:not(#_) .m8-dock-plus:active{ transform:scale(.94); }
   html:not(#_) body:not(#_) .page{ padding-bottom:calc(120px + env(safe-area-inset-bottom)) !important; }
   html:not(#_) body:not(#_) #m8-savebar{ bottom:calc(88px + env(safe-area-inset-bottom)); }
   html:not(#_) body:not(#_) .m8-chq-sum{ grid-template-columns:repeat(2, minmax(0,1fr)); }
@@ -842,6 +850,79 @@ html:not(#_#_#_) body:not(#_#_#_) #toast-container .toast{ animation-name:m8Toas
 }
 @media screen and (min-width:1280px){
   html:not(#_) body:not(#_) .m8-party{ grid-template-columns:400px minmax(0,1fr); }
+}
+
+/* ══ STATEMENT · v9 ══ */
+@media screen{
+  /* the summary panel sits on white paper in both themes — keep it dark ink */
+  html:not(#_) body:not(#_) #monthly-payment-panel > div, html:not(#_) body:not(#_).dark-mode #monthly-payment-panel > div{ background:#151517 !important; color:#fff !important; border:0 !important; box-shadow:0 10px 30px -18px rgba(0,0,0,.45) !important; }
+  html:not(#_) body:not(#_) #monthly-payment-panel > div > div:first-child{ color:rgba(255,255,255,.55) !important; }
+  html:not(#_) body:not(#_) #monthly-payment-panel [id^="mps-"]{ white-space:nowrap; }
+  html:not(#_) body:not(#_) #mps-payments-detail, html:not(#_) body:not(#_) #mps-payments-detail *{ color:rgba(255,255,255,.82); }
+  /* table head on the statement: ink, not navy */
+  html:not(#_) body:not(#_) #page-search .ref-table thead th, html:not(#_) body:not(#_) #page-search .ref-table thead tr, html:not(#_) body:not(#_) #page-urdu-stmt .ref-table thead th{ background:#151517 !important; color:#fff !important; border-color:#151517 !important; }
+  html:not(#_) body:not(#_) .ios-tgl input:checked ~ .ios-tgl-track{ background:var(--k-acc) !important; }
+}
+@media screen and (max-width:599px){
+  html:not(#_) body:not(#_) #monthly-payment-panel > div{ padding:16px !important; border-radius:20px !important; }
+  html:not(#_) body:not(#_) #monthly-payment-panel > div > div:nth-child(2){ grid-template-columns:1fr 1fr !important; gap:10px !important; }
+  html:not(#_) body:not(#_) #monthly-payment-panel > div > div:nth-child(2) > div{ padding:12px !important; min-width:0; }
+  html:not(#_) body:not(#_) #monthly-payment-panel [id^="mps-"]:not(#mps-title):not(#mps-month-label):not(#mps-payments-detail){ font-size:16px !important; }
+
+  /* control bar: [Clear | Run search] then [Invoices | Print | Stamp] */
+  html:not(#_) body:not(#_) #page-search .page-header > div:last-child, html:not(#_) body:not(#_) #page-urdu-stmt .page-header > div:last-child{
+    display:grid !important; grid-template-columns:1fr 1fr; gap:8px !important; width:100% !important; flex-wrap:nowrap !important; }
+  html:not(#_) body:not(#_) #page-search .page-header > div:last-child > .btn, html:not(#_) body:not(#_) #page-urdu-stmt .page-header > div:last-child > .btn{ width:100% !important; min-width:0 !important; height:46px !important; min-height:46px !important; padding:0 12px !important; justify-content:center !important; font-size:14px !important; border-radius:14px !important; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions{
+    grid-column:1 / -1; display:grid !important; grid-template-columns:1.25fr 1fr 1fr; gap:0 !important; width:100% !important;
+    background:var(--k-tile); border:1px solid var(--k-line); border-radius:16px; padding:4px !important; height:auto; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions > *, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions > *{
+    height:42px !important; min-height:42px !important; margin:0 !important; border-radius:12px !important; border:0 !important; box-shadow:none !important;
+    background:transparent !important; color:var(--k-ink) !important; font-size:13px !important; font-weight:600 !important; padding:0 8px !important;
+    display:flex !important; align-items:center !important; justify-content:center !important; gap:6px !important; min-width:0 !important; width:auto !important; flex:none !important; position:relative; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions > * + *::before, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions > * + *::before{
+    content:""; position:absolute; left:0; top:11px; bottom:11px; width:1px; background:var(--k-line); }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .ios-tgl-t{ font-size:0 !important; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .ios-tgl-t::after{ content:"Invoices"; font-size:13px; }
+  html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions .ios-tgl-t{ font-size:12px !important; white-space:normal !important; line-height:1.1; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .ios-tgl, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions .ios-tgl{ gap:8px !important; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .ios-tgl-track, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions .ios-tgl-track{ width:36px !important; height:22px !important; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .ios-tgl-knob, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions .ios-tgl-knob{ width:18px !important; height:18px !important; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .ios-tgl input:checked ~ .ios-tgl-track .ios-tgl-knob, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions .ios-tgl input:checked ~ .ios-tgl-track .ios-tgl-knob{ transform:translateX(14px) !important; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .btn-primary, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions .btn-primary{ color:var(--k-acc) !important; }
+  html:not(#_) body:not(#_) #page-search .stmt-actions .btn svg, html:not(#_) body:not(#_) #page-urdu-stmt .stmt-actions .btn svg{ width:17px !important; height:17px !important; stroke:currentColor !important; color:inherit !important; }
+}
+
+/* ══ LOCK · fingerprint button v9 — a clean round button, centred ══ */
+@media screen{
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-wrap{ margin-top:6px; text-align:center; }
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-wrap[style*="none"]{ display:none !important; }
+  html:not(#_) body:not(#_) #lock-overlay .lock-divider{ color:var(--k-ink3) !important; font:600 11px/1 var(--k-font) !important; letter-spacing:.06em !important; margin:20px 0 14px !important; }
+  html:not(#_) body:not(#_) #lock-overlay .lock-divider::before, html:not(#_) body:not(#_) #lock-overlay .lock-divider::after{ background:var(--k-line) !important; }
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-btn{ display:grid !important; place-items:center !important; width:68px !important; height:68px !important; min-width:68px !important; max-width:68px !important; min-height:68px !important;
+    margin:0 auto !important; padding:0 !important; border-radius:50% !important; flex:none !important;
+    background:var(--k-acc-soft) !important; border:1px solid rgba(232,97,58,.28) !important; color:var(--k-acc) !important; box-shadow:none !important; cursor:pointer; }
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-btn svg{ display:block !important; width:32px !important; height:32px !important; fill:currentColor !important; stroke:none !important; color:var(--k-acc) !important; }
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-btn:active{ transform:scale(.94); }
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-btn:disabled{ opacity:.7; }
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-btn::after{ content:"Use fingerprint"; position:absolute; left:50%; top:calc(100% + 10px); transform:translateX(-50%); white-space:nowrap; font:500 12.5px/1 var(--k-font); color:var(--k-ink2); pointer-events:none; }
+  html:not(#_) body:not(#_) #lock-overlay #lock-bio-btn{ position:relative; margin-bottom:26px !important; }
+}
+html:not(#_#_#_) body:not(#_#_#_) #lock-overlay #lock-bio-btn.scanning{ animation:m8BioRing 1.3s ease-out infinite !important; }
+@keyframes m8BioRing{ 0%{ box-shadow:0 0 0 0 rgba(232,97,58,.35); } 70%{ box-shadow:0 0 0 16px rgba(232,97,58,0); } 100%{ box-shadow:0 0 0 0 rgba(232,97,58,0); } }
+
+/* ══ PRINT ══ old page fades must never run while printing: the browser took
+   the print snapshot on the fade's first frame (opacity 0) → blank preview. */
+@media print{
+  html:not(#_) body:not(#_) *:not(#_#_#_), html:not(#_) body:not(#_) *:not(#_#_#_)::before, html:not(#_) body:not(#_) *:not(#_#_#_)::after{
+    animation:none !important; transition:none !important;
+  }
+  html:not(#_) body:not(#_) .page.active{ opacity:1 !important; transform:none !important; filter:none !important; }
+  html:not(#_) body:not(#_) html, html:not(#_) body:not(#_){ height:auto !important; min-height:0 !important; }
+  /* nothing from the app's own overlays ever reaches paper */
+  html:not(#_) body:not(#_) > .m8-menu, html:not(#_) body:not(#_) > .m8-menu-scrim, html:not(#_) body:not(#_) #m9-rmenu, html:not(#_) body:not(#_) #m9-rscrim, html:not(#_) body:not(#_) #m8-cq-menu, html:not(#_) body:not(#_) #m8-cq-scrim, html:not(#_) body:not(#_) #m8-chq-menu, html:not(#_) body:not(#_) #m9-undo-hint,
+  html:not(#_) body:not(#_) .m9q-lib, html:not(#_) body:not(#_) .m9q-pop, html:not(#_) body:not(#_) #m8-rb, html:not(#_) body:not(#_) #m8-hud, html:not(#_) body:not(#_) #m8-dock, html:not(#_) body:not(#_) #m8-savebar, html:not(#_) body:not(#_) #m8-pv, html:not(#_) body:not(#_) #m8-keys, html:not(#_) body:not(#_) #m8-rem, html:not(#_) body:not(#_) #m8-cqd, html:not(#_) body:not(#_) #toast-container, html:not(#_) body:not(#_) .m8-ov{ display:none !important; }
+  html:not(#_) body:not(#_) #page-search .ref-table thead th, html:not(#_) body:not(#_) #page-urdu-stmt .ref-table thead th{ background:#151517 !important; border-color:#151517 !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
 </style>
 </head>
@@ -1059,6 +1140,7 @@ function printChequeListPdf(){
   function titleOf(html){ var m = /<title>([\s\S]*?)<\/title>/i.exec(html); return m ? m[1].replace(/<[^>]+>/g,'').trim() : 'Document'; }
   var PAPER_W = 794;     /* A4 at 96 dpi — the preview is laid out exactly like the printed page */
   var FRAME_CSS = '<style id="m8-frame">html,body{background:#fff!important;margin:0!important;padding:0!important;min-height:0!important}'+
+    '*,*::before,*::after{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}'+
     '.inv-doc,.uinv-doc,.rcpt-doc,.erp-doc{margin:0 auto!important;box-shadow:none!important;border-radius:0!important;max-width:100%!important}'+
     '.inv-doc.inv-doc-page{margin-bottom:0!important;border-bottom:10px solid #e9e9eb!important}'+
     '@media print{.inv-doc.inv-doc-page{border-bottom:0!important}}</style>';
@@ -1078,6 +1160,9 @@ function printChequeListPdf(){
     function fit(){
       var avail = host.clientWidth || host.getBoundingClientRect().width;
       if(!avail) return;
+      try{ var hs = getComputedStyle(host), ws = getComputedStyle(wrap);
+        avail -= (parseFloat(hs.paddingLeft)||0) + (parseFloat(hs.paddingRight)||0) + (parseFloat(ws.marginLeft)||0) + (parseFloat(ws.marginRight)||0); }catch(e){}
+      if(avail < 40) return;
       var s = Math.min(1, (avail) / PAPER_W) * zoom;
       try{ var d = f.contentDocument; if(d && d.documentElement){ natH = Math.max(d.documentElement.scrollHeight, d.body ? d.body.scrollHeight : 0, 300); } }catch(e){}
       f.style.height = natH + 'px';
@@ -1285,6 +1370,16 @@ function printChequeListPdf(){
     return null;
   }
   M8.parseDate = parseDate; M8.parseMonth = parseMonth;
+  /* Is a search word a date? "29" = the 29th of this month, plus every typed form
+     (29-10 · 29.10 · 29/10/26 · 29-10/26 · 29 oct · today). Returns YYYY-MM-DD or null. */
+  M8.dateQuery = function(q){
+    var s = String(q == null ? '' : q).trim().toLowerCase(); if(!s) return null;
+    if(/^\d{1,2}$/.test(s)) return (+s >= 1 && +s <= 31) ? parseDate(s) : null;
+    if(/^(t|today|y|yesterday|tm|tomorrow)$/.test(s)) return parseDate(s);
+    if(/\d/.test(s) && /^[\d\s\/.\-]+$/.test(s) && /[\/.\-\s]/.test(s)) return parseDate(s) || null;
+    if(/^\d{1,2}(st|nd|rd|th)?\s*[a-z]{3,9}(\s*\d{2,4})?$|^[a-z]{3,9}\s*\d{1,2}(\s*\d{2,4})?$/.test(s)) return parseDate(s) || null;
+    return null;
+  };
 
   function show(iso, month){
     if(!iso) return '';
@@ -1842,13 +1937,13 @@ function printChequeListPdf(){
     return '';
   }
   function filtered(){
-    var t0 = iso(localToday()), r = perRange(), q = V.q.trim().toLowerCase();
+    var t0 = iso(localToday()), r = perRange(), q = V.q.trim().toLowerCase(), qd = M8.dateQuery ? M8.dateQuery(q) : null;
     var list = all().filter(function(c){
       if(V.st === 'pending' && c.cleared) return false;
       if(V.st === 'overdue' && (c.cleared || c.date >= t0)) return false;
       if(V.st === 'cleared' && !c.cleared) return false;
       if(r && (c.date < r[0] || c.date > r[1])) return false;
-      if(q && [c.party, c.chequeNo, c.note, String(c.amount), money(c.amount)].join(' ').toLowerCase().indexOf(q) < 0) return false;
+      if(q && [c.party, c.chequeNo, c.note, String(c.amount), money(c.amount)].join(' ').toLowerCase().indexOf(q) < 0 && !(qd && c.date === qd)) return false;
       return true;
     });
     var newestFirst = V.st === 'cleared' || (V.st === 'all' && (V.per === 'all' || V.per === 'last'));
@@ -1890,6 +1985,7 @@ function printChequeListPdf(){
     }
     if(e.target.closest('[data-reset]')){ var q = V.q; V = JSON.parse(JSON.stringify(DEF_V)); V.q = q; paintRegister(); return; }
     if((t = e.target.closest('[data-clr]'))){ e.stopPropagation(); toggleClear(t.dataset.clr); return; }
+    if((t = e.target.closest('[data-cqm]'))){ e.stopPropagation(); cqMenu(t, t.dataset.cqm); return; }
     if((t = e.target.closest('[data-rem]'))){ e.stopPropagation(); editing = t.dataset.rem; openReminders(); return; }
     if((t = e.target.closest('[data-edit]'))){ openCheque(t.dataset.edit); return; }
     if((t = e.target.closest('[data-ca]'))){
@@ -1923,6 +2019,40 @@ function printChequeListPdf(){
     }
   }
   M8.toggleChequeClear = toggleClear;
+  /* each cheque's own ⋯ menu — marking as cleared lives here, away from stray taps */
+  function cqMenu(btn, id){
+    var c = all().find(function(x){ return String(x.id) === String(id); }); if(!c) return;
+    var m = $('m8-cq-menu'), s = $('m8-cq-scrim');
+    if(!m){
+      s = document.createElement('div'); s.id = 'm8-cq-scrim'; s.className = 'm8-menu-scrim';
+      m = document.createElement('div'); m.id = 'm8-cq-menu'; m.className = 'm8-menu'; m.setAttribute('role', 'menu');
+      document.body.appendChild(s); document.body.appendChild(m);
+      var shut = function(){ m.classList.remove('open'); s.classList.remove('open'); };
+      s.addEventListener('click', shut);
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape') shut(); });
+      window.addEventListener('resize', shut, { passive:true });
+      document.addEventListener('scroll', function(){ if(!M8.isPhone()) shut(); }, true);
+      m.addEventListener('click', function(e){
+        var b = e.target.closest('[data-cm]'); if(!b) return;
+        var k = b.dataset.cm, cid = m.dataset.id; shut();
+        if(k === 'clr') toggleClear(cid);
+        else if(k === 'open') openCheque(cid);
+        else if(k === 'rem'){ editing = cid; openReminders(); }
+      });
+    }
+    m.dataset.id = c.id;
+    m.innerHTML = '<div class="m8-menu-t">'+esc(c.party||'Cheque')+' · AED '+money(c.amount)+'</div>'+
+      '<button type="button" role="menuitem" data-cm="clr">'+icon(c.cleared ? 'restore' : 'check')+'<span>'+(c.cleared ? 'Mark as pending' : 'Mark as cleared')+'</span></button>'+
+      '<button type="button" role="menuitem" data-cm="open">'+icon(VIEW ? 'eye' : 'edit')+'<span>'+(VIEW ? 'Details' : 'Edit cheque')+'</span></button>'+
+      (c.cleared ? '' : '<button type="button" role="menuitem" data-cm="rem">'+icon('bell')+'<span>Reminder for this cheque</span></button>');
+    if(!M8.isPhone()){
+      var r = btn.getBoundingClientRect();
+      m.style.left = 'auto'; m.style.right = Math.max(10, innerWidth - r.right) + 'px';
+      m.classList.add('open');
+      var h = m.offsetHeight; m.style.top = (innerHeight - r.bottom - 12 >= h ? r.bottom + 6 : Math.max(10, r.top - h - 6)) + 'px';
+    } else { m.style.top = ''; m.style.left = ''; m.style.right = ''; m.classList.add('open'); }
+    s.classList.add('open'); M8.vibe(4);
+  }
   function openCheque(id){
     if(!VIEW && typeof openChequeModal === 'function') return openChequeModal(id);
     var c = all().find(function(x){ return String(x.id) === String(id); }); if(!c) return;
@@ -2046,7 +2176,7 @@ function printChequeListPdf(){
             '<span class="m8-av">'+esc(initials(c.party))+'</span>'+
             '<span class="m8-cq-m"><b>'+esc(c.party||'—')+'</b><small>#'+esc(c.chequeNo||'—')+(c.note?' · '+esc(c.note):'')+'</small></span>'+
             '<span class="m8-cq-s"><b>'+money(c.amount)+'</b><span class="m8-st '+st[0]+'">'+st[1]+'</span></span>'+
-            '<button type="button" class="m8-tick'+(c.cleared?' on':'')+'" data-clr="'+esc(c.id)+'" aria-pressed="'+(!!c.cleared)+'" aria-label="'+(c.cleared?'Cleared — tap to mark pending':'Mark as cleared')+'" title="'+(c.cleared?'Cleared — tap to undo':'Mark as cleared')+'">'+icon('check')+'</button>'+
+            '<button type="button" class="m8-cq-more" data-cqm="'+esc(c.id)+'" aria-haspopup="menu" aria-label="More for this cheque" title="More">'+icon('more')+'</button>'+
             '</div>';
         }).join('')+'</section>';
     }).join('');
