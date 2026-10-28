@@ -24469,8 +24469,10 @@ html:not(#_) body:not(#_) .m10-note{ font-size:12px; color:var(--k-ink3); line-h
   html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-bar{ -webkit-backdrop-filter:blur(24px) saturate(1.9) !important; backdrop-filter:blur(24px) saturate(1.9) !important; }
   html:not(#_) body:not(#_).dark-mode .m10-bar{ background:rgba(36,36,40,.74); border-color:rgba(255,255,255,.09); box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 18px 36px -16px rgba(0,0,0,.85); }
   /* one solid disc glides under the active icon */
-  html:not(#_) body:not(#_) .m10-lens{ position:absolute; z-index:0; top:7px; left:10px; width:46px; height:46px; border-radius:50%; background:var(--k-dark); pointer-events:none; opacity:0;
-    transform:translate3d(calc(var(--i, 0) * 54px), 0, 0); box-shadow:0 8px 16px -8px rgba(0,0,0,.6); }
+  html:not(#_) body:not(#_) .m10-lens{ position:absolute; z-index:0; top:0; left:0; width:46px; height:46px; border-radius:50%; background:var(--k-dark); pointer-events:none; opacity:0;
+    box-shadow:0 8px 16px -8px rgba(0,0,0,.6); }
+  /* the icons are drawn a hair low inside their box — lift them so they sit dead-centre */
+  html:not(#_) body:not(#_) .m10-t svg{ display:block; transform:translateY(-.5px); }
   html:not(#_) body:not(#_) .m10-bar.has-on .m10-lens{ opacity:1; }
   html:not(#_#_#_) body:not(#_#_#_) .m10-lens{ transition:transform 340ms var(--m10-spring), opacity 160ms ease !important; transition-property:transform, opacity !important; transition-duration:340ms, 160ms !important; }
   html:not(#_#_#_) body:not(#_#_#_) .m10-lens.instant{ transition:none !important; }
@@ -24502,7 +24504,6 @@ html:not(#_) body:not(#_) .m10-note{ font-size:12px; color:var(--k-ink3); line-h
 @media screen and (min-width:600px) and (max-width:900px){
   html:not(#_) body:not(#_) .m10-bar{ grid-template-columns:repeat(4, 62px); height:66px; }
   html:not(#_) body:not(#_) .m10-t{ width:62px; height:58px; }
-  html:not(#_) body:not(#_) .m10-lens{ top:9px; left:14px; transform:translate3d(calc(var(--i, 0) * 62px), 0, 0); }
   html:not(#_) body:not(#_) .m10-plus{ width:62px; height:62px; flex-basis:62px; }
 }
 @media (prefers-reduced-motion: reduce){
@@ -29258,7 +29259,14 @@ html:has(body.dark-mode)::backdrop{ background:#0c0c0d !important; }
     var bar = $('m10-bar'), lens = $('m10-lens'); if(!bar || !lens) return;
     var on = i >= 0;
     if(instant) lens.classList.add('instant');
-    if(on) lens.style.setProperty('--i', i);
+    if(on){
+      /* the disc is placed on the icon's own measured centre, so it is always dead-centre */
+      var btn = bar.querySelector('.m10-t[data-tab="' + TABS[i] + '"]');
+      if(btn && bar.offsetWidth){
+        var x = btn.offsetLeft + (btn.offsetWidth - lens.offsetWidth) / 2, y = btn.offsetTop + (btn.offsetHeight - lens.offsetHeight) / 2;
+        lens.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
+      }
+    }
     bar.classList.toggle('has-on', on);
     bar.querySelectorAll('.m10-t').forEach(function(b){
       var hit = on && b.dataset.tab === TABS[i];
@@ -29477,6 +29485,7 @@ html:has(body.dark-mode)::backdrop{ background:#0c0c0d !important; }
       var swm = M8.switchMode; M8.switchMode = function(){ var r = swm.apply(this, arguments); syncDock(false); return r; }; M8.switchMode.__m10 = true;
     }
     if(small.addEventListener) small.addEventListener('change', function(){ syncDock(true); headerSize(); });
+    window.addEventListener('resize', function(){ syncDock(true); }, { passive:true });
     var sc = $('app-scroll'); if(sc) sc.addEventListener('scroll', onScroll, { passive:true });
     var tb = $('topbar'); if(tb && window.ResizeObserver) new ResizeObserver(headerSize).observe(tb);
     window.addEventListener('resize', headerSize, { passive:true });
