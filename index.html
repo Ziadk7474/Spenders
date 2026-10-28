@@ -24287,6 +24287,9 @@ html:not(#_) body:not(#_) button > .m9i:only-child{ margin-right:0; }
   html:not(#_) body:not(#_) .m9q-card-a{ width:100%; justify-content:flex-end; }
   html:not(#_) body:not(#_) .m9q-card-a .m8-btn{ flex:1; }
 }
+
+/* party search: hidden rows stay hidden in card view too */
+html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch > td{ display:none !important; }
 </style>
 <script id="m5-js">/* ══════════════════════════════════════════════════════════════════════
    M8 · CORE — one icon set, safe printing, real document previews.
@@ -25746,7 +25749,7 @@ html:not(#_) body:not(#_) button > .m9i:only-child{ margin-right:0; }
       var inp = w.querySelector('input');
       var apply = function(){
         var q = inp.value.trim().toLowerCase(), n = 0, all = 0;
-        pt.querySelectorAll('tbody tr').forEach(function(tr){ if(tr.classList.contains('m5-empty-row')) return; all++; var t = (tr.cells[1] ? tr.cells[1].textContent : '').toLowerCase(); var ok = !q || t.indexOf(q) >= 0; tr.style.display = ok ? '' : 'none'; if(ok) n++; });
+        pt.querySelectorAll('tbody tr').forEach(function(tr){ if(tr.classList.contains('m5-empty-row')) return; all++; var t = (tr.cells[1] ? tr.cells[1].textContent : '').toLowerCase(); var ok = !q || t.indexOf(q) >= 0; tr.classList.toggle('m8-nomatch', !ok); tr.style.display = ''; if(ok) n++; });
         $('m8-psearch-n').textContent = q ? n+' of '+all : all+' '+(mode()==='sales'?'customers':'vendors');
       };
       inp.addEventListener('input', apply);
