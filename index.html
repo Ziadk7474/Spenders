@@ -27395,6 +27395,26 @@ html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html
   M8.rowMenu = { open:open, close:close };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook); else hook();
 })();
+
+/* ── keep the installed app on the newest version ──
+   Checks for an update each time the app is opened or brought back. When a new
+   version takes over it reloads straight away if the app was only just opened,
+   otherwise it offers a one-tap reload so nothing typed is lost. */
+(function(){
+  if(!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+  var t0 = Date.now(), done = false;
+  function check(){ try{ navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update().catch(function(){}); }); }catch(e){} }
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    if(done) return; done = true;
+    if(Date.now() - t0 < 15000 || document.visibilityState === 'hidden'){ location.reload(); return; }
+    if(typeof showUndoToast === 'function'){
+      showUndoToast('A new version of the app is ready', function(){ location.reload(); });
+      setTimeout(function(){ var b = document.querySelector('#toast-container .toast:last-child button'); if(b) b.textContent = 'Reload'; }, 30);
+    }
+  });
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') check(); });
+  setTimeout(check, 3000);
+})();
 </script>
 <script>/* ══════════════════════════════════════════════════════════════════════
    M9 · ITEMS & LISTS — rebuilt
@@ -27606,11 +27626,23 @@ html:not(#_#_#_) body:not(#_#_#_) #party-summary-table tbody tr.m8-nomatch, html
       b('restore', 'upload', 'Restore from backup', 'Replaces the cloud data. A safety copy downloads first.', 'warn') + '</div>';
   }
 
+  /* typing in a search box only refreshes the results — the box itself is never
+     rebuilt, so the phone keyboard stays open and keeps every letter */
+  function paintRes(){
+    var pane = document.querySelector('#m9-items .m9-pane'); if(!pane) return paint();
+    var bar = pane.querySelector(':scope > .m9-bar'); if(!bar) return paint();
+    var tmp = document.createElement('div');
+    tmp.innerHTML = S.tab === 'items' ? paneItems() : S.tab === 'parties' ? paneParties() : '';
+    var nb = tmp.querySelector(':scope > .m9-bar'); if(!nb) return paint();
+    while(bar.nextSibling) pane.removeChild(bar.nextSibling);
+    while(nb.nextSibling) pane.appendChild(nb.nextSibling);
+  }
+
   /* ── events ── */
   function onInput(e){
     var t = e.target;
-    if(t.id === 'm9-it-q'){ S.q = t.value; clearTimeout(onInput._t); onInput._t = setTimeout(paint, 90); }
-    else if(t.id === 'm9-pa-q'){ S.pq = t.value; clearTimeout(onInput._t); onInput._t = setTimeout(paint, 90); }
+    if(t.id === 'm9-it-q'){ S.q = t.value; clearTimeout(onInput._t); onInput._t = setTimeout(paintRes, 60); }
+    else if(t.id === 'm9-pa-q'){ S.pq = t.value; clearTimeout(onInput._t); onInput._t = setTimeout(paintRes, 60); }
   }
   function onKey(e){
     if(e.key !== 'Enter') { if(e.key === 'Escape' && (S.edit || S.adding)){ S.edit = null; S.adding = false; paint(); } return; }
