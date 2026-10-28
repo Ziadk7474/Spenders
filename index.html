@@ -24525,6 +24525,12 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
   background:linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,0)); }
 
 @media print{ #m10-dock, #m10-mp, #m10-mp-scrim, #m10-hs{ display:none !important; } body::before, body::after{ display:none !important; } }
+
+/* full screen: whatever Android shows around the app (the camera strip) gets the app's own plain colour */
+html:fullscreen, :root:fullscreen{ background:#efefef !important; }
+html:fullscreen:has(body.dark-mode), :root:fullscreen:has(body.dark-mode){ background:#0c0c0d !important; }
+:root::backdrop, html::backdrop{ background:#efefef !important; }
+html:has(body.dark-mode)::backdrop{ background:#0c0c0d !important; }
 </style>
 <script id="m5-js">/* ══════════════════════════════════════════════════════════════════════
    M8 · CORE — one icon set, safe printing, real document previews.
@@ -29153,6 +29159,18 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
      empty strip. So the status bar stays (time, Wi-Fi, battery) and takes
      exactly the app's own background colour, and the top edge of the app
      uses that same colour — the two read as one surface. */
+  /* Full screen (Android home-screen app): hides the bottom system bar and the
+     status bar so the app fills the whole screen. Browsers only allow it after a
+     tap, so it switches on at your first touch. The strip Android keeps at the
+     very top (camera area) gets the same plain colour as the app's top edge. */
+  function canFull(){ return !!(document.fullscreenEnabled && document.documentElement.requestFullscreen) && coarse.matches && !isIOS; }
+  function goFull(){
+    if(!S.full || !canFull() || !standalone() || document.fullscreenElement) return;
+    try{ var r = document.documentElement.requestFullscreen({ navigationUI:'hide' }); if(r && r.catch) r.catch(function(){}); }catch(e){}
+  }
+  document.addEventListener('pointerup', goFull, true);
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') setTimeout(function(){ document.body.classList.toggle('m10-full', !!document.fullscreenElement); }, 200); });
+  document.addEventListener('fullscreenchange', function(){ document.body.classList.toggle('m10-full', !!document.fullscreenElement); });
   function leaveFull(){ if(document.fullscreenElement && document.exitFullscreen){ try{ var r = document.exitFullscreen(); if(r && r.catch) r.catch(function(){}); }catch(e){} } }
 
   /* status bar colour follows the theme (light / dark) */
@@ -29294,7 +29312,7 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
       var lock = sub.querySelector('[data-more="2"]') || sub.querySelector('.zm-subitem[onclick*="openLockSettings"]'); if(!lock) return;
       var inSide = !!sub.closest('#sidebar');
       var el = document.createElement('div'); el.className = 'zm-subitem'; el.setAttribute('data-m10', 'hs'); el.setAttribute('role', 'button'); el.tabIndex = 0;
-      el.innerHTML = '<span class="m8-subic">' + icon('phone') + '</span>' + (inSide ? '<span class="zm-lbl">Haptics</span>' : '<span>Haptics</span>');
+      el.innerHTML = '<span class="m8-subic">' + icon('phone') + '</span>' + (inSide ? '<span class="zm-lbl">Haptics &amp; screen</span>' : '<span>Haptics &amp; screen</span>');
       el.addEventListener('click', function(e){ e.stopPropagation(); if(typeof closeDrawer === 'function') closeDrawer(); if(typeof zsbCloseFly === 'function') try{ zsbCloseFly(); }catch(err){} setTimeout(openSettings, 60); });
       lock.parentNode.insertBefore(el, lock.nextSibling);
     });
@@ -29310,13 +29328,14 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
       '<div class="m10-row' + (S.hap ? '' : ' off') + '" style="display:block"><b>Strength</b><small>Tap one to feel it.</small>' +
         '<div class="m10-seg" role="radiogroup" aria-label="Haptic strength">' + ['light', 'medium', 'strong'].map(function(l){
           return '<button type="button" role="radio" data-lv="' + l + '" aria-checked="' + (S.level === l) + '" class="' + (S.level === l ? 'on' : '') + '">' + l.charAt(0).toUpperCase() + l.slice(1) + '</button>'; }).join('') + '</div></div>' +
+      (canFull() ? '<div class="m10-row"><div><b>Full screen</b><small>Hide the bottom system bar and the status bar so the app fills the whole screen.</small></div>' + sw('full', S.full) + '</div>' : '') +
       '<p class="m10-note">' + (isIOS ? 'Haptics on iPhone need iOS 18 or newer; the strength is set by the iPhone.' : 'Strength changes how long each tap lasts.') + '</p>';
   }
   function buildSettings(){
     if($('m10-hs')) return;
     var ov = document.createElement('div'); ov.id = 'm10-hs'; ov.className = 'm8-ov';
     ov.innerHTML = '<div class="m8-sheet" role="dialog" aria-modal="true" aria-labelledby="m10-hs-t">' +
-      '<div class="m8-sheet-h"><div><b id="m10-hs-t">Haptics</b><small>Saved on this device</small></div><button type="button" class="m8-ib" data-x aria-label="Close">' + icon('x') + '</button></div>' +
+      '<div class="m8-sheet-h"><div><b id="m10-hs-t">Haptics &amp; screen</b><small>Saved on this device</small></div><button type="button" class="m8-ib" data-x aria-label="Close">' + icon('x') + '</button></div>' +
       '<div class="m8-sheet-b" id="m10-hs-b"></div></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', function(e){
@@ -29325,6 +29344,7 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
       if(s){
         var k = s.dataset.sw; S[k] = !S[k]; save();
         if(k === 'hap' && S.hap) M8.haptic('success');
+        if(k === 'full'){ if(S.full) goFull(); else leaveFull(); }
         if(k !== 'hap') M8.haptic('select');
         paintSettings(); return;
       }
@@ -29446,7 +29466,6 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
   /* ── BOOT ── */
   function boot(){
     if(isIOS && navigator.standalone) document.body.classList.add('m10-ios');
-    leaveFull();
     fastDrawer();
     buildDock();
     hookToasts();
