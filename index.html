@@ -24312,17 +24312,21 @@ html:not(#_) body:not(#_).dark-mode, html:not(#_) body:not(#_).dark-mode.mode-sa
   --m8-glass:#1d1d20 !important; --m8-glass-b:var(--k-line) !important; --m8-scrim:rgba(0,0,0,.55) !important;
 }
 
-/* ── 1 · ORANGE GLOW behind the app — strongest at the top right ── */
-html:not(#_) body:not(#_)::before{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+/* ── 1 · ORANGE GLOW — strongest at the top right. The very top edge stays the
+   same plain colour as the phone's status bar, so the two join without a line. ── */
+html:not(#_#_#_) body:not(#_#_#_).m8::before{
   background:
-    radial-gradient(34vmax 26vmax at 96% 0%, rgba(240,112,70,.30), rgba(240,112,70,0) 70%),
-    radial-gradient(70vmax 46vmax at 100% -4%, rgba(232,97,58,.18), rgba(232,97,58,0) 64%),
-    radial-gradient(50vmax 34vmax at -10% 108%, rgba(232,97,58,.07), rgba(232,97,58,0) 60%); }
-html:not(#_) body:not(#_).dark-mode::before{
+    linear-gradient(180deg, #efefef 0, rgba(239,239,239,0) 54px),
+    radial-gradient(38vmax 28vmax at 98% 7%, rgba(240,112,70,.26), rgba(240,112,70,0) 70%),
+    radial-gradient(68vmax 46vmax at 100% 2%, rgba(232,97,58,.15), rgba(232,97,58,0) 64%),
+    radial-gradient(48vmax 38vmax at -8% 42%, rgba(255,255,255,.85), rgba(255,255,255,0) 66%),
+    radial-gradient(54vmax 40vmax at 72% 108%, rgba(232,97,58,.09), rgba(232,97,58,0) 64%) !important; }
+html:not(#_#_#_) body:not(#_#_#_).m8.dark-mode::before{
   background:
-    radial-gradient(34vmax 26vmax at 96% 0%, rgba(240,106,66,.30), rgba(240,106,66,0) 70%),
-    radial-gradient(70vmax 46vmax at 100% -4%, rgba(240,106,66,.16), rgba(240,106,66,0) 62%),
-    radial-gradient(50vmax 34vmax at -10% 108%, rgba(240,106,66,.07), rgba(240,106,66,0) 60%); }
+    linear-gradient(180deg, #0c0c0d 0, rgba(12,12,13,0) 54px),
+    radial-gradient(38vmax 28vmax at 98% 7%, rgba(240,106,66,.24), rgba(240,106,66,0) 70%),
+    radial-gradient(68vmax 46vmax at 100% 2%, rgba(240,106,66,.12), rgba(240,106,66,0) 62%),
+    radial-gradient(54vmax 40vmax at 72% 108%, rgba(240,106,66,.06), rgba(240,106,66,0) 64%) !important; }
 
 /* ── 2 · CALMER NUMBERS in the small dashboard tiles ── */
 html:not(#_) body:not(#_) .m8-tile-h em{ font-size:12px !important; font-weight:500 !important; color:var(--k-ink3) !important; letter-spacing:0 !important; }
@@ -24374,6 +24378,12 @@ html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item.acti
 html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu :is(.zm-item.active, .zm-item.zm-home.active, .zm-subitem.active, .zm-item.m10-on) :is(svg, .zm-ic, .m8-subic, span){
   color:#fff !important; stroke:#fff !important; }
 html:not(#_#_#_) body:not(#_#_#_) :is(#sidebar,#drawer) .zmenu .zm-item.active > .zsb-plus{ background:rgba(255,255,255,.22) !important; color:#fff !important; }
+
+/* side menu on phone/tablet: only transform + opacity animate (smooth on slower phones) */
+@media screen and (max-width:900px){
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar{ transition:transform 260ms cubic-bezier(.22,1,.36,1) !important; transition-property:transform !important; transition-duration:260ms !important; will-change:transform; contain:layout paint style; }
+  html:not(#_#_#_) body:not(#_#_#_).mobile-sidebar-open #scrim{ animation:m8Fade 200ms ease-out both !important; animation-duration:200ms !important; }
+}
 
 /* ── 5 · ROUND LOGOS: splash + lock are always a perfect circle ── */
 html:not(#_) body:not(#_) .flo-logo, html:not(#_) body:not(#_) #firebase-loading-overlay .flo-logo{ width:84px !important; height:84px !important; aspect-ratio:1 / 1; }
@@ -24435,42 +24445,43 @@ html:not(#_) body:not(#_) .m10-note{ font-size:12px; color:var(--k-ink3); line-h
 
 /* ══ PHONE + TABLET (≤ 900) ══ */
 @media screen and (max-width:900px){
-  /* transparent header that floats over the page — no band, no separate bar */
+  /* fully transparent header that floats over the page: logo and buttons only stay on screen
+     while you scroll; the title fades so it never sits on top of the content */
   html:not(#_) body:not(#_) #topbar{ position:fixed !important; top:0; left:0; right:0; z-index:7000 !important; background:transparent !important; box-shadow:none !important; border:0 !important;
-    padding-top:calc(10px + env(safe-area-inset-top)) !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #topbar::before{ display:block !important; content:"" !important; position:absolute; left:0; right:0; top:0; bottom:-22px; z-index:-1; pointer-events:none; opacity:0;
-    background:linear-gradient(180deg, var(--k-sheet) 0%, var(--k-sheet) 58%, rgba(255,255,255,0) 100%); }
-  html:not(#_#_#_) body:not(#_#_#_).dark-mode #topbar::before{ background:linear-gradient(180deg, var(--k-sheet) 0%, var(--k-sheet) 58%, rgba(21,21,23,0) 100%); }
-  html:not(#_#_#_) body:not(#_#_#_).m10-scrolled #topbar::before{ opacity:1; }
-  html:not(#_#_#_) body:not(#_#_#_) #topbar::before{ transition:opacity 200ms ease !important; transition-property:opacity !important; transition-duration:200ms !important; }
+    padding-top:calc(10px + env(safe-area-inset-top)) !important; pointer-events:none; }
+  html:not(#_) body:not(#_) #m5-hdr{ pointer-events:none; }
+  html:not(#_) body:not(#_) #topbar > :not(#m5-hdr), html:not(#_) body:not(#_) #m5-hdr > *{ pointer-events:auto; }
+  html:not(#_) body:not(#_) #m5-hdr .m5-ttl{ opacity:1; }
+  html:not(#_) body:not(#_).m10-scrolled #m5-hdr .m5-ttl{ opacity:0; transform:translate3d(0,-4px,0); pointer-events:none; }
+  html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl{ transition:opacity 180ms ease, transform 180ms ease !important; transition-property:opacity, transform !important; transition-duration:180ms !important; }
+  /* the logo, bell and switch keep a soft shadow so they read over any content */
+  html:not(#_) body:not(#_).m10-scrolled #m5-logo, html:not(#_) body:not(#_).m10-scrolled .m8-bell, html:not(#_) body:not(#_).m10-scrolled .m8-switch{ box-shadow:0 6px 18px -8px rgba(0,0,0,.35) !important; }
   html:not(#_) body:not(#_) #app-scroll{ padding-top:var(--m10-hdr, calc(66px + env(safe-area-inset-top))) !important; }
 
   html:not(#_) body:not(#_) #m8-dock{ display:none !important; }
 
-  /* ── the nav: one glass pill (4 tabs) + a solid orange create button ── */
-  html:not(#_) body:not(#_) #m10-dock{ display:flex; align-items:center; justify-content:center; gap:10px; position:fixed; left:0; right:0; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:8000; pointer-events:none; }
-  html:not(#_) body:not(#_) .m10-bar{ pointer-events:auto; position:relative; display:grid; grid-template-columns:repeat(4, 58px); align-items:center; height:62px; padding:6px; border-radius:31px;
-    background:rgba(255,255,255,.74); border:1px solid rgba(255,255,255,.8);
-    box-shadow:0 1px 0 rgba(255,255,255,.95) inset, 0 0 0 .5px rgba(18,18,18,.06), 0 18px 36px -18px rgba(24,24,32,.42), 0 2px 8px -3px rgba(24,24,32,.10);
+  /* ── the nav: one glass pill with four icons + a solid orange create button ── */
+  html:not(#_) body:not(#_) #m10-dock{ display:flex; align-items:center; justify-content:center; gap:12px; position:fixed; left:0; right:0; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:8000; pointer-events:none; }
+  html:not(#_) body:not(#_) .m10-bar{ pointer-events:auto; position:relative; display:grid; grid-template-columns:repeat(4, 54px); align-items:center; height:62px; padding:4px 6px; border-radius:31px;
+    background:rgba(255,255,255,.76); border:1px solid rgba(255,255,255,.85);
+    box-shadow:0 1px 0 rgba(255,255,255,.95) inset, 0 0 0 .5px rgba(18,18,18,.07), 0 18px 36px -18px rgba(24,24,32,.42), 0 2px 8px -3px rgba(24,24,32,.10);
     touch-action:pan-y; -webkit-user-select:none; user-select:none; isolation:isolate; }
   html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-bar{ -webkit-backdrop-filter:blur(24px) saturate(1.9) !important; backdrop-filter:blur(24px) saturate(1.9) !important; }
-  html:not(#_) body:not(#_).dark-mode .m10-bar{ background:rgba(36,36,40,.72); border-color:rgba(255,255,255,.09); box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 18px 36px -16px rgba(0,0,0,.85); }
-  /* one solid capsule slides under the active tab — fixed size, so nothing moves around */
-  html:not(#_) body:not(#_) .m10-lens{ position:absolute; z-index:0; top:6px; left:6px; width:58px; height:50px; border-radius:25px; background:var(--k-dark); pointer-events:none; opacity:0;
-    transform:translate3d(calc(var(--i, 0) * 100%), 0, 0); box-shadow:0 6px 14px -8px rgba(0,0,0,.55); }
+  html:not(#_) body:not(#_).dark-mode .m10-bar{ background:rgba(36,36,40,.74); border-color:rgba(255,255,255,.09); box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 18px 36px -16px rgba(0,0,0,.85); }
+  /* one solid disc glides under the active icon */
+  html:not(#_) body:not(#_) .m10-lens{ position:absolute; z-index:0; top:7px; left:10px; width:46px; height:46px; border-radius:50%; background:var(--k-dark); pointer-events:none; opacity:0;
+    transform:translate3d(calc(var(--i, 0) * 54px), 0, 0); box-shadow:0 8px 16px -8px rgba(0,0,0,.6); }
   html:not(#_) body:not(#_) .m10-bar.has-on .m10-lens{ opacity:1; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-lens{ transition:transform 380ms var(--m10-spring), opacity 180ms ease !important; transition-property:transform, opacity !important; transition-duration:380ms, 180ms !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-lens{ transition:transform 340ms var(--m10-spring), opacity 160ms ease !important; transition-property:transform, opacity !important; transition-duration:340ms, 160ms !important; }
   html:not(#_#_#_) body:not(#_#_#_) .m10-lens.instant{ transition:none !important; }
-  html:not(#_) body:not(#_) .m10-t{ position:relative; z-index:1; width:58px; height:50px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-    border:0; padding:0; margin:0; background:transparent !important; color:var(--k-ink2); cursor:pointer; border-radius:25px; box-shadow:none !important;
-    -webkit-tap-highlight-color:transparent; font-family:var(--k-font); }
-  html:not(#_) body:not(#_) .m10-t svg{ width:21px; height:21px; flex:0 0 auto; }
-  html:not(#_) body:not(#_) .m10-l{ font:550 10px/1 var(--k-font); letter-spacing:.01em; white-space:nowrap; color:var(--k-ink3); }
+  html:not(#_) body:not(#_) .m10-t{ position:relative; z-index:1; width:54px; height:54px; display:grid; place-items:center; border:0; padding:0; margin:0; background:transparent !important;
+    color:var(--k-ink2); cursor:pointer; border-radius:50%; box-shadow:none !important; -webkit-tap-highlight-color:transparent; }
+  html:not(#_) body:not(#_) .m10-t svg{ width:23px; height:23px; }
+  html:not(#_) body:not(#_) .m10-l{ display:none !important; }
   html:not(#_) body:not(#_) .m10-t.on{ color:var(--k-acc); }
-  html:not(#_) body:not(#_) .m10-t.on .m10-l{ color:var(--k-on-dark); font-weight:650; }
-  html:not(#_#_#_) body:not(#_#_#_) .m10-t, html:not(#_#_#_) body:not(#_#_#_) .m10-t .m10-l{ transition:color 200ms ease !important; transition-property:color !important; transition-duration:200ms !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m10-t{ transition:color 200ms ease !important; transition-property:color !important; transition-duration:200ms !important; }
   html:not(#_) body:not(#_) .m10-t:active, html:not(#_) body:not(#_) .m10-t:focus{ outline:none !important; }
-  html:not(#_) body:not(#_) .m10-t:focus-visible{ outline:2px solid rgba(232,97,58,.5) !important; outline-offset:-3px; }
+  html:not(#_) body:not(#_) .m10-t:focus-visible{ outline:2px solid rgba(232,97,58,.5) !important; outline-offset:-4px; }
 
   html:not(#_) body:not(#_) .m10-plus{ pointer-events:auto; position:relative; flex:0 0 58px; width:58px; height:58px; border-radius:50%; border:0; padding:0; cursor:pointer; color:#fff;
     background:var(--k-acc) !important; background-image:none !important; display:grid; place-items:center;
@@ -24489,9 +24500,10 @@ html:not(#_) body:not(#_) .m10-note{ font-size:12px; color:var(--k-ink3); line-h
   html:not(#_) body:not(#_) #m8-hud{ bottom:calc(92px + env(safe-area-inset-bottom)) !important; }
 }
 @media screen and (min-width:600px) and (max-width:900px){
-  html:not(#_) body:not(#_) .m10-bar{ grid-template-columns:repeat(4, 66px); height:64px; }
-  html:not(#_) body:not(#_) .m10-lens, html:not(#_) body:not(#_) .m10-t{ width:66px; height:52px; }
-  html:not(#_) body:not(#_) .m10-plus{ width:60px; height:60px; flex-basis:60px; }
+  html:not(#_) body:not(#_) .m10-bar{ grid-template-columns:repeat(4, 62px); height:66px; }
+  html:not(#_) body:not(#_) .m10-t{ width:62px; height:58px; }
+  html:not(#_) body:not(#_) .m10-lens{ top:9px; left:14px; transform:translate3d(calc(var(--i, 0) * 62px), 0, 0); }
+  html:not(#_) body:not(#_) .m10-plus{ width:62px; height:62px; flex-basis:62px; }
 }
 @media (prefers-reduced-motion: reduce){
   html:not(#_#_#_) body:not(#_#_#_) .m10-lens, html:not(#_#_#_) body:not(#_#_#_) .m10-plus svg, html:not(#_#_#_) body:not(#_#_#_) .page.active{ transition:none !important; animation:none !important; }
@@ -29136,16 +29148,11 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
     if(e.target.closest && e.target.closest('.zmenu .zm-item, .zmenu .zm-subitem, .zmenu .zm-ghead')) M8.haptic('select');
   }, true);
 
-  /* ── 3 · FULL SCREEN (Android home-screen app) ──
-     Hides the status bar and the system navigation bar so the app fills the
-     whole screen. Browsers only allow this after a tap, so it switches on at
-     your first touch. Swipe from the top or bottom edge to see the bars. */
-  function canFull(){ return !!(document.fullscreenEnabled && document.documentElement.requestFullscreen) && coarse.matches && !isIOS; }
-  function goFull(){
-    if(!S.full || !canFull() || !standalone() || document.fullscreenElement) return;
-    try{ var r = document.documentElement.requestFullscreen({ navigationUI:'hide' }); if(r && r.catch) r.catch(function(){}); }catch(e){}
-  }
-  document.addEventListener('pointerup', goFull, true);
+  /* ── 3 · STATUS BAR ──
+     A web app can't draw under Android's status bar, and hiding it left an
+     empty strip. So the status bar stays (time, Wi-Fi, battery) and takes
+     exactly the app's own background colour, and the top edge of the app
+     uses that same colour — the two read as one surface. */
   function leaveFull(){ if(document.fullscreenElement && document.exitFullscreen){ try{ var r = document.exitFullscreen(); if(r && r.catch) r.catch(function(){}); }catch(e){} } }
 
   /* status bar colour follows the theme (light / dark) */
@@ -29287,7 +29294,7 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
       var lock = sub.querySelector('[data-more="2"]') || sub.querySelector('.zm-subitem[onclick*="openLockSettings"]'); if(!lock) return;
       var inSide = !!sub.closest('#sidebar');
       var el = document.createElement('div'); el.className = 'zm-subitem'; el.setAttribute('data-m10', 'hs'); el.setAttribute('role', 'button'); el.tabIndex = 0;
-      el.innerHTML = '<span class="m8-subic">' + icon('phone') + '</span>' + (inSide ? '<span class="zm-lbl">Haptics &amp; screen</span>' : '<span>Haptics &amp; screen</span>');
+      el.innerHTML = '<span class="m8-subic">' + icon('phone') + '</span>' + (inSide ? '<span class="zm-lbl">Haptics</span>' : '<span>Haptics</span>');
       el.addEventListener('click', function(e){ e.stopPropagation(); if(typeof closeDrawer === 'function') closeDrawer(); if(typeof zsbCloseFly === 'function') try{ zsbCloseFly(); }catch(err){} setTimeout(openSettings, 60); });
       lock.parentNode.insertBefore(el, lock.nextSibling);
     });
@@ -29298,21 +29305,18 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
   function paintSettings(){
     var b = $('m10-hs-b'); if(!b) return;
     var hasVib = !!nativeVibrate || isIOS;
-    var full = canFull();
     b.innerHTML =
       '<div class="m10-row"><div><b>Haptics</b><small>' + (hasVib ? 'A soft tap when you press, save or switch.' : 'This device has no vibration motor for apps.') + '</small></div>' + sw('hap', S.hap) + '</div>' +
       '<div class="m10-row' + (S.hap ? '' : ' off') + '" style="display:block"><b>Strength</b><small>Tap one to feel it.</small>' +
         '<div class="m10-seg" role="radiogroup" aria-label="Haptic strength">' + ['light', 'medium', 'strong'].map(function(l){
           return '<button type="button" role="radio" data-lv="' + l + '" aria-checked="' + (S.level === l) + '" class="' + (S.level === l ? 'on' : '') + '">' + l.charAt(0).toUpperCase() + l.slice(1) + '</button>'; }).join('') + '</div></div>' +
-      (full ? '<div class="m10-row"><div><b>Full screen</b><small>Hide the status bar and the bottom system bar so the app fills the whole screen.</small></div>' + sw('full', S.full) + '</div>' : '') +
-      '<p class="m10-note">' + (isIOS ? 'On iPhone the app already runs under the status bar. Haptics need iOS 18 or newer.' :
-        full ? 'Full screen works when the app is opened from its home-screen icon. Swipe from the top or bottom edge to see the bars for a moment.' : '') + '</p>';
+      '<p class="m10-note">' + (isIOS ? 'Haptics on iPhone need iOS 18 or newer; the strength is set by the iPhone.' : 'Strength changes how long each tap lasts.') + '</p>';
   }
   function buildSettings(){
     if($('m10-hs')) return;
     var ov = document.createElement('div'); ov.id = 'm10-hs'; ov.className = 'm8-ov';
     ov.innerHTML = '<div class="m8-sheet" role="dialog" aria-modal="true" aria-labelledby="m10-hs-t">' +
-      '<div class="m8-sheet-h"><div><b id="m10-hs-t">Haptics &amp; screen</b><small>Saved on this device</small></div><button type="button" class="m8-ib" data-x aria-label="Close">' + icon('x') + '</button></div>' +
+      '<div class="m8-sheet-h"><div><b id="m10-hs-t">Haptics</b><small>Saved on this device</small></div><button type="button" class="m8-ib" data-x aria-label="Close">' + icon('x') + '</button></div>' +
       '<div class="m8-sheet-b" id="m10-hs-b"></div></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', function(e){
@@ -29321,7 +29325,6 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
       if(s){
         var k = s.dataset.sw; S[k] = !S[k]; save();
         if(k === 'hap' && S.hap) M8.haptic('success');
-        if(k === 'full'){ if(S.full) goFull(); else leaveFull(); }
         if(k !== 'hap') M8.haptic('select');
         paintSettings(); return;
       }
@@ -29419,9 +29422,32 @@ html:not(#_) body:not(#_).m10-ios:not(.dark-mode)::after{ content:""; position:f
     });
   }
 
+  /* ── SIDE MENU SPEED ──
+     Switching the whole menu between "usable" and "not usable" (inert) is the
+     slow part of opening it. It now happens after the slide, not before it,
+     so the panel moves on the very next frame. */
+  function fastDrawer(){
+    var sb = $('sidebar'); if(!sb || sb.__m10) return; sb.__m10 = true;
+    var d = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'inert'); if(!d || !d.set) return;
+    var want = d.get.call(sb), t = 0;
+    try{
+      Object.defineProperty(sb, 'inert', { configurable:true,
+        get:function(){ return want; },
+        set:function(v){ want = !!v; clearTimeout(t); t = setTimeout(function(){ if(d.get.call(sb) !== want) d.set.call(sb, want); }, want ? 300 : 280); } });
+    }catch(e){}
+    /* the open-section heights are measured after the slide too */
+    var z = window.zsbSyncHeights;
+    if(typeof z === 'function' && !z.__m10){
+      var wz = function(animate){ if(animate !== true && small.matches){ var a = arguments, self = this; clearTimeout(wz._t); wz._t = setTimeout(function(){ z.apply(self, a); }, 300); return; } return z.apply(this, arguments); };
+      wz.__m10 = true; window.zsbSyncHeights = wz;
+    }
+  }
+
   /* ── BOOT ── */
   function boot(){
     if(isIOS && navigator.standalone) document.body.classList.add('m10-ios');
+    leaveFull();
+    fastDrawer();
     buildDock();
     hookToasts();
     addMenuEntry();
