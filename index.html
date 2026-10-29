@@ -14019,7 +14019,11 @@ async function syncLinkedCashPayments(inv, prev) {
   let n = 0;
   for(const p of linked) {
     if(_allocList(p).length > 1) continue;               // split payment — leave alone
-    const amt = +inv.amount || 0;
+    // A part payment made with the bill stays a part payment (only cash-in-hand
+    // parties are always paid in full). It used to be stretched to the full total.
+    const isCashP = CASH_PARTIES_LIVE.includes((inv.party || '').toUpperCase());
+    const part = prev && !isCashP && Math.abs((+p.amount || 0) - (+prev.amount || 0)) > 0.005;
+    const amt = part ? Math.min(+p.amount || 0, +inv.amount || 0) : (+inv.amount || 0);
     const drift = Math.abs((+p.amount || 0) - amt) > 0.005;
     if(!drift && p.party === inv.party) continue;
     await fbSavePayment({
@@ -14047,6 +14051,7 @@ function findCashPaymentGaps() {
     if(allocs.length !== 1) return;                      // only unambiguous ones
     const inv = (AD().records || []).find(r => String(r.id) === String(allocs[0].invId));
     if(!inv) return;
+    if(!CASH_PARTIES_LIVE.includes((inv.party || '').toUpperCase())) return;   // other parties may be part paid on purpose
     const gap = (+inv.amount || 0) - (+p.amount || 0);
     if(Math.abs(gap) > 0.005) out.push({ pay: p, inv: inv, gap: gap });
   });
@@ -24552,16 +24557,16 @@ html:has(body.dark-mode)::backdrop{ background:#0c0c0d !important; }
 @media screen{
 /* the original shells are now empty */
 html:not(#_#_#_) body:not(#_#_#_) #page-entry .entry-form-body > .entry-section, html:not(#_#_#_) body:not(#_#_#_) #page-entry .entry-actions{ display:none !important; }
-html:not(#_) body:not(#_) #m12{ display:flex; flex-direction:column; gap:14px; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 [hidden]{ display:none !important; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 #e-vat-row[style*="none"]{ display:none !important; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 input[type=number]{ -moz-appearance:textfield; appearance:textfield; }
-html:not(#_) body:not(#_) #m12 input[type=number]::-webkit-inner-spin-button, html:not(#_) body:not(#_) #m12 input[type=number]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 .entry-section{ margin:0 !important; }
+html:not(#_) body:not(#_) :is(#m12, #m12e){ display:flex; flex-direction:column; gap:14px; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) [hidden]{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) #e-vat-row[style*="none"]{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) input[type=number]{ -moz-appearance:textfield; appearance:textfield; }
+html:not(#_) body:not(#_) :is(#m12, #m12e) input[type=number]::-webkit-inner-spin-button, html:not(#_) body:not(#_) :is(#m12, #m12e) input[type=number]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .entry-section{ margin:0 !important; }
 
 /* keep the field you are typing in clear of the sticky save bar */
-html:not(#_) body:not(#_) #m12 :is(input, select, button){ scroll-margin:96px 0 130px; }
-html:not(#_) body:not(#_) #m12 .m8-quick-l .m8-chips{ -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image:linear-gradient(90deg, #000 calc(100% - 36px), transparent); padding-right:28px; }
+html:not(#_) body:not(#_) :is(#m12, #m12e) :is(input, select, button){ scroll-margin:96px 0 130px; }
+html:not(#_) body:not(#_) :is(#m12, #m12e) .m8-quick-l .m8-chips{ -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image:linear-gradient(90deg, #000 calc(100% - 36px), transparent); padding-right:28px; }
 
 /* PO pill in the page title row: one clean pill, label + value */
 html:not(#_#_#_) body:not(#_#_#_) #page-entry .entry-hero-number{ display:inline-flex !important; align-items:center !important; gap:10px !important; height:40px !important; padding:0 18px !important; border-radius:999px !important;
@@ -24577,29 +24582,32 @@ html:not(#_) body:not(#_) .m12-back{ display:none; }
 /* field rows: label on top, like the payment window */
 html:not(#_) body:not(#_) .m12-row{ display:grid; gap:14px 14px; align-items:end; }
 html:not(#_) body:not(#_) .m12-row-head{ grid-template-columns:130px minmax(0,2.6fr) minmax(150px,1fr) minmax(120px,.85fr) minmax(120px,.85fr) minmax(140px,1fr); }
-html:not(#_) body:not(#_) .m12-row-pay{ grid-template-columns:minmax(150px,1fr) minmax(150px,1fr) minmax(0,2.4fr) minmax(150px,1fr); }
+html:not(#_) body:not(#_) .m12-row-pay{ display:flex; flex-wrap:wrap; }
+html:not(#_) body:not(#_) .m12-row-pay > .m12-f{ flex:1 1 170px; }
+html:not(#_) body:not(#_) .m12-row-pay > .m12-f-notes{ flex:3 1 280px; }
+html:not(#_) body:not(#_) .m12-row-pay > .m12-f-bal{ flex:0 0 auto; min-width:170px; }
 html:not(#_) body:not(#_) .m12-f{ display:flex; flex-direction:column; gap:7px; min-width:0; }
 html:not(#_) body:not(#_) .m12-lr{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-width:0; padding:0 4px; }
 html:not(#_) body:not(#_) .m12-lr > label{ padding:0 !important; }
 html:not(#_) body:not(#_) .m12-lr > label, html:not(#_) body:not(#_) .m12-f > label{ font-size:13.5px; font-weight:500; color:var(--k-ink2); line-height:1.2; margin:0; padding:0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 .m12-f :is(input:not([type=checkbox]), select){ width:100% !important; max-width:none !important; min-width:0 !important; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 .m12-f .fg-field{ width:100% !important; max-width:none !important; margin:0 !important; display:block !important; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 .m12-f .m8-dw{ width:100% !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .m12-f :is(input:not([type=checkbox]), select){ width:100% !important; max-width:none !important; min-width:0 !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .m12-f .fg-field{ width:100% !important; max-width:none !important; margin:0 !important; display:block !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .m12-f .m8-dw{ width:100% !important; }
 
 /* type-to-pick fields */
 html:not(#_) body:not(#_) .m12-cb{ position:relative; min-width:0; flex:1 1 auto; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 .m12-cb input{ padding-right:40px !important; cursor:text; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 .m12-cb input[readonly]{ cursor:pointer; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .m12-cb input{ padding-right:40px !important; cursor:text; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .m12-cb input[readonly]{ cursor:pointer; }
 html:not(#_) body:not(#_) .m12-cb .m12-chev{ position:absolute; right:15px; top:50%; width:16px; height:16px; margin-top:-8px; color:var(--k-ink3); pointer-events:none; }
 html:not(#_) body:not(#_) .m12-f.locked .m12-cb input{ color:var(--k-pos) !important; }
 html:not(#_) body:not(#_) .m12-party-wrap{ display:flex; align-items:center; gap:8px; min-width:0; }
 html:not(#_) body:not(#_) .m12-party-wrap .m12-cb{ position:relative; }
 html:not(#_) body:not(#_) .m12-bal{ font-size:12px; color:var(--k-ink3); white-space:nowrap; font-variant-numeric:tabular-nums; }
-html:not(#_#_#_) body:not(#_#_#_) #m12 .m12-addp{ flex:0 0 auto; width:44px; height:44px; padding:0 !important; border-radius:50% !important; display:grid; place-items:center; cursor:pointer;
+html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .m12-addp{ flex:0 0 auto; width:44px; height:44px; padding:0 !important; border-radius:50% !important; display:grid; place-items:center; cursor:pointer;
   background:var(--k-tile) !important; border:1px solid var(--k-line) !important; color:var(--k-ink) !important; box-shadow:none !important; }
 html:not(#_) body:not(#_) .m12-addp svg{ width:18px; height:18px; }
-html:not(#_) body:not(#_) #m12 .m8-quick{ margin-top:14px !important; }
-html:not(#_) body:not(#_) #m12 #party-dupe-warn{ margin-top:10px; }
+html:not(#_) body:not(#_) :is(#m12, #m12e) .m8-quick{ margin-top:14px !important; }
+html:not(#_) body:not(#_) :is(#m12, #m12e) #party-dupe-warn{ margin-top:10px; }
 html:not(#_) body:not(#_) .m12-cashnote{ margin-top:14px; padding:11px 16px; border-radius:16px; background:rgba(31,157,85,.10); color:var(--k-pos); font-size:13px; font-weight:500; }
 
 /* payment section */
@@ -24637,27 +24645,27 @@ html:not(#_) body:not(#_) .m12-he{ padding:10px 14px; font-size:13px; color:var(
 
 /* ══ PC + laptop: the item lines stay a real table (the old layout turned them into cards below 1200px) ══ */
 @media screen and (min-width:901px){
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table{ display:table !important; width:100% !important; table-layout:fixed !important; min-width:0 !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table thead{ display:table-header-group !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tbody{ display:table-row-group !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tfoot{ display:table-footer-group !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tr{ display:table-row !important; grid-template-columns:none !important; position:static !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tbody tr{ padding:0 !important; margin:0 !important; background:transparent !important; border:0 !important; border-radius:0 !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tbody td:not([style*="display: none"]):not([style*="display:none"]){ display:table-cell !important; position:static !important; width:auto !important; grid-column:auto !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tbody td::before{ display:none !important; content:none !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tfoot tr:not([style*="display: none"]):not([style*="display:none"]){ display:table-row !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tfoot td{ display:table-cell !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table th:nth-child(2){ width:11% !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table th:nth-child(3){ width:11% !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table th:nth-child(6){ width:14% !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table th:nth-child(7){ width:15% !important; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table th:last-child{ width:56px !important; }
-  html:not(#_#_#_) body:not(#_#_#_).md-sales #m12 .items-table th:nth-child(2){ width:8% !important; }
-  html:not(#_#_#_) body:not(#_#_#_).md-sales #m12 .items-table th:nth-child(3){ width:10% !important; }
-  html:not(#_#_#_) body:not(#_#_#_).md-sales #m12 .items-table th:nth-child(4){ width:9% !important; }
-  html:not(#_#_#_) body:not(#_#_#_).md-sales #m12 .items-table th:nth-child(5){ width:11% !important; }
-  html:not(#_#_#_) body:not(#_#_#_).md-sales #m12 .items-table th:nth-child(6){ width:11% !important; }
-  html:not(#_#_#_) body:not(#_#_#_).md-sales #m12 .items-table th:nth-child(7){ width:13% !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table{ display:table !important; width:100% !important; table-layout:fixed !important; min-width:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table thead{ display:table-header-group !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tbody{ display:table-row-group !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tfoot{ display:table-footer-group !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tr{ display:table-row !important; grid-template-columns:none !important; position:static !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tbody tr{ padding:0 !important; margin:0 !important; background:transparent !important; border:0 !important; border-radius:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tbody td:not([style*="display: none"]):not([style*="display:none"]){ display:table-cell !important; position:static !important; width:auto !important; grid-column:auto !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tbody td::before{ display:none !important; content:none !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tfoot tr:not([style*="display: none"]):not([style*="display:none"]){ display:table-row !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tfoot td{ display:table-cell !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table th:nth-child(2){ width:11% !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table th:nth-child(3){ width:11% !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table th:nth-child(6){ width:14% !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table th:nth-child(7){ width:15% !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table th:last-child{ width:56px !important; }
+  html:not(#_#_#_) body:not(#_#_#_).md-sales :is(#m12, #m12e) .items-table th:nth-child(2){ width:8% !important; }
+  html:not(#_#_#_) body:not(#_#_#_).md-sales :is(#m12, #m12e) .items-table th:nth-child(3){ width:10% !important; }
+  html:not(#_#_#_) body:not(#_#_#_).md-sales :is(#m12, #m12e) .items-table th:nth-child(4){ width:9% !important; }
+  html:not(#_#_#_) body:not(#_#_#_).md-sales :is(#m12, #m12e) .items-table th:nth-child(5){ width:11% !important; }
+  html:not(#_#_#_) body:not(#_#_#_).md-sales :is(#m12, #m12e) .items-table th:nth-child(6){ width:11% !important; }
+  html:not(#_#_#_) body:not(#_#_#_).md-sales :is(#m12, #m12e) .items-table th:nth-child(7){ width:13% !important; }
 }
 /* laptop: the bill details wrap to two rows */
 @media screen and (min-width:901px) and (max-width:1320px){
@@ -24666,7 +24674,6 @@ html:not(#_) body:not(#_) .m12-he{ padding:10px 14px; font-size:13px; color:var(
   html:not(#_) body:not(#_) .m12-f-date, html:not(#_) body:not(#_) .m12-f-inv, html:not(#_) body:not(#_) .m12-f-po{ grid-column:span 1; }
   html:not(#_) body:not(#_) .m12-f-date{ grid-column:span 2; }
   html:not(#_) body:not(#_) .m12-f-pb{ grid-column:span 2; }
-  html:not(#_) body:not(#_) .m12-row-pay{ grid-template-columns:repeat(2, minmax(0,1fr)) minmax(0,2fr) minmax(0,1fr); }
 }
 
 /* ══ tablet + phone ══ */
@@ -24676,10 +24683,10 @@ html:not(#_) body:not(#_) .m12-he{ padding:10px 14px; font-size:13px; color:var(
   html:not(#_) body:not(#_) .m12-row-head{ grid-template-columns:repeat(2, minmax(0,1fr)); }
   html:not(#_) body:not(#_) .m12-f-party{ grid-column:1 / -1; order:-1; }
   html:not(#_) body:not(#_) .m12-f-type{ order:-2; grid-column:1 / -1; }
-  html:not(#_) body:not(#_) .m12-row-pay{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-  html:not(#_) body:not(#_) .m12-f-notes{ grid-column:1 / -1; }
-  html:not(#_#_#_) body:not(#_#_#_) #m12 .items-table tbody td:first-child{ padding-right:46px !important; }   /* clear of the round delete button */
-  html:not(#_) body:not(#_) .m12-f-bal{ grid-column:1 / -1; flex-direction:row; align-items:center; justify-content:space-between; }
+  html:not(#_) body:not(#_) .m12-row-pay > .m12-f-notes{ flex:1 1 100%; }
+  html:not(#_) body:not(#_) :is(#m12, #m12e) .add-row-btn kbd{ display:none !important; }
+  html:not(#_#_#_) body:not(#_#_#_) :is(#m12, #m12e) .items-table tbody td:first-child{ padding-right:46px !important; }   /* clear of the round delete button */
+  html:not(#_) body:not(#_) .m12-row-pay > .m12-f-bal{ flex:1 1 100%; flex-direction:row; align-items:center; justify-content:space-between; }
   html:not(#_) body:not(#_) .m12-f-bal .m12-balbox{ min-height:0; }
 }
 @media screen and (max-width:599px){
@@ -24691,21 +24698,50 @@ html:not(#_) body:not(#_) .m12-he{ padding:10px 14px; font-size:13px; color:var(
 }
 @media print{ #m12-plist{ display:none !important; } }
 
+/* ══ EDIT BILL / INVOICE — same look as New Entry ══ */
+@media screen{
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-form-body > .entry-section{ display:none !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-main-card{ background:transparent !important; border:0 !important; box-shadow:none !important; padding:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-form-body{ padding:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-hero{ display:flex !important; align-items:flex-end !important; justify-content:space-between !important; gap:12px; padding:0 2px 16px !important; background:none !important; border:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice #edit-inv-title{ font-size:32px !important; font-weight:500 !important; letter-spacing:-.045em !important; line-height:1.1 !important; color:var(--k-ink) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-eyebrow{ color:var(--k-ink3) !important; font-size:13px !important; font-weight:400 !important; text-transform:none !important; letter-spacing:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions{ display:flex !important; justify-content:flex-end !important; gap:10px !important; margin:16px 0 0 !important; padding:0 !important; background:none !important; border:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions .btn{ height:48px !important; padding:0 22px !important; border-radius:999px !important; font:600 15px/1 var(--k-font) !important; display:inline-flex !important; align-items:center !important; gap:8px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions .btn-success{ background:var(--k-acc) !important; color:#fff !important; border:0 !important; box-shadow:var(--m8-glow) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions .btn-success kbd{ font:600 11px/1 var(--k-font); padding:4px 7px; border-radius:7px; background:rgba(255,255,255,.22); color:#fff; border:0; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions .btn-ghost{ background:var(--k-card) !important; color:var(--k-ink) !important; border:0 !important; }
+  html:not(#_) body:not(#_) #m12e .m12-cashnote.warn{ background:rgba(229,72,77,.10); color:var(--k-neg); }
+  html:not(#_) body:not(#_) #m12e .m12e-adv{ margin-top:16px; }
+  html:not(#_) body:not(#_) #m12e .m12e-adv summary{ cursor:pointer; font-size:13px; color:var(--k-ink3); padding:4px; width:max-content; }
+  html:not(#_) body:not(#_) #m12e .m12e-adv[open] summary{ margin-bottom:8px; }
+  html:not(#_#_#_) body:not(#_#_#_) #m12e .m12e-adv .fg-field{ display:block !important; width:100% !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #m12e .m12e-adv .hint-text{ display:block; margin-top:6px; font-size:12px; color:var(--k-ink3); }
+  html:not(#_#_#_) body:not(#_#_#_) #m12e .add-row-btn svg{ width:16px; height:16px; }
+}
+@media screen and (max-width:900px){
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-hero-copy{ display:flex !important; align-items:center !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice #edit-inv-title{ font-size:24px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions{ position:sticky; bottom:calc(84px + env(safe-area-inset-bottom)); z-index:5; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions .btn{ flex:1 1 0; justify-content:center !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-edit-invoice .entry-actions .btn-success kbd{ display:none; }
+}
+
 /* ══ M12 · BRAND — am. nexus ══ */
 html:not(#_) body:not(#_) .amx{ display:inline-flex; align-items:center; line-height:0; color:var(--k-ink); }
 html:not(#_) body:not(#_) .amx svg{ display:block; height:100%; width:auto; overflow:visible; }
 /* header: the wordmark leads, the page name sits small underneath */
-html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl{ display:flex !important; flex-direction:column !important; justify-content:center !important; gap:6px !important; min-width:0; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl{ display:flex !important; flex-direction:column !important; justify-content:center !important; gap:5px !important; min-width:0; }
 html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl #m5-t1{ position:absolute !important; width:1px !important; height:1px !important; overflow:hidden !important; clip:rect(0 0 0 0) !important; white-space:nowrap !important; }
-html:not(#_) body:not(#_) #m5-hdr .amx-hdr{ height:21px; }
+html:not(#_) body:not(#_) #m5-hdr .amx-hdr{ height:17px; }
 html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl #m5-t2{ font-size:12.5px !important; font-weight:500 !important; color:var(--k-ink3) !important; letter-spacing:0 !important; line-height:1.1 !important; }
 /* lock + loading + drawer */
-html:not(#_) body:not(#_) .amx-lock{ height:34px; color:var(--k-ink); margin-top:4px; }
+html:not(#_) body:not(#_) .amx-lock{ height:26px; color:var(--k-ink); margin-top:4px; }
 html:not(#_#_#_) body:not(#_#_#_) #lock-overlay .lock-title{ display:flex !important; justify-content:center !important; font-size:0 !important; line-height:0 !important; margin:6px 0 18px !important; }
-html:not(#_) body:not(#_) .amx-load{ display:flex; justify-content:center; height:28px; margin:18px auto 6px; }
-html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
+html:not(#_) body:not(#_) .amx-load{ display:flex; justify-content:center; height:22px; margin:18px auto 6px; }
+html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
 @media screen and (max-width:599px){
-  html:not(#_) body:not(#_) #m5-hdr .amx-hdr{ height:15px; }
+  html:not(#_) body:not(#_) #m5-hdr .amx-hdr{ height:13px; }
   html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl{ gap:5px !important; }
   html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl #m5-t2{ font-size:12px !important; }
 }
@@ -24718,7 +24754,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
   /* shrink to fit next to the Purchase / Sales switch instead of being cut */
   html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl{ min-width:0 !important; flex:1 1 auto !important; }
   html:not(#_) body:not(#_) #m5-hdr .amx-hdr{ display:block; width:100%; }
-  html:not(#_) body:not(#_) #m5-hdr .amx-hdr svg{ width:100%; max-width:150px; height:17px; }
+  html:not(#_) body:not(#_) #m5-hdr .amx-hdr svg{ width:100%; max-width:120px; height:14px; }
 }
 </style>
 <script id="m5-js">/* ══════════════════════════════════════════════════════════════════════
@@ -27778,7 +27814,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
       if(a === 'view'){ viewRecord(r.id); }
       else if(a === 'print'){ viewRecord(r.id); setTimeout(function(){ if(typeof printInvoice === 'function') printInvoice(); }, 120); }
       else if(a === 'edit'){ viewRecord(r.id); if(typeof openEditInvoiceModal === 'function') openEditInvoiceModal(); }
-      else if(a === 'pay'){ hideModals(); if(typeof openPaymentModal === 'function') openPaymentModal(r.party); }
+      else if(a === 'pay'){ hideModals(); if(window.M12APP && M12APP.payInvoice) M12APP.payInvoice(r); else if(typeof openPaymentModal === 'function') openPaymentModal(r.party); }
       else if(a === 'dup'){ hideModals(); duplicate(r); }
       else if(a === 'party'){ if(M8.openParty) M8.openParty(r.party, DB.mode); }
       else if(a === 'stmt'){ if(typeof searchParty === 'function') searchParty(r.party); }
@@ -29963,6 +29999,8 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
   /* o: { input, items(q) → [{v,label,sub,cls}], value() → v, pick(item), next:true } */
   function Combo(o){
     var self = this, inp = o.input, items = [], act = -1, typed = false;
+    var rp = o.repaint || function(){ paintTop(); paintPay(); };
+    var goNext = o.next || next, goPrev = o.prev || prev;
     inp._m12combo = this; self.input = inp;
     function render(){
       ensureList();
@@ -29976,7 +30014,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
     }
     self.open = function(){
       if(active && active !== self) active.close();
-      active = self; typed = false; balCache = null;
+      active = self; typed = false; balCache = null; if(o.onOpen) o.onOpen();
       items = o.items('');
       act = Math.max(0, items.findIndex(function(it){ return it.v === o.value(); }));
       if(!items.length) act = -1;
@@ -29987,10 +30025,11 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
       inp.setAttribute('aria-expanded', 'false');
     };
     self.isOpen = function(){ return active === self && plist && plist.classList.contains('open'); };
-    self.revert = function(){ typed = false; paintTop(); if(document.activeElement === inp && !inp.readOnly) try{ inp.select(); }catch(e){} };
+    self.typed = function(){ return typed; };
+    self.revert = function(){ typed = false; rp(); if(document.activeElement === inp && !inp.readOnly) try{ inp.select(); }catch(e){} };
     self.pick = function(i, how){
       var it = items[i]; if(!it) return;
-      o.pick(it); typed = false; self.close(); paintTop(); paintPay(); commitUndo();
+      o.pick(it); typed = false; self.close(); rp(); commitUndo();
       M8.haptic && M8.haptic('select');
       if(how === 'click'){ if(TOUCH) inp.blur(); else try{ inp.select(); }catch(e){} }
     };
@@ -30001,19 +30040,19 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
       typed = true; active = self;
       items = o.items(inp.value); act = items.length ? 0 : -1; render();
     });
-    inp.addEventListener('blur', function(){ setTimeout(function(){ if(document.activeElement !== inp){ self.close(); typed = false; paintTop(); } }, 120); });
+    inp.addEventListener('blur', function(){ setTimeout(function(){ if(document.activeElement !== inp){ self.close(); typed = false; rp(); } }, 120); });
     /* returns true when it used the key */
     self.key = function(e){
       var k = e.key;
       if(k === 'ArrowDown'){ if(!self.isOpen()){ self.open(); return true; } act = Math.min(act + 1, items.length - 1); render(); return true; }
       if(k === 'ArrowUp'){ if(!self.isOpen()){ self.open(); return true; } act = Math.max(act - 1, 0); render(); return true; }
       if(k === 'Escape'){ if(self.isOpen()){ self.close(); self.revert(); return true; } return false; }
-      if(k === 'Tab' && e.shiftKey){ self.close(); typed = false; paintTop(); prev(inp); return true; }
+      if(k === 'Tab' && e.shiftKey){ self.close(); typed = false; rp(); goPrev(inp); return true; }
       if(k === 'Enter' || k === 'Tab'){
         if(self.isOpen() && act >= 0 && (typed || items[act].v !== o.value())) self.pick(act, 'key');
-        else { self.close(); typed = false; paintTop(); }
+        else { self.close(); typed = false; rp(); }
         if(o.must && !o.value()){ toast(o.must(), 'error'); setTimeout(function(){ self.open(); }, 0); return true; }
-        next(inp);
+        goNext(inp);
         return true;
       }
       return false;
@@ -30187,6 +30226,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
     window.addEventListener('keyup', function(e){
       if(e.key !== 'Shift' || !e.target || !e.target.closest) return;
       var el = e.target, inSave = el.closest('#m8-savebar') && M8.page() === 'entry';
+      if(el.closest('#m12e')){ e.stopPropagation(); if(shClean && Date.now() - shAt < 450 && window.M12EDIT){ shClean = false; if(el._m12combo) el._m12combo.close(); if(typeof _edcClose === 'function') _edcClose(); M12EDIT.prev(el); } shClean = false; return; }
       if(!el.closest('#m12') && !inSave) return;
       e.stopPropagation();                       /* the app's old "Shift = jump to payment" stays off on this page */
       var ok = shClean && Date.now() - shAt < 450; shClean = false;
@@ -30228,11 +30268,14 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
     var sub = (own ? '' : dshort(x.date) + ' · ') + String(x.qty || '') + ' ' + (x.unit || '') + (x.kg ? ' · ' + x.kg + ' kg/bag' : '');
     return '<button type="button" class="m12-hr" data-rate="' + x.price + '"><span><b>' + esc(title) + '</b><small>' + esc(sub) + '</small></span><strong>' + money(x.price) + '</strong></button>';
   }
-  function openHistory(from){
-    var tr = curRow(from), d = tr && norm(tr.querySelector('.li-desc').value);
+  /* ctx (optional, for other pages): { tr, desc:'.cls', price:'.cls', party:'NAME', recalc:fn(tr) } */
+  function openHistory(from, ctx){
+    ctx = ctx || {};
+    var tr = ctx.tr || curRow(from), dSel = ctx.desc || '.li-desc';
+    var d = tr && norm(tr.querySelector(dSel).value);
     if(!d){ toast('Type an item first, then press Alt+S', 'error'); return; }
-    histFrom = { el:from, tr:tr };
-    var s = sales(), party = partyNow();
+    histFrom = { el:from, tr:tr, price:ctx.price || '.li-price', recalc:ctx.recalc || null };
+    var s = sales(), party = ctx.party != null ? ctx.party : partyNow();
     var own = lines(s ? 'sales' : 'purchase', d), other = lines(s ? 'purchase' : 'sales', d);
     var mine = party ? own.filter(function(x){ return x.party === party; }).slice(0, 8) : [];
     var others = latestPer(own, party).slice(0, 12), side = latestPer(other).slice(0, 12);
@@ -30253,7 +30296,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
         if(e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey) e.stopPropagation();   /* no one-letter app shortcuts in here */
       });
     }
-    $('m12-hist-t').textContent = tr.querySelector('.li-desc').value.trim();
+    $('m12-hist-t').textContent = tr.querySelector(dSel).value.trim();
     $('m12-hist-s').textContent = 'Past rates · ↑ ↓ then Enter puts the rate on this line';
     var who = s ? 'customer' : 'vendor';
     $('m12-hist-b').innerHTML =
@@ -30273,14 +30316,17 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
   function useRate(rate){
     var h = histFrom; closeHistory();
     if(!h || !h.tr || !h.tr.isConnected) return;
-    var p = h.tr.querySelector('.li-price'); if(!p) return;
+    var p = h.tr.querySelector(h.price); if(!p) return;
     p.value = rate; p.dataset.autofill = '0';
     p.dispatchEvent(new Event('input', { bubbles:true }));
-    if(typeof calcRowTotal === 'function') calcRowTotal(+h.tr.dataset.lid);
+    if(h.recalc) h.recalc(h.tr); else if(typeof calcRowTotal === 'function') calcRowTotal(+h.tr.dataset.lid);
     commitUndo();
     setTimeout(function(){ focusSel(p); }, 40);
   }
-  window.M12ENTRY = { closeHistory:closeHistory, closeList:function(){ var a = active; if(a){ a.close(); a.revert(); return true; } return false; }, listOpen:function(){ return !!(active && active.isOpen()); } };
+  /* shared with the edit page (m12-edit.js) */
+  window.M12KIT = { Combo:Combo, rank:rank, money:money, focusSel:focusSel, TOUCH:TOUCH, store:store, commitUndo:commitUndo,
+    isCashParty:isCashParty, openHistory:openHistory, closeActive:function(){ if(active) active.close(); } };
+  window.M12ENTRY = { closeHistory:closeHistory, closeList:function(){ var a = active; if(a){ a.close(); a.revert(); return true; } return false; }, listOpen:function(){ return !!(active && active.isOpen()); }, listTyped:function(){ return !!(active && active.isOpen() && active.typed()); } };
 
   /* save: point at what is missing */
   function wrapSave(){
@@ -30342,6 +30388,301 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
 })();
 </script>
 <script>/* ══════════════════════════════════════════════════════════════════════
+   M12 · EDIT BILL / INVOICE — same layout and keys as New Entry, and a
+   Payment field that really changes the bill:
+     Cash   → the bill is paid in full (the payment kept with the bill is
+              topped up, or one is recorded for what is still due)
+     Credit → nothing is paid with the bill (the payment that was recorded
+              together with this bill is moved to Trash — can be restored)
+     Part paid (only shown when it is part paid) → left exactly as it is
+   Payments made separately to the party are never touched.
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var M8 = window.M8, K = window.M12KIT; if(!M8 || !K) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var icon = M8.icon, esc = M8.esc, money = K.money, focusSel = K.focusSel;
+  var CHEV = '<svg class="m12-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>';
+  function sales(){ return DB.mode === 'sales'; }
+  function visible(el){ return !!(el && el.offsetParent !== null); }
+  function rec(){ var id = (typeof _viewingRecordId !== 'undefined') ? _viewingRecordId : window._viewingRecordId; return (AD().records || []).find(function(x){ return x.id === id; }); }
+  function partyNow(){ return ($('ei-party') || {}).value || ''; }
+  function cashParty(){ return K.isCashParty(partyNow()); }
+  function dateProxy(){ var d = $('ei-date'); return (d && d._m8proxy) || d; }
+  function linkedPays(id){
+    return (AD().payments || []).filter(function(p){
+      var a = _allocList(p); return p.withInvoice && a.length === 1 && String(a[0].invId) === String(id);
+    });
+  }
+  function editTotal(){ var t = 0; document.querySelectorAll('#edit-line-items-body .eli-total').forEach(function(el){ t += parseFloat(el.value) || 0; }); return t; }
+
+  var st = { mode:'credit', init:'credit', paidBy:'' };
+
+  /* ── BUILD ─────────────────────────────────────────────────────────── */
+  function field(cls, id, label, inner){ return '<div class="m12-f ' + cls + '"><div class="m12-lr"><label for="' + id + '" id="' + id + '-l">' + label + '</label></div>' + inner + '</div>'; }
+  function combo(id, ph){ return '<div class="m12-cb"><input type="text" id="' + id + '" autocomplete="off" spellcheck="false" placeholder="' + ph + '" role="combobox" aria-expanded="false" aria-controls="m12-plist" data-noundo>' + CHEV + '</div>'; }
+  function build(){
+    var page = $('page-edit-invoice'), body = page && page.querySelector('.entry-form-body');
+    if(!body || $('m12e')) return !!$('m12e');
+    var root = document.createElement('div'); root.id = 'm12e';
+    root.innerHTML =
+      '<section class="entry-section m12-sec">' +
+        '<div class="entry-section-head"><div class="entry-section-title"><span class="entry-step">1</span><span>Bill details</span></div><div class="entry-section-hint" id="m12e-state"></div></div>' +
+        '<div class="m12-row m12-row-head">' +
+          field('m12-f-type', 'm12e-type', 'Payment', combo('m12e-type', 'Credit or cash')) +
+          field('m12-f-party', 'm12e-party', 'Vendor', '<div class="m12-party-wrap">' + combo('m12e-party', 'Type name') + '</div>') +
+          '<div class="m12-f m12-f-date"><label>Date</label><div id="m12e-date-host"></div></div>' +
+          '<div class="m12-f m12-f-inv"><label for="ei-invno">Invoice no.</label><div id="m12e-inv-host"></div></div>' +
+          '<div class="m12-f m12-f-po"><label for="ei-vehicle">PO no.</label><div id="m12e-po-host"></div></div>' +
+          field('m12-f-pb', 'm12e-pb', 'Paid by', combo('m12e-pb', 'Type name')) +
+        '</div>' +
+        '<div class="m12-cashnote" id="m12e-note" hidden></div>' +
+      '</section>' +
+      '<div id="m12e-items-host"></div>' +
+      '<section class="entry-section m12-sec">' +
+        '<div class="entry-section-head"><div class="entry-section-title"><span class="entry-step">3</span><span>Payment</span></div></div>' +
+        '<div class="m12-row m12-row-pay">' +
+          '<div class="m12-f" id="m12e-f-method"><label for="ei-method">Method</label><div id="m12e-method-host"></div></div>' +
+          '<div class="m12-f m12-f-notes"><label for="ei-notes">Notes</label><div id="m12e-notes-host"></div></div>' +
+          '<div class="m12-f m12-f-bal"><label>Due on this bill</label><div class="m12-balbox"><b id="m12e-due">0.00</b></div></div>' +
+        '</div>' +
+        '<details class="m12e-adv"><summary>Correct the party balance</summary><div id="m12e-bal-host"></div></details>' +
+      '</section>';
+    body.insertBefore(root, body.firstChild);
+
+    var selRow = $('ei-party') && $('ei-party').closest('.form-group'); if(selRow) selRow.style.display = 'none';
+    [['ei-date', 'm12e-date-host'], ['ei-invno', 'm12e-inv-host'], ['ei-vehicle', 'm12e-po-host'], ['ei-method', 'm12e-method-host'], ['ei-notes', 'm12e-notes-host'], ['ei-balance', 'm12e-bal-host']].forEach(function(p){
+      var el = $(p[0]), ff = el && el.closest('.fg-field'); if(ff) $(p[1]).appendChild(ff);
+    });
+    var items = $('edit-line-items-body') && $('edit-line-items-body').closest('.entry-section');
+    if(items){ $('m12e-items-host').appendChild(items); }
+    var add = items && items.querySelector('.add-row-btn'); if(add && !add.querySelector('kbd')) add.innerHTML = icon('plus') + '<span>Add another item</span><kbd>Alt A</kbd>';
+
+    /* back button on phone + tablet */
+    var copy = page.querySelector('.entry-hero-copy');
+    if(copy && !copy.querySelector('.m12-back')){
+      var bk = document.createElement('button'); bk.type = 'button'; bk.className = 'm8-ib m12-back'; bk.setAttribute('aria-label', 'Back'); bk.innerHTML = icon('left');
+      bk.addEventListener('click', function(){ if(window.M12APP) M12APP.back(); else closeEditInvModal(); });
+      copy.insertBefore(bk, copy.firstChild);
+    }
+    var save = page.querySelector('.entry-actions .btn-success'); if(save && !save.querySelector('kbd')) save.insertAdjacentHTML('beforeend', '<kbd>Ctrl A</kbd>');
+    if(K.TOUCH){ ['m12e-type', 'm12e-pb'].forEach(function(id){ var i = $(id); i.readOnly = true; i.setAttribute('inputmode', 'none'); }); }
+    makeCombos(); wire();
+    return true;
+  }
+
+  /* ── STATE ─────────────────────────────────────────────────────────── */
+  function rowNow(){
+    var r = rec(); if(!r || typeof invoiceRow !== 'function') return null;
+    clearLedgerCache(); return invoiceRow(r);
+  }
+  function paint(){
+    if(!$('m12e')) return;
+    var s = sales(), cp = cashParty();
+    $('m12e-party-l').textContent = s ? 'Customer' : 'Vendor';
+    $('m12e-pb-l').textContent = s ? 'Received by' : 'Paid by';
+    var t = $('m12e-type'); if(t && document.activeElement !== t) t.value = cp ? 'Cash' : ({ cash:'Cash', credit:'Credit', partial:'Part paid' })[st.mode];
+    if(t) t.closest('.m12-f').classList.toggle('locked', cp);
+    var p = $('m12e-party'); if(p && document.activeElement !== p) p.value = partyNow();
+    var pb = $('m12e-pb'); if(pb && document.activeElement !== pb) pb.value = st.paidBy;
+    var row = rowNow(), total = editTotal(), paidNow = row ? Math.min(row.paid, total) : 0;
+    var eff = cp ? 'cash' : st.mode;
+    var due = eff === 'cash' ? 0 : (eff === 'credit' ? Math.max(0, total - (paidNow - linkedSum())) : Math.max(0, total - paidNow));
+    var d = $('m12e-due'); if(d){ d.textContent = money(due); d.className = due > 0.005 ? 'due' : 'clear'; }
+    var stt = $('m12e-state');
+    if(stt && row) stt.textContent = row.status === 'paid' ? 'Now: paid' : row.status === 'partial' ? 'Now: part paid · ' + money(row.paid) + ' of ' + money(row.invoiced) : 'Now: unpaid';
+    var n = $('m12e-note');
+    if(n){
+      var msg = '';
+      if(cp) msg = 'Cash party — this bill is always paid in full on its date.';
+      else if(st.mode !== st.init){
+        msg = st.mode === 'cash' ? 'On save this bill will be marked paid in full' + (st.paidBy ? ' by ' + st.paidBy : '') + '.'
+            : st.mode === 'credit' ? (linkedSum() > 0.005 ? 'On save the payment of ' + money(linkedSum()) + ' recorded with this bill goes to Trash, so the full amount is on credit.' : 'On save nothing will be paid on this bill.') : '';
+      }
+      n.hidden = !msg; n.textContent = msg;
+      n.classList.toggle('warn', !cp && st.mode === 'credit');
+    }
+    var fm = $('m12e-f-method'); if(fm) fm.hidden = !(eff === 'cash');
+  }
+  function linkedSum(){ var r = rec(); return r ? linkedPays(r.id).reduce(function(a, p){ return a + (+p.amount || 0); }, 0) : 0; }
+  function setMode(m){ st.mode = m; if(m === 'cash'){ var me = $('ei-method'); if(me && !me.value && [].some.call(me.options, function(o){ return o.value === 'CASH'; })) me.value = 'CASH'; } paint(); }
+
+  /* ── PICKERS ───────────────────────────────────────────────────────── */
+  function makeCombos(){
+    new K.Combo({ input:$('m12e-type'), repaint:paint, next:next, prev:prev,
+      value:function(){ return cashParty() ? 'cash' : st.mode; },
+      items:function(q){
+        var all = cashParty() ? [{ v:'cash', label:'Cash', sub:'Cash party' }] :
+          [{ v:'credit', label:'Credit', sub:'Nothing paid with this bill' }, { v:'cash', label:'Cash', sub:'Paid in full' }].concat(st.init === 'partial' ? [{ v:'partial', label:'Part paid', sub:'Keep as it is' }] : []);
+        q = (q || '').trim().toLowerCase(); return q ? all.filter(function(x){ return x.label.toLowerCase().indexOf(q) === 0; }) : all;
+      },
+      pick:function(it){ if(!cashParty()) setMode(it.v); }
+    });
+    new K.Combo({ input:$('m12e-party'), repaint:paint, next:next, prev:prev,
+      must:function(){ return sales() ? 'Choose a customer first' : 'Choose a vendor first'; },
+      value:function(){ return partyNow(); },
+      items:function(q){
+        var sel = $('ei-party'), names = [].slice.call(sel.options).map(function(o){ return o.value; }).filter(Boolean);
+        return K.rank(names, q).slice(0, 60).map(function(x){ return { v:x.n, label:x.n }; });
+      },
+      pick:function(it){ var sel = $('ei-party'); sel.value = it.v; sel.dispatchEvent(new Event('change', { bubbles:true })); }
+    });
+    new K.Combo({ input:$('m12e-pb'), repaint:paint, next:next, prev:prev,
+      value:function(){ return st.paidBy; },
+      items:function(q){ return K.rank(typeof getPaidBys === 'function' ? getPaidBys() : [], q).map(function(x){ return { v:x.n, label:x.n }; }); },
+      pick:function(it){ st.paidBy = it.v; K.store('pb_' + DB.mode, it.v); }
+    });
+  }
+
+  /* ── KEYBOARD ORDER (same as New Entry) ────────────────────────────── */
+  function rows(){ return [].slice.call(document.querySelectorAll('#edit-line-items-body tr')); }
+  function rowFields(tr){ return ['eli-desc', 'eli-qty', 'eli-kgbag', 'eli-price'].map(function(c){ return tr.querySelector('.' + c); }).filter(function(el){ return el && visible(el) && !el.readOnly && !el.disabled; }); }
+  function saveBtn(){ return document.querySelector('#page-edit-invoice .entry-actions .btn-success'); }
+  function headSeq(){ return [$('m12e-type'), $('m12e-party'), dateProxy(), $('ei-invno'), $('ei-vehicle'), $('m12e-pb')].filter(visible); }
+  function tailSeq(){ return [$('ei-method'), $('ei-notes'), saveBtn()].filter(visible); }
+  function seq(){ var s = headSeq(); rows().forEach(function(tr){ s = s.concat(rowFields(tr)); }); return s.concat(tailSeq()); }
+  function rowEmpty(tr){ return !rowFields(tr).some(function(el){ return el.value && String(el.value).trim(); }); }
+  function addRow(){
+    if(rows().length >= 10){ toast('Maximum 10 lines on one bill', 'error'); focusSel(tailSeq()[0]); return; }
+    addEditLineItem(); var r = rows(); focusSel(r[r.length - 1].querySelector('.eli-desc')); K.commitUndo();
+  }
+  function next(el){
+    var tr = el.closest && el.closest('#edit-line-items-body tr');
+    if(tr){
+      var f = rowFields(tr), i = f.indexOf(el);
+      if(i >= 0 && i < f.length - 1){ focusSel(f[i + 1]); return; }
+      if(tr.nextElementSibling){ focusSel(tr.nextElementSibling.querySelector('.eli-desc')); return; }
+      addRow(); return;
+    }
+    var s = seq(), k = s.indexOf(el); if(k >= 0 && k < s.length - 1) focusSel(s[k + 1]);
+  }
+  function prev(el){ var s = seq(), k = s.indexOf(el); if(k > 0) focusSel(s[k - 1]); }
+  function descNext(el){
+    var tr = el.closest('tr'), lst = $('edit-desc-combo-list');
+    var open = lst && lst.style.display === 'block' && typeof _edcInput !== 'undefined' && _edcInput === el;
+    if(!el.value.trim() && !el._m12nav){
+      if(typeof _edcClose === 'function') _edcClose();
+      var all = rows();
+      if(rowEmpty(tr) && all.length > 1 && tr === all[all.length - 1]){ tr.remove(); updateEditGrandTotal(); K.commitUndo(); }
+      focusSel(tailSeq()[0]); return;
+    }
+    if(open && _edcActive >= 0) _edcPick(_edcActive); else if(typeof _edcClose === 'function') _edcClose();
+    focusSel(tr.querySelector('.eli-qty'));
+  }
+  function onKey(e){
+    if(!e.isTrusted) return;
+    var el = e.target; if(!el || !el.closest || !el.closest('#m12e')) return;
+    var k = e.key;
+    if(e.altKey && !e.ctrlKey && !e.metaKey){
+      var a = (k || '').toLowerCase(), tr = el.closest('#edit-line-items-body tr');
+      if(a === 'a'){ e.preventDefault(); e.stopPropagation(); addRow(); return; }
+      if(a === 'x' && tr){ e.preventDefault(); e.stopPropagation(); var to = tr.nextElementSibling || tr.previousElementSibling; if(rows().length > 1){ tr.remove(); updateEditGrandTotal(); if(to) focusSel(to.querySelector('.eli-desc')); K.commitUndo(); } return; }
+      if(a === 'p'){ e.preventDefault(); e.stopPropagation(); focusSel($('m12e-type')); return; }
+      if(a === 's'){
+        e.preventDefault(); e.stopPropagation();
+        var row = tr || rows().filter(function(t){ return t.querySelector('.eli-desc').value.trim(); }).pop();
+        K.openHistory(el, { tr:row, desc:'.eli-desc', price:'.eli-price', party:partyNow(), recalc:function(t){ calcEditRow(+t.dataset.elid); } });
+        return;
+      }
+      return;
+    }
+    if(el._m12combo){ if(el._m12combo.key(e)){ e.preventDefault(); e.stopPropagation(); } return; }
+    var isTab = k === 'Tab', isEnter = k === 'Enter' && !e.ctrlKey && !e.metaKey && !e.isComposing;
+    if(!isTab && !isEnter) return;
+    if(el.tagName === 'BUTTON' || el.type === 'checkbox' || el.tagName === 'SUMMARY') return;
+    e.preventDefault(); e.stopPropagation();
+    if(e.shiftKey){ prev(el); return; }
+    if(el.classList.contains('m8-date')){
+      el.dispatchEvent(new KeyboardEvent('keydown', { key:'Enter', bubbles:true, cancelable:true }));
+      var w = el.closest('.m8-dw'); if(w && w.classList.contains('bad')) return;
+      next(el); return;
+    }
+    if(el.classList.contains('eli-desc')){ descNext(el); return; }
+    if(el.id === 'ei-balance'){ var s2 = saveBtn(); if(s2) s2.focus(); return; }
+    next(el);
+  }
+  function wire(){
+    window.addEventListener('keydown', onKey, true);
+    var page = $('page-edit-invoice');
+    page.addEventListener('keydown', function(e){ if((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.classList && e.target.classList.contains('eli-desc')) e.target._m12nav = true; }, true);
+    page.addEventListener('input', function(e){ if(e.target.classList && e.target.classList.contains('eli-desc')) e.target._m12nav = false; if(e.target.closest && e.target.closest('#edit-line-items-body')) paint(); }, true);
+    $('ei-party').addEventListener('change', paint);
+  }
+
+  /* ── OPEN ──────────────────────────────────────────────────────────── */
+  function onOpen(){
+    if(!build()) return;
+    var r = rec(), row = rowNow();
+    st.init = !row ? 'credit' : row.status === 'paid' ? 'cash' : row.status === 'partial' ? 'partial' : 'credit';
+    st.mode = st.init;
+    var lp = r ? linkedPays(r.id)[0] : null;
+    st.paidBy = (lp && lp.paidBy) || K.store('pb_' + DB.mode) || '';
+    var t = $('edit-inv-title'); if(t && r) t.textContent = (sales() ? 'Invoice ' : 'Bill ') + (r.vehicle || r.invNo || '');
+    var ey = document.querySelector('#page-edit-invoice .entry-eyebrow'); if(ey) ey.textContent = sales() ? 'Edit sales invoice' : 'Edit purchase bill';
+    paint();
+    if(!K.TOUCH && !(M8.isDock && M8.isDock())) setTimeout(function(){ focusSel($('m12e-type')); }, 160);
+  }
+
+  /* ── SAVE: the app's own save, then the Cash / Credit change ───────── */
+  function wrapSave(){
+    var orig = window.saveEditInvoice; if(typeof orig !== 'function' || orig.__m12) return;
+    var w = async function(){
+      var r = rec(); if(!r) return orig.apply(this, arguments);
+      var cp = cashParty(), want = cp ? 'cash' : st.mode, act = cp || want !== st.init;
+      if(act && want === 'cash' && !st.paidBy){ toast('Choose who ' + (sales() ? 'received' : 'paid'), 'error'); focusSel($('m12e-pb')); return; }
+      var gone = act && want === 'credit' ? linkedPays(r.id) : [];
+      if(gone.length && !confirm('Put this bill fully on credit?\n\nThe payment of AED ' + money(gone.reduce(function(a, p){ return a + (+p.amount || 0); }, 0)) +
+          ' recorded together with this bill will go to Trash (you can restore it from there).\n\nPayments made separately to the party are not touched.')) return;
+      if(act){ var b = $('ei-balance'); if(b) b.value = fmt(+window._eiBalanceOpening || 0); }   /* one change at a time */
+      var saved = null, fsr = window.fbSaveRecord;
+      window.fbSaveRecord = async function(x){ var ok = await fsr.apply(this, arguments); if(ok) saved = x; return ok; };
+      try{ await orig.apply(this, arguments); } finally { window.fbSaveRecord = fsr; }
+      if(!saved || !act) return;
+      try{
+        if(want === 'cash') await payInFull(saved);
+        else if(want === 'credit') await toCredit(gone);
+      }catch(err){ console.error('[m12 edit]', err); toast('Saved, but the payment could not be changed: ' + (err && err.message || err), 'error'); return; }
+      clearLedgerCache();
+      if(typeof refreshCurrentPage === 'function') try{ refreshCurrentPage(); }catch(e){}
+      toast(want === 'cash' ? 'Saved — bill marked paid in full' : 'Saved — bill is now on credit', 'success');
+      setTimeout(function(){ var m = $('inv-modal'); if(m && m.style.display !== 'none' && typeof viewRecord === 'function') viewRecord(saved.id); }, 450);
+    };
+    w.__m12 = true; window.saveEditInvoice = w;
+  }
+  async function payInFull(inv){
+    clearLedgerCache();
+    var row = invoiceRow(inv), total = +inv.amount || 0, paid = Math.min(row ? row.paid : 0, total), due = Math.round((total - paid) * 100) / 100;
+    if(due <= 0.005) return;
+    var who = st.paidBy, meth = ($('ei-method') || {}).value || 'CASH', lp = linkedPays(inv.id)[0], now = new Date().toISOString(), by = window._user ? window._user.email : 'system';
+    if(lp){
+      var amt = Math.round(((+lp.amount || 0) + due) * 100) / 100;
+      await fbSavePayment(Object.assign({}, lp, { amount:amt, allocations:[{ invId:inv.id, amount:amt }], paidBy:lp.paidBy || who, method:lp.method || meth, updatedAt:now, updatedBy:by }));
+    } else {
+      var ids = await allocateRecordIds(1);
+      await fbSavePayment({ id:ids[0], date:inv.date, party:inv.party, paidBy:who, method:meth, amount:due, withInvoice:true, allocMode:'manual',
+        allocations:[{ invId:inv.id, amount:due }], invRef:inv.vehicle || inv.invNo || '', notes:'Paid in full (set on edit)', createdAt:now, createdBy:by });
+      await fbSaveMeta();
+    }
+  }
+  async function toCredit(list){
+    for(var i = 0; i < list.length; i++){
+      var p = list[i];
+      await fbWrite('almadhi/trash/payment_' + p.id, Object.assign({}, p, { _deletedAt:new Date().toISOString(), _deletedBy:window._user ? window._user.email : 'system', _kind:'payment', _module:DB.mode, _reason:'bill set to credit' }));
+      await window._fbRemove(window._fbRef(window._db, MODE_ROOT() + '/payments/' + p.id));
+    }
+  }
+
+  window.M12EDIT = { prev:prev, next:next };
+  function boot(){
+    wrapSave();
+    M8.after('openEditInvoiceModal', onOpen);
+    M8.after('updateEditGrandTotal', paint);
+    M8.after('setAppMode', function(){ if(M8.page() === 'edit-invoice') paint(); });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); }); else setTimeout(boot, 0);
+})();
+</script>
+<script>/* ══════════════════════════════════════════════════════════════════════
    M12 · APP-WIDE — Back gesture, Esc, Ctrl+A / Ctrl+S save, Ctrl+Z undo,
    and the shortcut sheet behind the keyboard button.
 
@@ -30392,17 +30733,20 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
   }
   /* returns a closer for the top layer, or null */
   function topLayer(noLists){
-    if(!noLists && window.M12ENTRY && M12ENTRY.listOpen()) return function(){ M12ENTRY.closeList(); };
+    /* a list you were typing in closes first; a list that only opened on focus does not hold up Esc / Back */
+    if(!noLists && window.M12ENTRY && M12ENTRY.listTyped && M12ENTRY.listTyped()) return function(){ M12ENTRY.closeList(); };
+    if(window.M12ENTRY && M12ENTRY.listOpen() && !noLists && window.M12KIT) M12KIT.closeActive();
     var h = $('m12-hist'); if(h && h.classList.contains('open')) return function(){ M12ENTRY.closeHistory(); };
     var pv = $('m8-pv'); if(pv && pv.classList.contains('open')) return function(){ M8.closePreview(); };
     var sh = document.querySelectorAll('.m8-ov.open:not(#m8-pv)');
     if(sh.length){ var last = sh[sh.length - 1]; return function(){ if(last.id === 'm10-hs'){ var x = last.querySelector('[data-x], .m8-ib'); if(x) x.click(); else M8.closeSheet(last); document.body.classList.remove('m8-lock'); } else M8.closeSheet(last); }; }
     var lib = $('m9q-lib'); if(lib && lib.classList.contains('open')) return function(){ lib.classList.remove('open'); };
-    var scr = document.querySelector('#m10-mp-scrim.open, #m8-menu-scrim.open');
-    if(scr) return function(){ scr.dispatchEvent(new MouseEvent('click', { bubbles:true })); scr.classList.remove('open'); [].forEach.call(document.querySelectorAll('#m10-mp.open, .m8-menu.open, #m9q-pop.open'), function(x){ x.classList.remove('open'); }); };
+    var scr = document.querySelector('.m8-menu-scrim.open, #m10-mp-scrim.open');
+    if(scr) return function(){ scr.dispatchEvent(new MouseEvent('click', { bubbles:true })); scr.classList.remove('open'); setTimeout(function(){ if(scr.classList.contains('open')){ scr.classList.remove('open'); [].forEach.call(document.querySelectorAll('#m10-mp.open, .m8-menu.open, #m9q-pop.open, #m8-chq-menu.open, #m8-cq-menu.open'), function(x){ x.classList.remove('open'); }); } }, 0); };
     var cr = $('m5-create'); if(cr && cr.classList.contains('open')) return function(){ cr.classList.remove('open'); };
     var gs = $('gsearch-modal'); if(gs && gs.classList.contains('open')) return function(){ if(typeof closeGlobalSearch === 'function') closeGlobalSearch(); else gs.classList.remove('open'); };
     var mods = openModals(); if(mods.length){ var m = mods[mods.length - 1]; return function(){ closeModal(m); }; }
+    if(document.body.classList.contains('mobile-sidebar-open')) return function(){ if(typeof closeDrawer === 'function') closeDrawer(); else document.body.classList.remove('mobile-sidebar-open'); };
     var dr = $('drawer'); if(dr && (dr.classList.contains('open') || dr.classList.contains('show'))) return function(){ if(typeof closeDrawer === 'function') closeDrawer(); else dr.classList.remove('open'); };
     var dd = document.querySelector('.row-menu-panel.open, .drange-menu.open, .dropdown.open'); if(dd) return function(){ dd.classList.remove('open'); };
     return null;
@@ -30495,6 +30839,9 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
   }
   window.addEventListener('keydown', function(e){
     if(!e.isTrusted || e.isComposing) return;
+    appKey(e);
+  }, true);
+  function appKey(e){
     var lock = $('lock-overlay'); if(lock && vis(lock)) return;
     var k = (e.key || '').toLowerCase(), ctrl = e.ctrlKey || e.metaKey;
 
@@ -30509,13 +30856,36 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
     /* Esc — close the top window, else go back a page */
     if(k === 'escape' && !ctrl && !e.altKey){
       if(M8.page() === 'quotation' && !topLayer()) return;
-      var dl = $('desc-combo-list'); if(dl && dl.style.display === 'block') return;   /* the item list closes itself */
-      var inEntry = e.target && e.target.closest && e.target.closest('#m12');
+      var dl = $('desc-combo-list'), el2 = $('edit-desc-combo-list');
+      if((dl && dl.style.display === 'block') || (el2 && el2.style.display === 'block')) return;   /* the item list closes itself */
+      var inEntry = e.target && e.target.closest && e.target.closest('#m12, #m12e');
       if(typing(e.target) && !inEntry) return;   /* elsewhere the first Esc just leaves the field (the app does that) */
       e.preventDefault(); e.stopImmediatePropagation();
       back();
     }
-  }, true);
+  }
+
+  /* Documents (invoice view, print preview) are shown inside a frame. Once you
+     click on the paper, keys go to the frame and the app never saw them — so
+     Esc, Ctrl+P, Ctrl+A and every other shortcut are passed on from there. */
+  function hookFrame(f){
+    try{
+      var d = f.contentDocument; if(!d || d.__m12k) return; d.__m12k = 1;
+      d.addEventListener('keydown', function(e){
+        if(!e.isTrusted || e.isComposing) return;
+        var k = (e.key || '').toLowerCase(), ctrl = e.ctrlKey || e.metaKey;
+        if(k === 'escape'){ e.preventDefault(); try{ window.focus(); }catch(_){} back(); return; }
+        if(ctrl && !e.altKey && (k === 'a' || k === 's')){ var b = findSave(); if(b){ e.preventDefault(); b.click(); } else if(k === 's') e.preventDefault(); return; }
+        if(ctrl && (k === 'z' || k === 'y')){ e.preventDefault(); if(M8.undo){ if(k === 'y' || e.shiftKey) M8.undo.redo(); else M8.undo.undo(); } return; }
+        var ev = new KeyboardEvent('keydown', { key:e.key, code:e.code, ctrlKey:e.ctrlKey, shiftKey:e.shiftKey, altKey:e.altKey, metaKey:e.metaKey, bubbles:true, cancelable:true });
+        document.dispatchEvent(ev);
+        if(ev.defaultPrevented) e.preventDefault();
+      }, true);
+    }catch(_){}
+  }
+  function scanFrames(){ [].forEach.call(document.querySelectorAll('iframe.m8-paper-f'), function(f){ hookFrame(f); if(!f.__m12l){ f.__m12l = 1; f.addEventListener('load', function(){ hookFrame(f); }); } }); }
+  var fq = 0;
+  new MutationObserver(function(){ if(fq) return; fq = 1; Promise.resolve().then(function(){ fq = 0; scanFrames(); }); }).observe(document.documentElement, { childList:true, subtree:true });
   /* Ctrl+Z / Ctrl+Y on screens without a form: still answer, never silently */
   window.addEventListener('keydown', function(e){
     if(!e.isTrusted || e.defaultPrevented || !(e.ctrlKey || e.metaKey) || e.altKey) return;
@@ -30580,7 +30950,22 @@ html:not(#_) body:not(#_) .amx-drawer{ height:20px; }
     ov.addEventListener('click', function(e){ if(e.target === ov || e.target.closest('[data-x]')) M8.closeSheet(ov); });
   }
 
-  window.M12APP = { back:back, closeTop:closeTop, _dbg:function(){ return { stack:stack.slice(), last:last, depth:depth() }; } };
+  function payInvoice(r){
+    if(typeof openPaymentModal !== 'function') return;
+    openPaymentModal(r.party);
+    try{
+      clearLedgerCache();
+      var row = invoiceRow(r), out = Math.round(((row && row.outstanding) || 0) * 100) / 100;
+      var sales = DB.mode === 'sales', label = r.vehicle || r.invNo || '';
+      if(out <= 0.005){ toast((sales ? 'Invoice ' : 'Bill ') + label + ' is already paid', 'success'); return; }
+      var amt = $('pm-amount'); if(amt) amt.value = out.toFixed(2);
+      _allocState.pm.manual = {}; _allocState.pm.manual[r.id] = out;
+      allocSetMode('pm', 'manual');
+      var n = $('pm-notes'); if(n && !n.value) n.value = 'For ' + (sales ? 'invoice ' : 'bill ') + label;
+      if(!(M8.isDock && M8.isDock())) setTimeout(function(){ var a2 = $('pm-amount'); if(a2){ a2.focus(); a2.select(); } }, 120);
+    }catch(e){ console.error('[m12 pay]', e); }
+  }
+  window.M12APP = { back:back, closeTop:closeTop, payInvoice:payInvoice, _dbg:function(){ return { stack:stack.slice(), last:last, depth:depth() }; } };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildKeys); else buildKeys();
 })();
 </script>
