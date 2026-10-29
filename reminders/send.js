@@ -1,4 +1,4 @@
-/* Al Madhi — sends cheque reminders to phones, even when the app is closed.
+/* am. nexus — sends cheque reminders to phones, even when the app is closed.
    Runs on GitHub every 10 minutes (see .github/workflows/cheque-reminders.yml).
    Reads cheques + reminder settings from Firebase, sends a push notification
    at each reminder time, and remembers what it already sent.
