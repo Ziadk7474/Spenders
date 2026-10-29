@@ -3,7 +3,7 @@
    then quietly downloads the newest version for the next time you open it.
    The Firebase library and fonts are saved too, so nothing big is downloaded
    again on each open. Live cheque data still comes from Firebase every time. */
-var CACHE = 'am-cheque-viewer-v7';
+var CACHE = 'am-cheque-viewer-v8';
 var CORE = ['./', './index.html', './manifest.json?v=7', './icon-192.png?v=7', './icon-512.png?v=7', './apple-touch-icon.png?v=7', './favicon-32.png?v=7'];
 self.addEventListener('install', function(e){
   self.skipWaiting();
@@ -14,7 +14,10 @@ self.addEventListener('install', function(e){
 self.addEventListener('activate', function(e){
   e.waitUntil(caches.keys().then(function(keys){
     return Promise.all(keys.filter(function(k){ return k.indexOf('am-cheque-viewer') === 0 && k !== CACHE; }).map(function(k){ return caches.delete(k); }));
-  }).then(function(){ return self.clients.claim(); }));
+  }).then(function(){ return self.clients.claim(); })
+    /* reload open windows once, so a phone that saved the broken copy (v7) shows the fixed page straight away */
+    .then(function(){ return self.clients.matchAll({ type:'window' }); })
+    .then(function(list){ list.forEach(function(c){ try{ c.navigate(c.url); }catch(_){} }); }));
 });
 function fresh(req, c){
   return fetch(req, { cache:'no-cache' }).then(function(res){ if(res && res.ok) c.put(req, res.clone()); return res; });
