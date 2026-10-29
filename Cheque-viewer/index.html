@@ -973,26 +973,7 @@ function printChequeListPdf(){
   var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cheques — ' + e(lbl) + '</title><style>body{font-family:Inter,Arial,sans-serif;padding:36px;color:#111}h1{font-size:22px;margin:0}p{color:#666;margin:4px 0 18px}table{width:100%;border-collapse:collapse;font-size:12.5px}th{background:#141414;color:#fff;text-align:left;padding:8px}td{padding:8px;border-bottom:1px solid #e6e6e6}td.r,th.r{text-align:right}tfoot td{font-weight:700;border-top:2px solid #141414}.ok{color:#1f9d55}.due{color:#e8613a}@media print{body{padding:0}}</style></head><body>' +
     '<h1>Cheque list</h1><p>' + e(lbl) + ' · ' + list.length + ' cheques · printed ' + new Date().toLocaleDateString('en-GB') + '</p><table><thead><tr><th>Date</th><th>Party</th><th>Cheque no.</th><th class="r">Amount (AED)</th><th>Status</th></tr></thead><tbody>' +
     list.map(function(c){ return '<tr><td>' + new Date(c.date + 'T00:00:00').toLocaleDateString('en-GB') + '</td><td>' + e(c.party) + '</td><td>' + e(c.chequeNo||'—') + '</td><td class="r">' + fmt(c.amount) + '</td><td class="' + (c.cleared?'ok':'due') + '">' + (c.cleared?'Cleared':'Pending') + '</td></tr>'; }).join('') +
-    '</tbody><tfoot><tr><td colspan="3">Total</td><td class="r">' + fmt(tot) + '</td><td></td></tr></tfoot></table><script>/* Install button: shown only when the phone can install this as an app */
-(function(){
-  var ev = null, btn = null;
-  function standalone(){ return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone; }
-  function show(){
-    if(standalone() || btn) return;
-    btn = document.createElement('button'); btn.type = 'button'; btn.id = 'cv-install';
-    btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.75V15M7.75 10.75 12 15l4.25-4.25"/><path d="M4.5 16.5v1.75A2.75 2.75 0 0 0 7.25 21h9.5a2.75 2.75 0 0 0 2.75-2.75V16.5"/></svg><span>Install app</span><i aria-label="Close">&times;</i>';
-    btn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:9999;display:flex;align-items:center;gap:8px;height:46px;padding:0 8px 0 18px;border:0;border-radius:999px;background:#ED532D;color:#fff;font:600 14.5px/1 Inter,system-ui,sans-serif;box-shadow:0 12px 28px -10px rgba(237,83,45,.7);cursor:pointer';
-    btn.querySelector('i').style.cssText = 'font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.18);font-size:18px;margin-left:4px';
-    btn.addEventListener('click', function(e){
-      if(e.target.tagName === 'I'){ btn.remove(); try{ sessionStorage.setItem('cv-install-x', '1'); }catch(_){} return; }
-      if(!ev) return; ev.prompt(); ev.userChoice.then(function(){ ev = null; if(btn){ btn.remove(); btn = null; } });
-    });
-    document.body.appendChild(btn);
-  }
-  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); ev = e; try{ if(sessionStorage.getItem('cv-install-x')) return; }catch(_){} show(); });
-  window.addEventListener('appinstalled', function(){ if(btn){ btn.remove(); btn = null; } });
-})();</script>
-</body></html>';
+    '</tbody><tfoot><tr><td colspan="3">Total</td><td class="r">' + fmt(tot) + '</td><td></td></tr></tfoot></table></body></html>';
   if(window.M8 && M8.openPreview) M8.openPreview(html, 'Cheque list');
 }
 (function(){
@@ -2223,6 +2204,8 @@ function printChequeListPdf(){
     buildRegister();
     M8.after('renderCheques', function(){ paintRegister(); paintBell(); });
     M8.after('showPage', function(id){ if(id === 'cheques'){ buildRegister(); paintRegister(); } paintBell(); });
+    /* show the saved list at once — do not wait for the internet */
+    if(CHQ().length) setTimeout(function(){ renderCheques(); }, 0);
     var chqFns = ['saveCheque','toggleChequeCleared','fbSaveCheque'];
     chqFns.forEach(function(n){ M8.after(n, function(){ setTimeout(schedule, 50); }); });
     setTimeout(schedule, 1500);
@@ -2257,5 +2240,24 @@ onValue(ref(db, 'almadhi/cheques'), snap => {
 });
 </script>
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js?v=7').catch(function(){}); }); }</script>
+<script>/* Install button: shown only when the phone can install this as an app */
+(function(){
+  var ev = null, btn = null;
+  function standalone(){ return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone; }
+  function show(){
+    if(standalone() || btn) return;
+    btn = document.createElement('button'); btn.type = 'button'; btn.id = 'cv-install';
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.75V15M7.75 10.75 12 15l4.25-4.25"/><path d="M4.5 16.5v1.75A2.75 2.75 0 0 0 7.25 21h9.5a2.75 2.75 0 0 0 2.75-2.75V16.5"/></svg><span>Install app</span><i aria-label="Close">&times;</i>';
+    btn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:9999;display:flex;align-items:center;gap:8px;height:46px;padding:0 8px 0 18px;border:0;border-radius:999px;background:#ED532D;color:#fff;font:600 14.5px/1 Inter,system-ui,sans-serif;box-shadow:0 12px 28px -10px rgba(237,83,45,.7);cursor:pointer';
+    btn.querySelector('i').style.cssText = 'font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.18);font-size:18px;margin-left:4px';
+    btn.addEventListener('click', function(e){
+      if(e.target.tagName === 'I'){ btn.remove(); try{ sessionStorage.setItem('cv-install-x', '1'); }catch(_){} return; }
+      if(!ev) return; ev.prompt(); ev.userChoice.then(function(){ ev = null; if(btn){ btn.remove(); btn = null; } });
+    });
+    document.body.appendChild(btn);
+  }
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); ev = e; try{ if(sessionStorage.getItem('cv-install-x')) return; }catch(_){} show(); });
+  window.addEventListener('appinstalled', function(){ if(btn){ btn.remove(); btn = null; } });
+})();</script>
 </body>
 </html>
