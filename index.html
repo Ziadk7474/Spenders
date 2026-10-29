@@ -30918,6 +30918,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     ['Switch Purchase / Sales', ['M']],
     ['Go to Home · Invoices · Payments', ['G H', 'G I', 'G P']],
     ['Go to Parties · Cheques · Statement', ['G V', 'G C', 'G S']],
+    ['Go to Reports & tools', ['G R']],
     ['Cheque reminders', ['R']],
     ['Print the open document', ['Ctrl P']],
     ['Lock the app', ['Ctrl L']],
@@ -30968,6 +30969,1172 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
   window.M12APP = { back:back, closeTop:closeTop, payInvoice:payInvoice, _dbg:function(){ return { stack:stack.slice(), last:last, depth:depth() }; } };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildKeys); else buildKeys();
 })();
+</script>
+
+<style id="m13-style">/* ══════════════════════════════════════════════════════════════════════
+   M13 · Reports & tools page + everyday fixes. Uses the app's own k-tokens.
+   ══════════════════════════════════════════════════════════════════════ */
+@media screen{
+/* ── page shell ── */
+html:not(#_) body:not(#_) #page-reports{ font-family:var(--k-font); color:var(--k-ink); }
+html:not(#_) body:not(#_) #page-reports .m13-head{ margin-bottom:14px; }
+html:not(#_) body:not(#_) .m13-tabs{ display:flex; gap:6px; padding:5px; margin:0 0 18px; background:var(--k-card); border-radius:16px; overflow-x:auto; scrollbar-width:none; position:sticky; top:0; z-index:5; }
+html:not(#_) body:not(#_) .m13-tabs::-webkit-scrollbar{ display:none; }
+html:not(#_) body:not(#_) .m13-tab{ flex:1 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:8px; height:40px; padding:0 16px; border:0; border-radius:12px; background:transparent;
+  font:500 13.5px/1 var(--k-font); color:var(--k-ink2); cursor:pointer; white-space:nowrap; transition:background .15s, color .15s; }
+html:not(#_) body:not(#_) .m13-tab .m8i{ width:17px; height:17px; flex:0 0 auto; }
+html:not(#_) body:not(#_) .m13-tab:hover{ color:var(--k-ink); }
+html:not(#_) body:not(#_) .m13-tab.on{ background:var(--k-tile); color:var(--k-ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.06), 0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m13-tab.on .m8i{ color:var(--k-acc); }
+
+html:not(#_) body:not(#_) .m13-body{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+html:not(#_) body:not(#_) .m13-intro{ display:flex; flex-direction:column; gap:3px; padding:0 2px; }
+html:not(#_) body:not(#_) .m13-intro b{ font:650 17px/1.25 var(--k-font); letter-spacing:-.01em; }
+html:not(#_) body:not(#_) .m13-intro span{ font-size:13px; line-height:1.45; color:var(--k-ink3); max-width:720px; }
+html:not(#_) body:not(#_) .m13-note{ margin:4px 2px 0; font-size:12px; line-height:1.5; color:var(--k-ink3); max-width:760px; }
+html:not(#_) body:not(#_) .m13-empty{ padding:38px 18px; text-align:center; font-size:13.5px; color:var(--k-ink3); background:var(--k-card); border-radius:16px; }
+
+/* ── KPI tiles ── */
+html:not(#_) body:not(#_) .m13-kpis{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:10px; }
+html:not(#_) body:not(#_) .m13-kpi{ display:flex; flex-direction:column; gap:6px; min-width:0; padding:15px 16px; background:var(--k-card); border-radius:16px; }
+html:not(#_) body:not(#_) .m13-kpi > span{ font-size:12px; font-weight:500; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m13-kpi > b{ font:650 20px/1.15 var(--k-font); letter-spacing:-.015em; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_) body:not(#_) .m13-kpi > small{ font-size:11.5px; line-height:1.35; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m13-kpi.neg > b{ color:var(--k-neg); }
+html:not(#_) body:not(#_) .m13-kpi.pos > b{ color:var(--k-pos); }
+html:not(#_) body:not(#_) .m13-kpi-bar{ justify-content:space-between; }
+html:not(#_) body:not(#_) .m13-kpi-bar .m13-bar{ height:10px; margin-top:4px; }
+html:not(#_) body:not(#_) .m13-legend{ display:flex; flex-wrap:nowrap; white-space:nowrap; overflow:hidden; gap:4px 10px; font-size:11px; color:var(--k-ink3); align-items:center; }
+html:not(#_) body:not(#_) .m13-legend i{ display:inline-block; width:8px; height:8px; border-radius:3px; margin-right:-6px; }
+
+/* age bar: one colour family, older = stronger */
+html:not(#_) body:not(#_) .m13-bar{ display:flex; gap:2px; height:6px; border-radius:99px; overflow:hidden; background:var(--k-line); margin-top:8px; }
+html:not(#_) body:not(#_) .m13-bar i{ display:block; height:100%; min-width:3px; }
+html:not(#_) body:not(#_) :is(.m13-bar, .m13-legend) i.b0{ background:#9aa3ad; }
+html:not(#_) body:not(#_) :is(.m13-bar, .m13-legend) i.b1{ background:#e0a23a; }
+html:not(#_) body:not(#_) :is(.m13-bar, .m13-legend) i.b2{ background:#ea7a3e; }
+html:not(#_) body:not(#_) :is(.m13-bar, .m13-legend) i.b3{ background:var(--k-neg); }
+
+/* ── toolbar: chips + search ── */
+html:not(#_) body:not(#_) .m13-tools{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; }
+html:not(#_) body:not(#_) .m13-chips{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; max-width:100%; }
+html:not(#_) body:not(#_) .m13-chips::-webkit-scrollbar{ display:none; }
+html:not(#_) body:not(#_) .m13-chip{ flex:0 0 auto; height:34px; padding:0 14px; border:1px solid var(--k-line); border-radius:99px; background:var(--k-tile); font:500 12.5px/1 var(--k-font); color:var(--k-ink2); cursor:pointer; white-space:nowrap; }
+html:not(#_) body:not(#_) .m13-chip:hover{ border-color:var(--k-line2); color:var(--k-ink); }
+html:not(#_) body:not(#_) .m13-chip.on{ background:var(--k-dark); border-color:var(--k-dark); color:var(--k-on-dark); }
+html:not(#_) body:not(#_) .m13-search{ position:relative; flex:1 1 220px; max-width:320px; margin-left:auto; display:flex; align-items:center; }
+html:not(#_) body:not(#_) .m13-search .m8i{ position:absolute; left:12px; width:16px; height:16px; color:var(--k-ink3); pointer-events:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m13-search input{ width:100% !important; height:38px !important; padding:0 12px 0 36px !important; border:1px solid var(--k-line) !important; border-radius:12px !important; background:var(--k-tile) !important;
+  font:400 13.5px/1 var(--k-font) !important; color:var(--k-ink) !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m13-search input:focus{ border-color:var(--k-acc) !important; outline:0 !important; }
+
+/* ── list rows ── */
+html:not(#_) body:not(#_) .m13-list{ display:flex; flex-direction:column; background:var(--k-card); border-radius:18px; padding:4px; }
+html:not(#_) body:not(#_) .m13-row{ display:flex; align-items:center; gap:14px; padding:13px 14px; border-radius:14px; min-width:0; }
+html:not(#_) body:not(#_) .m13-row + .m13-row{ box-shadow:0 -1px 0 var(--k-line); }
+html:not(#_) body:not(#_) .m13-row:hover{ background:var(--k-tile); box-shadow:none; }
+html:not(#_) body:not(#_) .m13-row:hover + .m13-row{ box-shadow:none; }
+html:not(#_) body:not(#_) .m13-av{ flex:0 0 40px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:var(--k-tile); color:var(--k-ink2); font:650 13px/1 var(--k-font); letter-spacing:.02em; box-shadow:0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m13-av.sq{ border-radius:12px; }
+html:not(#_) body:not(#_) .m13-av .m8i{ width:18px; height:18px; }
+html:not(#_) body:not(#_) .m13-main{ flex:1 1 auto; min-width:0; }
+html:not(#_) body:not(#_) .m13-l1{ display:flex; align-items:center; flex-wrap:wrap; gap:6px 8px; min-width:0; }
+html:not(#_) body:not(#_) .m13-l1 b{ font:600 14px/1.3 var(--k-font); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
+html:not(#_) body:not(#_) .m13-l2{ margin-top:3px; font-size:12px; line-height:1.4; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m13-unit{ font-size:11px; font-weight:600; color:var(--k-ink3); padding:2px 7px; border-radius:6px; background:var(--k-tile); box-shadow:0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m13-tag{ font-style:normal; font-size:11px; font-weight:600; padding:3px 8px; border-radius:99px; white-space:nowrap; }
+html:not(#_) body:not(#_) .m13-tag.neg{ color:var(--k-neg); background:color-mix(in srgb, var(--k-neg) 12%, transparent); }
+html:not(#_) body:not(#_) .m13-tag.warn{ color:var(--k-wait); background:color-mix(in srgb, var(--k-wait) 13%, transparent); }
+html:not(#_) body:not(#_) .m13-tag.pos{ color:var(--k-pos); background:color-mix(in srgb, var(--k-pos) 12%, transparent); }
+html:not(#_) body:not(#_) .m13-amt{ flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:7px; text-align:right; }
+html:not(#_) body:not(#_) .m13-amt > b{ font:650 15px/1.1 var(--k-font); font-variant-numeric:tabular-nums; white-space:nowrap; }
+html:not(#_) body:not(#_) .m13-amt > small{ font-size:11.5px; color:var(--k-ink3); white-space:nowrap; }
+html:not(#_) body:not(#_) .m13-acts{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+html:not(#_) body:not(#_) .m13-ib{ width:34px; height:34px; display:grid; place-items:center; border:0; border-radius:10px; background:var(--k-tile); color:var(--k-ink2); cursor:pointer; text-decoration:none; box-shadow:0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m13-ib .m8i{ width:16px; height:16px; }
+html:not(#_) body:not(#_) .m13-ib:hover{ color:var(--k-ink); box-shadow:0 0 0 1px var(--k-line2); }
+html:not(#_) body:not(#_) .m13-ib.wa{ color:#1fa855; }
+html:not(#_) body:not(#_) .m13-ib.acc{ background:var(--k-acc); color:#fff; box-shadow:none; }
+html:not(#_) body:not(#_) .m13-share{ height:5px; margin-top:9px; border-radius:99px; background:var(--k-line); overflow:hidden; max-width:420px; }
+html:not(#_) body:not(#_) .m13-share i{ display:block; height:100%; border-radius:99px; background:var(--k-acc); }
+html:not(#_) body:not(#_) .m13-spark{ flex:0 0 84px; height:34px; display:flex; align-items:flex-end; gap:3px; }
+html:not(#_) body:not(#_) .m13-spark i{ flex:1; border-radius:3px 3px 1px 1px; background:color-mix(in srgb, var(--k-acc) 70%, transparent); }
+html:not(#_) body:not(#_) .m13-spark i.z{ background:var(--k-line); }
+
+/* ── buttons & forms ── */
+html:not(#_) body:not(#_) .m13-btns{ display:flex; flex-wrap:wrap; gap:8px; }
+html:not(#_) body:not(#_) .m13-btn{ display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border:0; border-radius:12px; background:var(--k-tile); color:var(--k-ink); font:600 13px/1 var(--k-font); cursor:pointer; box-shadow:0 0 0 1px var(--k-line); white-space:nowrap; }
+html:not(#_) body:not(#_) .m13-btn .m8i{ width:16px; height:16px; }
+html:not(#_) body:not(#_) .m13-btn:hover{ box-shadow:0 0 0 1px var(--k-line2); }
+html:not(#_) body:not(#_) .m13-btn.acc{ background:var(--k-acc); color:#fff; box-shadow:none; }
+html:not(#_) body:not(#_) .m13-btn.acc:hover{ filter:brightness(1.05); }
+html:not(#_) body:not(#_) .m13-btn.sm{ height:32px; padding:0 12px; font-size:12px; border-radius:10px; }
+
+/* ── cash book ── */
+html:not(#_) body:not(#_) .m13-people{ display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:8px; }
+html:not(#_) body:not(#_) .m13-person{ position:relative; display:grid; grid-template-columns:36px 1fr; grid-template-rows:auto auto; column-gap:10px; row-gap:2px; align-items:center; padding:11px 12px; border:0; border-radius:14px;
+  background:var(--k-card); text-align:left; cursor:pointer; color:var(--k-ink); font-family:var(--k-font); box-shadow:inset 0 0 0 1px transparent; }
+html:not(#_) body:not(#_) .m13-person .m13-av{ grid-row:1 / 3; width:36px; height:36px; flex-basis:36px; font-size:12px; }
+html:not(#_) body:not(#_) .m13-person b{ font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:44px; }
+html:not(#_) body:not(#_) .m13-person small{ font-size:11px; color:var(--k-ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_) body:not(#_) .m13-person em{ position:absolute; top:11px; right:12px; font-style:normal; font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m13-person.on{ box-shadow:inset 0 0 0 1.5px var(--k-acc); background:var(--k-tile); }
+html:not(#_) body:not(#_) :is(.m13-person em, .m13-ledger span).pos{ color:var(--k-pos); }
+html:not(#_) body:not(#_) :is(.m13-person em, .m13-ledger span).neg{ color:var(--k-neg); }
+html:not(#_) body:not(#_) .m13-ledger{ background:var(--k-card); border-radius:18px; padding:6px 4px; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2){ display:grid; grid-template-columns:96px minmax(0, 2fr) minmax(0, 1fr) 110px 110px 120px; gap:10px; padding:10px 14px; align-items:center; font-size:13px; }
+html:not(#_) body:not(#_) .m13-lh{ font-size:11.5px; font-weight:600; color:var(--k-ink3); text-transform:uppercase; letter-spacing:.04em; }
+html:not(#_) body:not(#_) .m13-lr2 + .m13-lr2, html:not(#_) body:not(#_) .m13-lh + .m13-lr2{ box-shadow:0 -1px 0 var(--k-line); }
+html:not(#_) body:not(#_) .m13-lr2 small{ display:block; font-size:11px; color:var(--k-ink3); margin-top:1px; }
+html:not(#_) body:not(#_) .m13-ell{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2) .r{ text-align:right; }
+html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2) > .m13-sgn{ display:none; }
+html:not(#_) body:not(#_) .m13-lr2 .b{ font-weight:650; }
+
+
+/* ══ everyday fixes ══ */
+
+/* dashboard: "Today" in place of the old Lock circle */
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-lock.m13-today{ display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; gap:3px !important; text-align:center !important; padding:12px !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-lock.m13-today small{ font:500 11.5px/1.2 var(--k-font) !important; color:var(--k-ink3) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-lock.m13-today b{ font:700 30px/1.05 var(--k-font) !important; color:var(--k-ink) !important; letter-spacing:-.02em !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-lock.m13-today span{ font:500 11.5px/1.3 var(--k-font) !important; color:var(--k-ink2) !important; white-space:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-lock.m13-today em{ font:600 11.5px/1.3 var(--k-font) !important; font-style:normal !important; color:var(--k-pos) !important; white-space:nowrap; }
+/* dashboard date chips stay on one line and scroll */
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-chips{ flex-wrap:nowrap !important; overflow-x:auto !important; scrollbar-width:none; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-chips::-webkit-scrollbar{ display:none; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-chips > *{ flex:0 0 auto !important; }
+
+/* statement: fewer filters on show, English | Urdu switch, PDF buttons */
+html:not(#_#_#_) body:not(#_#_#_) .search-panel.m13-less .m13-xf{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .search-panel .m13-ph{ display:flex !important; justify-content:space-between !important; align-items:center !important; }
+html:not(#_) body:not(#_) .m13-more-f{ display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px; border:0; border-radius:99px; background:var(--k-tile); box-shadow:0 0 0 1px var(--k-line); font:500 12px/1 var(--k-font); color:var(--k-ink2); cursor:pointer; }
+html:not(#_) body:not(#_) .m13-more-f .m8i{ width:14px; height:14px; }
+html:not(#_) body:not(#_) .m13-lang{ display:inline-flex; gap:2px; padding:3px; margin-top:10px; border-radius:99px; background:var(--k-card); }
+html:not(#_) body:not(#_) .m13-lang button{ height:30px; padding:0 14px; border:0; border-radius:99px; background:transparent; font:500 12.5px/1 var(--k-font); color:var(--k-ink2); cursor:pointer; }
+html:not(#_) body:not(#_) .m13-lang button.on{ background:var(--k-tile); color:var(--k-ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.08), 0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m13-lang button[data-l="ur"]{ font-family:'Noto Nastaliq Urdu','Jameel Noori Nastaleeq',var(--k-font); font-size:13px; }
+html:not(#_#_#_) body:not(#_#_#_) .m13-share .m8i{ width:16px; height:16px; margin-right:6px; }
+/* Urdu statement now opens from the switch inside Statement */
+html:not(#_#_#_) body:not(#_#_#_) .zmenu .zm-subitem[data-nav$=":urdu-stmt"]{ display:none !important; }
+
+/* Data Health check moved to More */
+html:not(#_#_#_) body:not(#_#_#_) #page-payments .page-header [onclick="openDupeScan()"]{ display:none !important; }
+
+/* records: Description gets the room it needs */
+html:not(#_#_#_) body:not(#_#_#_) #all-records-table th:nth-child(5), html:not(#_#_#_) body:not(#_#_#_) #all-records-table td:nth-child(5){ min-width:220px; }
+
+/* New Entry: credit limit line */
+html:not(#_) body:not(#_) .m13-limit{ display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; font-size:12.5px; line-height:1.4; color:var(--k-ink2); background:var(--k-card); }
+html:not(#_) body:not(#_) .m13-limit .m8i{ width:16px; height:16px; flex:0 0 auto; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m13-limit.over{ color:var(--k-neg); background:color-mix(in srgb, var(--k-neg) 10%, transparent); font-weight:500; }
+html:not(#_) body:not(#_) .m13-limit.over .m8i{ color:var(--k-neg); }
+html:not(#_#_#_) body:not(#_#_#_) .m13-limit[hidden]{ display:none !important; }
+
+/* ── tablet ── */
+@media (max-width:1100px){
+}
+@media (min-width:600px) and (max-width:1100px){
+  html:not(#_#_#_) body:not(#_#_#_) .amc-filter-row{ grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)) !important; gap:10px !important; align-items:end !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .amc-filter-row > *{ min-width:0 !important; max-width:none !important; grid-column:auto !important; }
+}
+@media (max-width:900px){
+  html:not(#_) body:not(#_) .m13-tab{ flex:0 0 auto; padding:0 14px; }
+  html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2){ grid-template-columns:78px minmax(0, 1fr) 90px 90px 100px; }
+  html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2) > :nth-child(3){ display:none; }
+  /* phone header: the Purchase / Sales switch steps aside while scrolling down */
+  html:not(#_) body:not(#_) #m8-switch{ transition:opacity .18s ease, transform .18s ease; }
+  html:not(#_#_#_) body.m13-down:not(#_#_#_) #m8-switch.show{ opacity:0 !important; transform:translateY(-8px) !important; pointer-events:none !important; }
+}
+
+/* ── phone ── */
+@media (max-width:599px){
+  html:not(#_) body:not(#_) .m13-tabs{ margin:0 -2px 14px; border-radius:14px; }
+  html:not(#_) body:not(#_) .m13-tab{ height:38px; padding:0 12px; font-size:13px; gap:6px; }
+  html:not(#_) body:not(#_) .m13-kpis{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+  html:not(#_) body:not(#_) .m13-kpi{ padding:13px 14px; }
+  html:not(#_) body:not(#_) .m13-kpi > b{ font-size:16.5px; }
+  html:not(#_) body:not(#_) .m13-kpi-bar{ grid-column:1 / -1; }
+  html:not(#_) body:not(#_) .m13-tools{ flex-direction:column; align-items:stretch; gap:10px; }
+  html:not(#_) body:not(#_) .m13-search{ flex:0 0 auto; max-width:none; margin:0; }
+  html:not(#_) body:not(#_) .m13-kpis > .m13-kpi:first-child{ grid-column:1 / -1; }
+  html:not(#_) body:not(#_) .m13-row{ flex-wrap:wrap; gap:10px 12px; padding:13px 12px; }
+  html:not(#_) body:not(#_) .m13-av{ flex-basis:36px; width:36px; height:36px; font-size:12px; }
+  html:not(#_) body:not(#_) .m13-main{ flex:1 1 calc(100% - 50px); }
+  html:not(#_) body:not(#_) .m13-amt{ flex:1 1 100%; flex-direction:row; align-items:center; justify-content:space-between; padding-left:48px; }
+  html:not(#_) body:not(#_) .m13-item .m13-spark{ display:none; }
+  html:not(#_) body:not(#_) .m13-people{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2){ grid-template-columns:58px minmax(0, 1fr) 88px 88px; gap:8px; padding:10px; font-size:12.5px; }
+  html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2) > :is(:nth-child(5), :nth-child(6)){ display:none; }
+  html:not(#_) body:not(#_) :is(.m13-lh, .m13-lr2) > .m13-sgn{ display:block; }
+  html:not(#_) body:not(#_) .m13-acts .m13-btn.sm{ padding:0 10px; }
+}
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   M14 · PC polish: side menu pill, PC header, small PC screens
+   ══════════════════════════════════════════════════════════════════════ */
+@media screen{
+/* the page area never jumps sideways when a scrollbar comes or goes */
+@media (min-width:901px){
+  html:not(#_#_#_) body:not(#_#_#_) #app-scroll{ scrollbar-gutter:stable; }
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar .sb-nav{ scrollbar-width:none !important; }
+}
+
+/* ── 1 · SIDE MENU: one pill, same shape everywhere ─────────────────── */
+html:not(#_) body:not(#_) .m14-pill{ display:none; }
+@media (min-width:901px){
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu{ position:relative !important; isolation:isolate; }
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu > .m14-pill{ display:block; position:absolute; left:0; top:0; z-index:0; pointer-events:none; opacity:0;
+    border-radius:999px; background:var(--k-acc); box-shadow:0 1px 0 rgba(255,255,255,.22) inset, var(--m8-glow-sm, 0 4px 14px rgba(232,97,58,.28));
+    transition:opacity .15s ease; will-change:transform; }
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu > .m14-pill.m14-anim{ transition:transform .26s cubic-bezier(.22,1,.36,1), width .26s cubic-bezier(.22,1,.36,1), height .26s cubic-bezier(.22,1,.36,1), opacity .15s ease; }
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem, .zm-group, .zm-sub, .zm-divider){ position:relative; z-index:1; }
+
+  /* every row: the same pill shape, nothing else changes */
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem){
+    border-radius:999px !important; border:0 !important; outline:0 !important; box-shadow:none !important; transform:none !important; font-weight:500 !important; }
+  /* the page you are on: the moving pill gives the colour; only the row under the pill turns its text white */
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem):is(.active, .m10-on, .m14-on){
+    background:transparent !important; background-image:none !important; box-shadow:none !important; }
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem):is(.active, .m10-on):not(.m14-on){ color:var(--k-ink) !important; font-weight:500 !important; }
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem):is(.active, .m10-on):not(.m14-on) :is(svg, .zm-ic, .m8-subic, span){ color:var(--k-ink2) !important; stroke:currentColor !important; }
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu .m14-on{ color:#fff !important; font-weight:600 !important; }
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu .m14-on :is(svg, .zm-ic, .m8-subic, span, .zm-chev){ color:#fff !important; stroke:#fff !important; }
+  /* an open group keeps its normal look (no bold, no darker icon) */
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu .zm-group.open > .zm-ghead{ font-weight:500 !important; }
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu .zm-group.open > .zm-ghead:not(.m14-on) .zm-ic{ color:var(--k-ink2) !important; }
+  /* hover: the same pill shape, a light shade, text and icons stay as they are */
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem):hover:not(.active):not(.m10-on):not(.m14-on){ background:rgba(0,0,0,.045) !important; }
+  html:not(#_#_#_) body.m14-pillon.dark-mode:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem):hover:not(.active):not(.m10-on):not(.m14-on){ background:rgba(255,255,255,.06) !important; }
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem):active:not(.active):not(.m14-on){ background:rgba(0,0,0,.07) !important; }
+  html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem):focus-visible{ box-shadow:inset 0 0 0 2px var(--k-acc) !important; }
+  /* the menu never shifts: no press animation */
+  html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-ghead, .zm-subitem){ transition:background-color .15s ease, color .15s ease !important; }
+}
+
+/* ── 2 · PC HEADER ──────────────────────────────────────────────────── */
+html:not(#_) body:not(#_) .m14-crumb, html:not(#_) body:not(#_) .m14-search{ display:none; }
+@media (min-width:901px){
+  /* logo column lines up with the side menu */
+  html:not(#_#_#_) body:not(#_#_#_) #m5-hdr{ gap:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #m5-hdr #m5-logo{ flex:0 0 44px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl{ flex:0 0 auto !important; width:max(0px, calc(var(--m14-sbw, 256px) - 22px - 44px)) !important; padding-left:12px !important; box-sizing:border-box !important; overflow:hidden !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl #m5-t2{ display:none !important; }
+  html:not(#_#_#_) body.sb-collapsed:not(#_#_#_) #m5-hdr .m5-ttl{ visibility:hidden !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #m5-hdr .m5-ttl .amx-hdr{ height:18px !important; }
+
+  /* where you are */
+  html:not(#_) body:not(#_) .m14-crumb{ display:flex; align-items:baseline; gap:8px; min-width:0; flex:1 1 auto; padding:0 16px 0 24px; font-family:var(--k-font); white-space:nowrap; overflow:hidden; }
+  html:not(#_) body:not(#_) .m14-c1{ font-size:14px; font-weight:500; color:var(--k-ink3); }
+  html:not(#_) body:not(#_) .m14-sep{ font-style:normal; font-size:14px; color:var(--k-line2); }
+  html:not(#_) body:not(#_) .m14-c2{ font-size:16px; font-weight:650; color:var(--k-ink); letter-spacing:-.015em; overflow:hidden; text-overflow:ellipsis; }
+  html:not(#_) body:not(#_) .m14-crumb.m14-solo :is(.m14-c1, .m14-sep){ display:none; }
+
+  /* search */
+  html:not(#_) body:not(#_) .m14-search{ display:inline-flex; align-items:center; gap:10px; flex:0 1 380px; min-width:200px; height:42px; margin-right:12px; padding:0 8px 0 15px;
+    border:1px solid var(--k-line); border-radius:999px; background:var(--k-tile); color:var(--k-ink3); font:400 13.5px/1 var(--k-font); cursor:text; text-align:left; }
+  html:not(#_) body:not(#_) .m14-search .m8i{ width:17px; height:17px; flex:0 0 auto; }
+  html:not(#_) body:not(#_) .m14-search span{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  html:not(#_) body:not(#_) .m14-search kbd{ flex:0 0 auto; font:600 11px/1 var(--k-font); color:var(--k-ink3); background:var(--k-card); border:1px solid var(--k-line); border-radius:8px; padding:5px 7px; }
+  html:not(#_) body:not(#_) .m14-search:hover{ border-color:var(--k-line2); color:var(--k-ink2); }
+  html:not(#_) body:not(#_) .m14-search:focus-visible{ outline:2px solid var(--k-acc); outline-offset:2px; }
+  /* Home already has its own big search */
+  html:not(#_#_#_) body:not(#_#_#_).m14-onhome .m14-search{ visibility:hidden !important; }
+
+  /* right side: switch · lock · keys · bell, evenly spaced */
+  html:not(#_#_#_) body:not(#_#_#_) #m8-hdr-r{ margin-left:0 !important; gap:8px !important; }
+  html:not(#_) body:not(#_) .m14-lock .m8i{ width:18px; height:18px; }
+}
+@media (min-width:901px) and (max-width:1180px){
+  html:not(#_) body:not(#_) .m14-search{ flex-basis:44px; min-width:44px; width:44px; padding:0; justify-content:center; }
+  html:not(#_) body:not(#_) .m14-search :is(span, kbd){ display:none; }
+}
+@media (max-width:900px){ html:not(#_#_#_) body:not(#_#_#_) #m14-lock{ display:none !important; } }
+
+/* cheque window: space between the rows of fields */
+html:not(#_#_#_) body:not(#_#_#_) #cheque-modal .modal-body{ display:flex !important; flex-direction:column !important; gap:14px !important; }
+html:not(#_#_#_) body:not(#_#_#_) #cheque-modal .modal-body > .form-group{ margin:0 !important; }
+
+/* ── 3 · SMALL PC SCREENS ────────────────────────────────────────────── */
+/* dashboard: 12 columns when the page area is under ~1120px wide (laptops, 125–150% zoom) */
+@media (min-width:901px){
+  html:not(#_#_#_) body.m14-mid:not(#_#_#_) .m5-body{
+    grid-template-columns:repeat(12, minmax(0,1fr)) !important; padding:20px 20px 60px !important; gap:12px !important;
+    grid-template-areas:
+      "seg seg seg seg chips chips chips chips chips chips chips chips"
+      "bal bal bal bal bal stack stack stack stack mini mini mini"
+      "days days days cmp cmp cmp wave wave wave wave wave wave"
+      "ann ann ann ann act act act act act act act act"
+      "quick quick quick quick act act act act act act act act"
+      "chq chq chq chq chq chq owe owe owe owe owe owe" !important; }
+  html:not(#_#_#_) body.m14-mid:not(#_#_#_) .m5-big{ font-size:34px !important; }
+  /* 1280–1750px screens: the small cards on the top row get a little more room */
+  html:not(#_#_#_) body.m14-wide-s:not(#_#_#_) .m5-body{
+    grid-template-areas:
+      "seg seg seg seg seg seg chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips"
+      "bal bal bal bal bal bal stack stack stack stack stack stack mini mini mini mini days days days days cmp cmp cmp cmp"
+      "ann ann ann ann ann ann act act act act act act act act act act act act wave wave wave wave wave wave"
+      "ann ann ann ann ann ann act act act act act act act act act act act act quick quick quick quick quick quick"
+      "chq chq chq chq chq chq chq chq chq chq chq chq owe owe owe owe owe owe owe owe owe owe owe owe" !important; }
+  /* monthly rings sit at the top of their card, not lost in the middle */
+  html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-annual .m5-rings{ margin:14px auto 10px !important; }
+  /* date chips: the first chip can always be reached when they scroll */
+  html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-chips{ justify-content:safe flex-end !important; }
+  /* titles in narrow cards stay on one line */
+  html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-card .m5-k, html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-card .m5-h3, html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-card .m5-h4{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-wstats > *{ min-width:0; }
+  html:not(#_#_#_) body:not(#_#_#_) #m5-home .m5-wstats :is(small, span){ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* short screens: a smaller greeting so the numbers show without scrolling */
+  html:not(#_#_#_) body.m14-short:not(#_#_#_) .m5-hello h2, html:not(#_#_#_) body.m14-short:not(#_#_#_) .m5-ask{ font-size:27px !important; }
+  html:not(#_#_#_) body.m14-short:not(#_#_#_) :is(.m5-mic, .m5-day){ width:58px !important; height:58px !important; flex-basis:58px !important; }
+  html:not(#_#_#_) body.m14-short:not(#_#_#_) .m5-cta{ height:46px !important; }
+  html:not(#_#_#_) body.m14-short:not(#_#_#_) .m5-hero{ padding-top:4px !important; padding-bottom:10px !important; }
+
+  /* tables: dates, amounts and numbers never break onto 2–3 lines */
+  html:not(#_#_#_) body:not(#_#_#_) :is(#all-records-table, #pay-table, #party-summary-table, .tbl-wrap table) td:is(:nth-child(2)){ white-space:nowrap; }
+  html:not(#_#_#_) body:not(#_#_#_) .tbl-wrap table :is(td, th):has(.aed-sym){ white-space:nowrap; }
+  html:not(#_#_#_) body:not(#_#_#_) .tbl-wrap table td .aed-sym{ display:inline-block; }
+}
+@media (min-width:901px) and (max-width:1366px){
+  html:not(#_#_#_) body:not(#_#_#_) #all-records-table th:nth-child(5), html:not(#_#_#_) body:not(#_#_#_) #all-records-table td:nth-child(5){ min-width:150px; }
+  html:not(#_#_#_) body:not(#_#_#_) .tbl-wrap table :is(th, td){ padding-left:10px !important; padding-right:10px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .page-header h1{ font-size:30px !important; }
+  /* statement header: buttons sit in one tidy row that wraps cleanly */
+  html:not(#_#_#_) body:not(#_#_#_) #page-search .page-header{ flex-wrap:wrap !important; gap:12px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-search .stmt-actions{ flex-wrap:wrap !important; }
+  /* reports tabs stay one line */
+  html:not(#_) body:not(#_) .m13-tab{ padding:0 12px; }
+}
+}
+
+/* ══ 4 · STATEMENT (English + Urdu) ═══════════════════════════════════ */
+@media screen{
+html:not(#_#_#_) body:not(#_#_#_) :is(#page-search, #page-urdu-stmt).m15-stmt .m15-hide{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt [hidden]{ display:none !important; }
+
+/* header: title on the left, English | اردو on the right */
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .page-header{ display:flex !important; flex-direction:row !important; align-items:flex-end !important; justify-content:space-between !important; gap:12px 20px !important; flex-wrap:wrap !important; margin-bottom:18px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .page-header > .m15-hr{ display:flex !important; width:auto !important; grid-template-columns:none !important; gap:0 !important; align-items:center !important; flex:0 0 auto !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m13-lang{ margin:0 !important; height:40px; align-items:center; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m13-lang button{ height:34px !important; padding:0 16px !important; }
+
+/* Urdu: title on the right, the switch on the left; dates read left to right */
+html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt.m15-stmt .page-header{ flex-direction:row-reverse !important; }
+html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt.m15-stmt .page-header > div:first-child{ text-align:right !important; direction:rtl; }
+html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt.m15-stmt .page-header h1{ font-size:30px !important; line-height:1.5 !important; margin:0 !important; }
+html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt .m15-grid input{ direction:ltr !important; text-align:left !important; }
+
+/* the card */
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .search-panel.m15-card{ padding:20px !important; border-radius:24px !important; margin-bottom:16px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-grid{ display:grid !important; grid-template-columns:minmax(0, 2fr) repeat(3, minmax(0, 1fr)) !important; gap:12px 14px !important; align-items:end !important; margin:0 !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-grid > .form-group{ margin:0 !important; min-width:0 !important; max-width:none !important; width:auto !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-grid > .form-group > label{ font-size:12.5px !important; font-weight:500 !important; color:var(--k-ink3) !important; margin:0 0 6px 4px !important; letter-spacing:0 !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-grid :is(input, select){ width:100% !important; min-width:0 !important; box-sizing:border-box !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-extra{ display:none !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; margin-top:12px !important; padding-top:12px !important; border-top:1px dashed var(--k-line) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-card.m15-open .m15-extra{ display:grid !important; }
+
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-row{ display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; margin-top:16px; padding-top:16px; border-top:1px solid var(--k-line); }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chips{ display:flex; gap:6px; flex:1 1 auto; min-width:0; overflow-x:auto; scrollbar-width:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chips::-webkit-scrollbar{ display:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chip{ flex:0 0 auto; height:36px; padding:0 15px; border:1px solid var(--k-line) !important; border-radius:999px !important; background:var(--k-tile) !important;
+  font:500 13px/1 var(--k-font); color:var(--k-ink2) !important; cursor:pointer; white-space:nowrap; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chip:hover{ border-color:var(--k-line2) !important; color:var(--k-ink) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chip.on{ background:var(--k-dark) !important; border-color:var(--k-dark) !important; color:var(--k-on-dark) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chip:focus-visible{ outline:2px solid var(--k-acc); outline-offset:2px; }
+#page-urdu-stmt .m15-chip, #page-urdu-stmt .m15-ur, .m15-hint .m15-ur{ font-family:var(--ur-font, 'Noto Nastaliq Urdu'), var(--k-font) !important; letter-spacing:0 !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-acts{ display:flex; align-items:center; gap:8px; flex:0 0 auto; margin-left:auto; }
+html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt .m15-acts{ margin-left:0; margin-right:auto; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-acts > .btn{ height:40px !important; min-height:40px !important; padding:0 16px !important; border-radius:999px !important; font-size:13.5px !important; font-weight:600 !important; gap:7px !important; width:auto !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; white-space:nowrap !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-acts > .btn svg{ width:16px !important; height:16px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-more{ position:relative; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-cnt{ font-style:normal; min-width:18px; height:18px; padding:0 5px; border-radius:99px; background:var(--k-acc); color:#fff; font-size:11px; font-weight:700; display:inline-grid; place-items:center; }
+
+/* the bar above the statement: choices on the left, actions on the right */
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .stmt-actions.m15-bar{ grid-column:auto !important; width:auto !important; height:auto !important; align-items:center !important; justify-content:flex-start !important; gap:8px !important; flex-wrap:wrap !important;
+  margin:0 0 14px !important; padding:8px !important; background:var(--k-card) !important; border:0 !important; border-radius:20px !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .stmt-actions.m15-bar[style*="none"]{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .stmt-actions.m15-bar:not([style*="none"]){ display:flex !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > *{ position:static !important; flex:0 0 auto !important; width:auto !important; height:40px !important; min-height:40px !important; margin:0 !important; border-radius:999px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > *::before{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .btn{ padding:0 16px !important; font-size:13.5px !important; font-weight:600 !important; gap:7px !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; white-space:nowrap !important;
+  background:var(--k-tile) !important; color:var(--k-ink) !important; border:1px solid var(--k-line) !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .btn svg{ width:16px !important; height:16px !important; stroke:currentColor !important; color:inherit !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .btn:hover{ border-color:var(--k-line2) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-tg{ order:1; display:inline-flex !important; align-items:center !important; gap:10px !important; padding:0 8px 0 16px !important; background:var(--k-tile) !important; border:1px solid var(--k-line) !important; box-shadow:none !important; cursor:pointer; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-tg .ios-tgl-t{ font-size:13px !important; font-weight:600 !important; color:var(--k-ink) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-tg .ios-tgl-t::after{ content:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) #page-search .m15-tg .ios-tgl-t{ font-size:13px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-tg .ios-tgl-track{ width:38px !important; height:24px !important; background:var(--k-line2) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-tg .ios-tgl-knob{ width:20px !important; height:20px !important; top:2px !important; left:2px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-tg input:checked ~ .ios-tgl-track{ background:var(--k-acc) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-tg input:checked ~ .ios-tgl-track .ios-tgl-knob{ transform:translateX(14px) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-stamp{ order:2; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-sh{ order:3; margin-left:auto !important; }
+html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt .m15-bar > .m15-print{ margin-right:auto !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-sv{ order:4; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-print{ order:5; background:var(--k-acc) !important; border-color:var(--k-acc) !important; color:#fff !important; }
+html:not(#_#_#_) body:not(#_#_#_) #page-search .m15-bar > .m15-print{ margin-left:0 !important; }
+
+/* nothing chosen yet / nothing found */
+html:not(#_) body:not(#_) .m15-hint{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:44px 20px; border-radius:24px; background:var(--k-card); text-align:center; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m15-hint-ic{ width:52px; height:52px; border-radius:50%; display:grid; place-items:center; background:var(--k-tile); color:var(--k-acc); box-shadow:0 0 0 1px var(--k-line); margin-bottom:4px; }
+html:not(#_) body:not(#_) .m15-hint-ic .m8i{ width:22px; height:22px; }
+html:not(#_) body:not(#_) .m15-hint b{ font:600 15.5px/1.35 var(--k-font); color:var(--k-ink); }
+html:not(#_) body:not(#_) .m15-hint small{ font-size:12.5px; line-height:1.45; max-width:380px; }
+html:not(#_#_#_) body:not(#_#_#_) #page-search.m15-stmt:not([data-m15ran]) #search-empty{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m15-stmt #search-empty.m15-empty{ margin:0 !important; padding:36px 20px !important; border:0 !important; border-radius:24px !important; background:var(--k-card) !important; color:var(--k-ink3) !important; font-size:14px !important; }
+
+/* tablet */
+@media (max-width:1100px){
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-grid > .form-group:first-child{ grid-column:1 / -1 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-extra{ grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-extra > .form-group:first-child{ grid-column:auto !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chips{ flex:1 1 100%; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-acts{ flex:1 1 100%; justify-content:flex-end; }
+}
+/* phone */
+@media (max-width:599px){
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .page-header{ align-items:flex-start !important; flex-direction:column !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt.m15-stmt .page-header{ align-items:flex-end !important; flex-direction:column !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .search-panel.m15-card{ padding:14px !important; border-radius:22px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-row{ margin-top:12px; padding-top:12px; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-chips{ margin:0 -14px; padding:0 14px; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-acts{ display:grid; grid-template-columns:auto auto 1fr; gap:8px; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt .m15-acts{ grid-template-columns:auto 1fr; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-acts > .btn{ padding:0 14px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-more span{ display:none; }
+  /* the bar: [Include invoices | Stamp] then [Share | Save | Print] */
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .stmt-actions.m15-bar:not([style*="none"]){ display:grid !important; grid-template-columns:repeat(6, minmax(0, 1fr)) !important; gap:8px !important; padding:8px !important; border-radius:18px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > *{ min-width:0 !important; margin:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-tg{ grid-column:span 4 !important; justify-content:space-between !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-stamp{ grid-column:span 2 !important; padding:0 8px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > :is(.m15-sh, .m15-sv, .m15-print){ grid-column:span 2 !important; padding:0 8px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #page-urdu-stmt .m15-bar > .m15-print{ grid-column:1 / -1 !important; margin:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .btn{ font-size:13px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > :is(.m15-sh, .m15-sv) span{ font-size:0 !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-sh span::after{ content:"Share"; font-size:13px; }
+  html:not(#_#_#_) body:not(#_#_#_) .m15-stmt .m15-bar > .m15-sv span::after{ content:"Save"; font-size:13px; }
+  html:not(#_) body:not(#_) .m15-hint{ padding:34px 18px; }
+}
+}
+</style>
+<script id="m13-js">/* ══════════════════════════════════════════════════════════════════════
+   M13 · REPORTS & TOOLS + everyday fixes
+   Reports: who owes / whom we owe (aging), cash book per person, items,
+   Trash (restore), daily backups.
+   Fixes: payment totals, statement (auto-run, more filters, English/Urdu,
+   PDF share), dashboard "Today" tile, credit limit warning on New Entry,
+   phone header, Data Health moved to More.
+   Reads the app's own data. The only writes are the ones you ask for:
+   Restore from Trash. Nothing else is changed.
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var M8 = window.M8; if(!M8) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var icon = M8.icon, esc = M8.esc;
+  var AED = '<svg class="aed-sym" viewBox="0 0 1000 870" aria-hidden="true" style="height:.8em;width:auto;vertical-align:-.04em;fill:currentColor"><use href="#aed-glyph"/></svg>';
+  function money(n){ n = +n || 0; return n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function short(n){ n = +n || 0; var a = Math.abs(n); return (a >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : a >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n.toFixed(0)); }
+  function ymd(d){ return M8.ymd ? M8.ymd(d) : d.toISOString().slice(0, 10); }
+  function today(){ return ymd(new Date()); }
+  function days(a, b){ return Math.round((Date.parse(b + 'T00:00:00') - Date.parse(a + 'T00:00:00')) / 864e5); }
+  function dShort(s){ if(!s) return ''; var d = new Date(s + 'T00:00:00'); return isNaN(d) ? s : d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' }); }
+  function initials(n){ return String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(function(w){ return w[0]; }).join('').toUpperCase(); }
+  function sales(){ return DB.mode === 'sales'; }
+  function book(m){ return (m || DB.mode) === 'sales' ? DB.sales : DB.purchase; }
+  function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem('am_m13_' + k) || 'null'); localStorage.setItem('am_m13_' + k, JSON.stringify(v)); }catch(e){ return null; } }
+  function partyInfo(name){
+    var cp = (AD().customParties || []).find(function(p){ return (typeof p === 'object' ? p.name : p) === name; });
+    return cp && typeof cp === 'object' ? cp : {};
+  }
+  function isCash(m){ return /CASH/i.test(m || ''); }
+  function itemsOf(r){ return (r.items && r.items.length) ? r.items : [{ desc:r.desc, qty:r.qty, unit:r.unit, price:r.price, amount:r.amount }]; }
+  function dl(name, text, type){ var b = new Blob([text], { type:type || 'text/plain' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400); }
+  function bar(parts, cls){ var t = parts.reduce(function(a, b){ return a + b; }, 0) || 1; return '<div class="m13-bar">' + parts.map(function(v, i){ return v > 0 ? '<i class="b' + i + (cls ? ' ' + cls : '') + '" style="width:' + (v / t * 100).toFixed(2) + '%"></i>' : ''; }).join('') + '</div>'; }
+
+  /* ── PAGE ──────────────────────────────────────────────────────────── */
+  var TABS = [['aging', 'Dues', 'alert'], ['cash', 'Cash book', 'pay'], ['items', 'Items', 'items'], ['trash', 'Trash', 'trash'], ['backup', 'Backups', 'backup']];
+  var cur = store('tab') || 'aging'; if(['aging','cash','items','trash','backup'].indexOf(cur) < 0) cur = 'aging';
+  function build(){
+    if($('page-reports')) return;
+    var ref = $('page-cheques'); if(!ref) return;
+    var pg = document.createElement('div'); pg.className = 'page'; pg.id = 'page-reports';
+    pg.innerHTML =
+      '<div class="page-header m13-head"><div><h1>Reports &amp; tools</h1><p id="m13-sub">Dues, cash, items, deleted entries and daily backups</p></div></div>' +
+      '<div class="m13-tabs" role="tablist" id="m13-tabs">' + TABS.map(function(t){ return '<button type="button" role="tab" class="m13-tab" data-t="' + t[0] + '">' + icon(t[2]) + '<span>' + t[1] + '</span></button>'; }).join('') + '</div>' +
+      '<div id="m13-body" class="m13-body"></div>';
+    ref.parentNode.insertBefore(pg, ref.nextSibling);
+    pg.addEventListener('click', onClick);
+    pg.addEventListener('input', onInput);
+    pg.addEventListener('change', onInput);
+  }
+  function open(tab){
+    build();
+    if(tab) cur = tab;
+    if(typeof navMain === 'function') navMain(null, 'reports'); else showPage('reports');
+  }
+  window.openReports = open;
+  function paint(){
+    var b = $('m13-body'); if(!b) return;
+    store('tab', cur);
+    [].forEach.call(document.querySelectorAll('#m13-tabs .m13-tab'), function(t){ var on = t.dataset.t === cur; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
+    var a = document.querySelector('#m13-tabs .m13-tab.on'); if(a && a.scrollIntoView) try{ a.scrollIntoView({ block:'nearest', inline:'nearest' }); }catch(e){}
+    var f = { aging:pAging, cash:pCash, items:pItems, trash:pTrash, backup:pBackup }[cur] || pAging;
+    try{ b.innerHTML = f(); }catch(err){ console.error('[m13]', err); b.innerHTML = '<div class="m13-empty">Something went wrong here: ' + esc(err.message) + '</div>'; }
+    if(cur === 'trash') loadTrash();
+    if(cur === 'backup') listBackups();
+    if(M8.enhanceDates) M8.enhanceDates(b);
+  }
+
+  /* ── SHARED UI ─────────────────────────────────────────────────────── */
+  function kpi(label, val, sub, cls){ return '<div class="m13-kpi' + (cls ? ' ' + cls : '') + '"><span>' + label + '</span><b>' + val + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>'; }
+  function chips(name, list, curV){ return '<div class="m13-chips">' + list.map(function(c){ return '<button type="button" class="m13-chip' + (c[0] === curV ? ' on' : '') + '" data-' + name + '="' + c[0] + '">' + c[1] + '</button>'; }).join('') + '</div>'; }
+  var PERIODS = [['month', 'This month'], ['last', 'Last month'], ['q', 'This quarter'], ['year', 'This year'], ['all', 'All time']];
+  function range(p){
+    var n = new Date(), y = n.getFullYear(), m = n.getMonth();
+    if(p === 'month') return [ymd(new Date(y, m, 1)), ymd(new Date(y, m + 1, 0))];
+    if(p === 'last') return [ymd(new Date(y, m - 1, 1)), ymd(new Date(y, m, 0))];
+    if(p === 'q'){ var q = Math.floor(m / 3) * 3; return [ymd(new Date(y, q, 1)), ymd(new Date(y, q + 3, 0))]; }
+    if(p === 'year') return [y + '-01-01', y + '-12-31'];
+    return ['0000-01-01', '9999-12-31'];
+  }
+  var S = store('state') || {};
+  function setS(k, v){ S[k] = v; store('state', S); paint(); }
+
+  /* ── 1 · DUES (aging) ──────────────────────────────────────────────── */
+  function agingData(){
+    if(typeof clearLedgerCache === 'function') clearLedgerCache();
+    var t = today(), names = {};
+    (AD().records || []).forEach(function(r){ if(r.party) names[r.party] = 1; });
+    var out = [];
+    Object.keys(names).forEach(function(p){
+      var m = partyAllocationMap(p), info = partyInfo(p), terms = +info.creditDays || 30;
+      var b = [0, 0, 0, 0], oldest = 0, overdue = 0, total = 0, n = 0, oldestDate = '';
+      m.rows.forEach(function(x){
+        if(x.outstanding <= 0.005) return;
+        var age = Math.max(0, days(x.rec.date || t, t)); n++;
+        b[age <= 30 ? 0 : age <= 60 ? 1 : age <= 90 ? 2 : 3] += x.outstanding;
+        total += x.outstanding; if(age > terms) overdue += x.outstanding;
+        if(age >= oldest){ oldest = age; oldestDate = x.rec.date; }
+      });
+      if(total > 0.005) out.push({ p:p, b:b, total:total, overdue:overdue, oldest:oldest, oldestDate:oldestDate, n:n, terms:terms, termsSet:!!info.creditDays, limit:+info.creditLimit || 0, phone:info.phone || '', contact:info.contactEn || '', adv:m.advance });
+    });
+    return out.sort(function(a, b){ return b.total - a.total; });
+  }
+  function waLink(r){
+    var d = String(r.phone || '').replace(/\D/g, '');
+    if(/^00/.test(d)) d = d.slice(2); else if(/^0\d{9}$/.test(d)) d = '971' + d.slice(1);
+    if(d.length < 9) return '';
+    var msg = 'Assalam o Alaikum ' + (r.contact || r.p) + ',\n\nYour balance with Al Madhi Carpentry is AED ' + money(r.total) + '.\nOldest unpaid invoice: ' + dShort(r.oldestDate) + ' (' + r.oldest + ' days).\n\nKindly arrange the payment. Thank you.';
+    return 'https://wa.me/' + d + '?text=' + encodeURIComponent(msg);
+  }
+  function pAging(){
+    var list = agingData(), s = sales(), f = S.agingF || 'all', q = (S.agingQ || '').toLowerCase();
+    var tot = 0, od = 0, o90 = 0, buck = [0, 0, 0, 0];
+    list.forEach(function(r){ tot += r.total; od += r.overdue; o90 += r.b[3]; r.b.forEach(function(v, i){ buck[i] += v; }); });
+    var shown = list.filter(function(r){ return (f === 'all' || (f === 'over' && r.overdue > 0.005) || (f === '90' && r.b[3] > 0.005) || (f === 'limit' && r.limit && r.total > r.limit)) && (!q || r.p.toLowerCase().indexOf(q) >= 0); });
+    return '<div class="m13-intro"><b>' + (s ? 'Who owes you' : 'Whom you owe') + '</b><span>' + (s ? 'Customers' : 'Vendors') + ' with unpaid ' + (s ? 'invoices' : 'bills') + ', by how old they are. Switch Purchase / Sales at the top.</span></div>' +
+      '<div class="m13-kpis">' + kpi(s ? 'Total to collect' : 'Total to pay', AED + ' ' + money(tot), list.length + (s ? ' customers' : ' vendors')) +
+        kpi('Past their terms', AED + ' ' + money(od), 'older than each party\'s credit days', od > 0 ? 'neg' : '') +
+        kpi('Older than 90 days', AED + ' ' + money(o90), tot ? Math.round(o90 / tot * 100) + '% of the total' : '', o90 > 0 ? 'neg' : '') +
+        '<div class="m13-kpi m13-kpi-bar"><span>By age</span>' + bar(buck) + '<div class="m13-legend"><i class="b0"></i>0–30 <i class="b1"></i>31–60 <i class="b2"></i>61–90 <i class="b3"></i>90+</div></div>' +
+      '</div>' +
+      '<div class="m13-tools">' + chips('agingf', [['all', 'All'], ['over', 'Past terms'], ['90', '90+ days'], ['limit', 'Over credit limit']], f) +
+        '<label class="m13-search">' + icon('search') + '<input type="search" id="m13-aq" placeholder="Search name" value="' + esc(S.agingQ || '') + '"></label></div>' +
+      (shown.length ? '<div class="m13-list">' + shown.map(function(r){
+        var wa = s ? waLink(r) : '', tel = String(r.phone || '').replace(/[^\d+]/g, '');
+        return '<div class="m13-row">' +
+          '<span class="m13-av">' + esc(initials(r.p)) + '</span>' +
+          '<div class="m13-main"><div class="m13-l1"><b>' + esc(r.p) + '</b>' + (r.limit && r.total > r.limit ? '<em class="m13-tag neg">Over limit ' + short(r.limit) + '</em>' : '') + (r.overdue > 0.005 ? '<em class="m13-tag warn">' + short(r.overdue) + ' past terms</em>' : '') + '</div>' +
+            '<div class="m13-l2">' + r.n + (r.n === 1 ? ' unpaid · ' : ' unpaid · ') + 'oldest ' + r.oldest + ' days · terms ' + r.terms + 'd' + (r.termsSet ? '' : ' (default)') + '</div>' + bar(r.b) + '</div>' +
+          '<div class="m13-amt"><b>' + money(r.total) + '</b><div class="m13-acts">' +
+            (wa ? '<a class="m13-ib wa" href="' + wa + '" target="_blank" rel="noopener" title="Send a WhatsApp reminder">' + icon('chat') + '</a>' : '') +
+            (tel ? '<a class="m13-ib" href="tel:' + esc(tel) + '" title="Call">' + icon('phone') + '</a>' : '') +
+            '<button type="button" class="m13-ib" data-stmt="' + encodeURIComponent(r.p) + '" title="Statement">' + icon('statement') + '</button>' +
+            '<button type="button" class="m13-ib acc" data-paynow="' + encodeURIComponent(r.p) + '" title="' + (s ? 'Record receipt' : 'Record payment') + '">' + icon('pay') + '</button>' +
+          '</div></div></div>';
+      }).join('') + '</div>' : '<div class="m13-empty">' + (list.length ? 'Nothing matches this filter.' : 'Nothing unpaid. Everything is settled.') + '</div>') +
+      '<p class="m13-note">Set each party\'s credit days, credit limit and phone in Parties → ⋮ → Edit details. The WhatsApp button appears when a phone number is saved.</p>';
+  }
+
+  /* ── 2 · CASH BOOK ─────────────────────────────────────────────────── */
+  function cashData(){
+    var r = range(S.cashP || 'month'), only = S.cashAll ? false : true, per = {}, rows = [];
+    [['purchase', -1], ['sales', 1]].forEach(function(bk){
+      (book(bk[0]).payments || []).forEach(function(p){
+        if(!p.date || p.date < r[0] || p.date > r[1]) return;
+        if(only && !isCash(p.method)) return;
+        var who = (p.paidBy || 'Not set').toUpperCase(), amt = +p.amount || 0;
+        var o = per[who] || (per[who] = { who:who, inn:0, out:0, n:0 });
+        if(bk[1] > 0) o.inn += amt; else o.out += amt; o.n++;
+        rows.push({ who:who, date:p.date, party:p.party, dir:bk[1], amt:amt, method:p.method || '', id:p.id, bk:bk[0] });
+      });
+    });
+    rows.sort(function(a, b){ return (a.date || '').localeCompare(b.date || '') || (a.id - b.id); });
+    return { per:Object.keys(per).map(function(k){ return per[k]; }).sort(function(a, b){ return (b.inn + b.out) - (a.inn + a.out); }), rows:rows };
+  }
+  function pCash(){
+    var d = cashData(), sel = S.cashWho && d.per.some(function(x){ return x.who === S.cashWho; }) ? S.cashWho : '';
+    var rows = d.rows.filter(function(x){ return !sel || x.who === sel; }), run = 0;
+    var tin = 0, tout = 0; d.per.forEach(function(x){ tin += x.inn; tout += x.out; });
+    return '<div class="m13-intro"><b>Cash book</b><span>Money each person received (sales) and paid out (purchases). Money handed between people is not recorded in the app.</span></div>' +
+      '<div class="m13-tools">' + chips('cashp', PERIODS, S.cashP || 'month') + chips('casha', [['cash', 'Cash only'], ['all', 'All methods']], S.cashAll ? 'all' : 'cash') + '</div>' +
+      '<div class="m13-kpis">' + kpi('Received', AED + ' ' + money(tin), 'sales receipts', 'pos') + kpi('Paid out', AED + ' ' + money(tout), 'purchase payments', 'neg') + kpi('Difference', AED + ' ' + money(tin - tout), tin - tout >= 0 ? 'more came in than went out' : 'more went out than came in') + '</div>' +
+      (d.per.length ? '<div class="m13-people">' + '<button type="button" class="m13-person' + (!sel ? ' on' : '') + '" data-who="">' + '<span class="m13-av">' + icon('parties') + '</span><b>Everyone</b><small>' + d.rows.length + ' entries</small></button>' +
+        d.per.map(function(x){ var net = x.inn - x.out; return '<button type="button" class="m13-person' + (sel === x.who ? ' on' : '') + '" data-who="' + esc(x.who) + '"><span class="m13-av">' + esc(initials(x.who)) + '</span><b>' + esc(x.who) + '</b>' +
+          '<small>In ' + short(x.inn) + ' · Out ' + short(x.out) + '</small><em class="' + (net >= 0 ? 'pos' : 'neg') + '">' + (net >= 0 ? '+' : '−') + short(Math.abs(net)) + '</em></button>'; }).join('') + '</div>' : '') +
+      (rows.length ? '<div class="m13-ledger"><div class="m13-lh"><span>Date</span><span>Party</span><span>' + (sel ? '' : 'Person') + '</span><span class="r m13-sgn">Amount</span><span class="r">In</span><span class="r">Out</span><span class="r">Running</span></div>' +
+        rows.map(function(x){ run += x.dir * x.amt; return '<div class="m13-lr2"><span>' + dShort(x.date) + '</span><span class="m13-ell">' + esc(x.party || '') + '<small>' + esc(x.method) + '</small></span><span class="m13-ell">' + (sel ? '' : esc(x.who)) + '</span>' +
+          '<span class="r m13-sgn ' + (x.dir > 0 ? 'pos' : 'neg') + '">' + (x.dir > 0 ? '+' : '−') + money(x.amt) + '</span>' +
+          '<span class="r pos">' + (x.dir > 0 ? money(x.amt) : '') + '</span><span class="r neg">' + (x.dir < 0 ? money(x.amt) : '') + '</span><span class="r b">' + money(run) + '</span></div>'; }).join('') + '</div>'
+        : '<div class="m13-empty">No ' + (S.cashAll ? '' : 'cash ') + 'payments in this period.</div>');
+  }
+
+  /* ── 3 · ITEMS ─────────────────────────────────────────────────────── */
+  function pItems(){
+    var r = range(S.itemP || 'year'), q = (S.itemQ || '').toLowerCase(), map = {}, now = new Date(), months = [];
+    for(var i = 5; i >= 0; i--){ var d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push(ymd(d).slice(0, 7)); }
+    (AD().records || []).forEach(function(rec){
+      if(!rec.date) return;
+      itemsOf(rec).forEach(function(it){
+        var name = String(it.desc || '').trim(); if(!name) return;
+        var key = name.toUpperCase() + '|' + (it.unit || ''), qty = +it.qty || 0, amt = +it.amount || (qty * (+it.price || 0));
+        var o = map[key] || (map[key] = { name:name, unit:it.unit || '', qty:0, amt:0, n:0, parties:{}, last:null, min:Infinity, max:0, m:{} });
+        var mk = rec.date.slice(0, 7); o.m[mk] = (o.m[mk] || 0) + amt;
+        if(rec.date < r[0] || rec.date > r[1]) return;
+        o.qty += qty; o.amt += amt; o.n++; o.parties[rec.party] = 1;
+        var pr = +it.price || 0; if(pr > 0){ o.min = Math.min(o.min, pr); o.max = Math.max(o.max, pr); if(!o.last || rec.date >= o.last.date) o.last = { date:rec.date, price:pr, party:rec.party }; }
+      });
+    });
+    var list = Object.keys(map).map(function(k){ return map[k]; }).filter(function(o){ return o.n && (!q || o.name.toLowerCase().indexOf(q) >= 0); }).sort(function(a, b){ return b.amt - a.amt; });
+    var total = list.reduce(function(a, o){ return a + o.amt; }, 0), top = list[0] ? list[0].amt : 1;
+    return '<div class="m13-intro"><b>' + (sales() ? 'What you sell' : 'What you buy') + '</b><span>Every item on your ' + (sales() ? 'invoices' : 'bills') + ': how much, at what rate, and the last 6 months. Switch Purchase / Sales at the top.</span></div>' +
+      '<div class="m13-tools">' + chips('itemp', PERIODS, S.itemP || 'year') + '<label class="m13-search">' + icon('search') + '<input type="search" id="m13-iq" placeholder="Search item" value="' + esc(S.itemQ || '') + '"></label></div>' +
+      '<div class="m13-kpis">' + kpi('Items', list.length, 'with entries in this period') + kpi('Total', AED + ' ' + money(total), '') + (list[0] ? kpi('Biggest', esc(list[0].name), Math.round(list[0].amt / (total || 1) * 100) + '% of the total') : '') + '</div>' +
+      (list.length ? '<div class="m13-list">' + list.map(function(o){
+        var avg = o.qty ? o.amt / o.qty : 0, mx = Math.max.apply(null, months.map(function(k){ return o.m[k] || 0; })) || 1;
+        var trend = o.last ? (o.last.price > avg * 1.02 ? '<em class="m13-tag neg">↑ above average</em>' : o.last.price < avg * 0.98 ? '<em class="m13-tag pos">↓ below average</em>' : '') : '';
+        return '<div class="m13-row m13-item"><span class="m13-av sq">' + icon('items') + '</span>' +
+          '<div class="m13-main"><div class="m13-l1"><b>' + esc(o.name) + '</b><span class="m13-unit">' + esc(o.unit) + '</span>' + trend + '</div>' +
+          '<div class="m13-l2">' + (+o.qty.toFixed(2)).toLocaleString('en-US') + ' ' + esc(o.unit) + ' · ' + o.n + ' ' + (sales() ? 'invoices' : 'bills') + ' · ' + Object.keys(o.parties).length + ' parties · avg ' + money(avg) + (o.min < Infinity && o.max - o.min > 0.004 ? ' · rate ' + money(o.min) + '–' + money(o.max) : '') + '</div>' +
+          '<div class="m13-share"><i style="width:' + (o.amt / top * 100).toFixed(1) + '%"></i></div></div>' +
+          '<div class="m13-spark" title="Last 6 months">' + months.map(function(k){ return '<i style="height:' + Math.max(6, (o.m[k] || 0) / mx * 100).toFixed(0) + '%" class="' + (o.m[k] ? '' : 'z') + '"></i>'; }).join('') + '</div>' +
+          '<div class="m13-amt"><b>' + money(o.amt) + '</b><small>' + (o.last ? 'last ' + money(o.last.price) + ' · ' + dShort(o.last.date) : '') + '</small></div></div>';
+      }).join('') + '</div>' : '<div class="m13-empty">No items in this period.</div>');
+  }
+
+  /* ── 6 · TRASH ─────────────────────────────────────────────────────── */
+  var trash = null, trashErr = '';
+  function pTrash(){
+    var head = '<div class="m13-intro"><b>Trash</b><span>Everything deleted from the app is kept here. Restore puts it back exactly as it was.</span></div>';
+    if(trash === null) return head + '<div class="m13-empty">' + (trashErr || 'Loading…') + '</div>';
+    var list = Object.keys(trash).map(function(k){ return Object.assign({ _key:k }, trash[k]); }).filter(function(t){ return t && t._kind; })
+      .sort(function(a, b){ return String(b._deletedAt || '').localeCompare(String(a._deletedAt || '')); });
+    if(!list.length) return head + '<div class="m13-empty">Trash is empty.</div>';
+    return head + '<div class="m13-list">' + list.map(function(t){
+      var k = t._kind, mod = t._module === 'sales' ? 'Sales' : 'Purchase', title, sub, ic;
+      if(k === 'record'){ ic = 'invoice'; title = (t.vehicle || t.invNo || 'Bill') + ' · ' + (t.party || ''); sub = mod + (t._module === 'sales' ? ' invoice' : ' bill') + ' · ' + dShort(t.date); }
+      else if(k === 'payment'){ ic = 'pay'; title = (t.party || '') + ' · ' + (t.method || ''); sub = mod + (t._module === 'sales' ? ' receipt' : ' payment') + ' · ' + dShort(t.date) + (t._reason ? ' · ' + t._reason : ''); }
+      else if(k === 'cheque'){ ic = 'cheque'; title = (t.party || '') + ' · #' + (t.chequeNo || ''); sub = 'Cheque · ' + dShort(t.date); }
+      else if(k === 'cheque_bulk'){ ic = 'cheque'; title = (t.records || []).length + ' cheques'; sub = 'Cheques deleted together'; }
+      else { ic = 'trash'; title = k; sub = ''; }
+      var amount = k === 'cheque_bulk' ? (t.records || []).reduce(function(a, c){ return a + (+c.amount || 0); }, 0) : +t.amount || 0;
+      return '<div class="m13-row"><span class="m13-av sq">' + icon(ic) + '</span><div class="m13-main"><div class="m13-l1"><b>' + esc(title) + '</b></div><div class="m13-l2">' + esc(sub) + ' · deleted ' + esc(dShort(String(t._deletedAt || '').slice(0, 10))) + (t._deletedBy && t._deletedBy !== 'system' ? ' by ' + esc(t._deletedBy) : '') + '</div></div>' +
+        '<div class="m13-amt"><b>' + money(amount) + '</b><div class="m13-acts"><button type="button" class="m13-btn sm" data-restore="' + esc(t._key) + '">' + icon('restore') + '<span>Restore</span></button></div></div></div>';
+    }).join('') + '</div>';
+  }
+  function loadTrash(){
+    if(!window._fbGet || !window._fbRef || !window._db){ trashErr = 'Connecting to the database…'; setTimeout(function(){ if(cur === 'trash' && M8.page() === 'reports' && trash === null) loadTrash(); }, 1500); return; }
+    if(loadTrash.busy) return; loadTrash.busy = true;
+    window._fbGet(window._fbRef(window._db, 'almadhi/trash')).then(function(s){ trash = (s && s.val && s.val()) || {}; trashErr = ''; })
+      .catch(function(e){ trash = null; trashErr = 'Could not load Trash: ' + (e && e.message || e); })
+      .then(function(){ loadTrash.busy = false; if(cur === 'trash') { var b = $('m13-body'); if(b) b.innerHTML = pTrash(); } });
+  }
+  async function restore(key){
+    var t = trash && trash[key]; if(!t) return;
+    var clean = {}; for(var k in t){ if(k.charAt(0) !== '_') clean[k] = t[k]; }
+    var k2 = t._kind, writes = [];
+    if(k2 === 'record') writes.push([MODE_ROOT(t._module) + '/records/' + t.id, clean]);
+    else if(k2 === 'payment') writes.push([MODE_ROOT(t._module) + '/payments/' + t.id, clean]);
+    else if(k2 === 'cheque') writes.push([CHQ_ROOT() + '/cheques/' + t.id, clean]);
+    else if(k2 === 'cheque_bulk') (t.records || []).forEach(function(c){ if(c && c.id != null) writes.push([CHQ_ROOT() + '/cheques/' + c.id, c]); });
+    if(!writes.length){ toast('This item cannot be restored', 'error'); return; }
+    var bk = book(t._module === 'sales' ? 'sales' : 'purchase'), have = function(l, id){ return (l || []).some(function(z){ return String(z.id) === String(id); }); };
+    if((k2 === 'record' && have(bk.records, t.id)) || (k2 === 'payment' && have(bk.payments, t.id)) || (k2 === 'cheque' && have(CHQ(), t.id))){ toast('This one is already back in the app', 'warn'); return; }
+    if(k2 === 'cheque_bulk'){ writes = writes.filter(function(w){ return !have(CHQ(), w[1].id); }); if(!writes.length){ toast('These cheques are already back in the app', 'warn'); return; } }
+    if(!confirm('Restore this ' + (k2 === 'cheque_bulk' ? 'group of cheques' : k2) + '?\n\nIt goes back exactly as it was before it was deleted.')) return;
+    for(var i = 0; i < writes.length; i++){ var ok = await fbWrite(writes[i][0], writes[i][1]); if(ok === false) return; }
+    try{ await window._fbRemove(window._fbRef(window._db, 'almadhi/trash/' + key)); }catch(e){}
+    delete trash[key];
+    if(typeof clearLedgerCache === 'function') clearLedgerCache();
+    toast('Restored', 'success'); paint();
+  }
+
+  /* ── 7 · BACKUPS (a copy on this device every day) ─────────────────── */
+  var IDB = 'am-nexus-backups';
+  function idb(){ return new Promise(function(res, rej){ try{ var r = indexedDB.open(IDB, 1); r.onupgradeneeded = function(){ r.result.createObjectStore('snaps', { keyPath:'day' }); }; r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; }catch(e){ rej(e); } }); }
+  function snapData(){
+    var b = function(m){ var d = book(m); return { app:'al-madhi-' + m, version:1, exportedAt:new Date().toISOString(), mode:m, records:d.records || [], payments:d.payments || [], meta:{ nextId:d.nextId, nextInv:d.nextInv },
+      custom:{ parties:d.customParties, descs:d.customDescs, units:d.customUnits, methods:d.customMethods, paidby:d.customPaidBy } }; };
+    return { purchase:b('purchase'), sales:b('sales'), cheques:(DB.purchase && DB.purchase.cheques) || (typeof CHQ === 'function' ? CHQ() : []) };
+  }
+  function autoBackup(){
+    var d = snapData(); if(!(d.purchase.records.length || d.sales.records.length)) return;   /* data not loaded yet */
+    idb().then(function(db){
+      var tx = db.transaction('snaps', 'readwrite'), st = tx.objectStore('snaps'), day = today(), json = JSON.stringify(d);
+      st.put({ day:day, at:new Date().toISOString(), size:json.length, n:{ p:d.purchase.records.length, s:d.sales.records.length, pp:d.purchase.payments.length, sp:d.sales.payments.length, c:(d.cheques || []).length }, data:json });
+      var all = st.getAllKeys(); all.onsuccess = function(){ var keys = all.result.sort(); while(keys.length > 7) st.delete(keys.shift()); };
+    }).catch(function(){});
+  }
+  function pBackup(){
+    return '<div class="m13-intro"><b>Backups</b><span>A copy of all your data is saved on this device once a day, automatically. The last 7 days are kept. Download one to keep it somewhere safe.</span></div>' +
+      '<div class="m13-btns"><button type="button" class="m13-btn acc" data-bk="now">' + icon('backup') + '<span>Save a copy now</span></button></div>' +
+      '<div class="m13-list" id="m13-bk-list"><div class="m13-empty">Loading…</div></div>' +
+      '<p class="m13-note">To put a backup back into the app use More → Import / restore backup and choose the Purchase or Sales file.</p>';
+  }
+  function listBackups(){
+    idb().then(function(db){ var r = db.transaction('snaps').objectStore('snaps').getAll(); r.onsuccess = function(){
+      var el = $('m13-bk-list'); if(!el) return;
+      var l = r.result.sort(function(a, b){ return b.day.localeCompare(a.day); });
+      el.innerHTML = l.length ? l.map(function(s){ return '<div class="m13-row"><span class="m13-av sq">' + icon('backup') + '</span><div class="m13-main"><div class="m13-l1"><b>' + dShort(s.day) + (s.day === today() ? ' · today' : '') + '</b></div>' +
+        '<div class="m13-l2">' + s.n.p + ' bills · ' + s.n.s + ' invoices · ' + (s.n.pp + s.n.sp) + ' payments · ' + s.n.c + ' cheques · ' + (s.size / 1024 / 1024).toFixed(2) + ' MB</div></div>' +
+        '<div class="m13-acts"><button type="button" class="m13-btn sm" data-bkdl="' + s.day + '|purchase">Purchase</button><button type="button" class="m13-btn sm" data-bkdl="' + s.day + '|sales">Sales</button><button type="button" class="m13-btn sm" data-bkdl="' + s.day + '|all">All</button></div></div>'; }).join('')
+        : '<div class="m13-empty">No copies yet. The first one is made a few seconds after the app finishes loading.</div>';
+    }; }).catch(function(e){ var el = $('m13-bk-list'); if(el) el.innerHTML = '<div class="m13-empty">This browser does not allow saving copies (' + esc(e && e.message || e) + ').</div>'; });
+  }
+  function bkDownload(spec){
+    var p = spec.split('|');
+    idb().then(function(db){ var r = db.transaction('snaps').objectStore('snaps').get(p[0]); r.onsuccess = function(){
+      var s = r.result; if(!s) return; var d = JSON.parse(s.data);
+      if(p[1] === 'all') dl('am-nexus-all-' + s.day + '.json', s.data, 'application/json');
+      else dl('am-nexus-' + p[1] + '-' + s.day + '.json', JSON.stringify(d[p[1]], null, 1), 'application/json');
+    }; });
+  }
+
+  /* ── EVENTS ────────────────────────────────────────────────────────── */
+  function onClick(e){
+    var t = e.target.closest('button, a'); if(!t) return;
+    var d = t.dataset;
+    if(d.t){ cur = d.t; paint(); return; }
+    if(d.agingf){ setS('agingF', d.agingf); return; }
+    if(d.cashp){ setS('cashP', d.cashp); return; }
+    if(d.casha){ setS('cashAll', d.casha === 'all'); return; }
+    if(d.who != null && t.classList.contains('m13-person')){ setS('cashWho', d.who); return; }
+    if(d.itemp){ setS('itemP', d.itemp); return; }
+    if(d.stmt){ var n = decodeURIComponent(d.stmt); if(typeof searchParty === 'function') searchParty(n); else { navMain(DB.mode, 'search'); } return; }
+    if(d.paynow){ if(typeof openPaymentModal === 'function') openPaymentModal(decodeURIComponent(d.paynow)); return; }
+    if(d.restore){ restore(d.restore); return; }
+    if(d.bk === 'now'){ autoBackup(); setTimeout(listBackups, 400); toast('Copy saved on this device', 'success'); return; }
+    if(d.bkdl){ bkDownload(d.bkdl); return; }
+  }
+  var qT = 0;
+  function onInput(e){
+    var t = e.target;
+    if(t.id === 'm13-aq' || t.id === 'm13-iq'){ clearTimeout(qT); var k = t.id === 'm13-aq' ? 'agingQ' : 'itemQ', v = t.value, pos = t.selectionStart;
+      qT = setTimeout(function(){ S[k] = v; store('state', S); paint(); var n = $(t.id); if(n){ n.focus(); try{ n.setSelectionRange(pos, pos); }catch(_){} } }, 220); return; }
+    if(e.type !== 'change') return;
+  }
+
+  /* ══ EVERYDAY FIXES ═══════════════════════════════════════════════════ */
+
+  /* payments: totals follow the filter; every cash / bank method counted */
+  function payKpis(){
+    var box = $('pay-kpis'); if(!box) return;
+    var vals = box.querySelectorAll('.pay-cell-val'), subs = box.querySelectorAll('.pay-cell-sub'); if(vals.length < 3) return;
+    var party = ($('pay-party-filter') || {}).value, from = ($('pay-from') || {}).value, to = ($('pay-to') || {}).value;
+    var l = (AD().payments || []).filter(function(p){ return (!party || p.party === party) && (!from || p.date >= from) && (!to || p.date <= to); });
+    var tot = 0, cash = 0, bank = 0, nc = 0, nb = 0;
+    l.forEach(function(p){ var a = +p.amount || 0; tot += a; if(isCash(p.method)){ cash += a; nc++; } else { bank += a; nb++; } });
+    var set = function(el, n){ var svg = el.querySelector('svg'); el.innerHTML = (svg ? svg.outerHTML : '') + ' ' + fmt(n); };
+    set(vals[0], tot); set(vals[1], cash); set(vals[2], bank);
+    var s = sales(), filt = party || from || to;
+    if(subs[0]) subs[0].textContent = l.length + (s ? ' receipts' : ' payments') + (filt ? ' · filtered' : '');
+    if(subs[1]) subs[1].textContent = nc + ' in cash';
+    if(subs[2]) subs[2].textContent = nb + ' by cheque, transfer or online';
+  }
+
+  /* ── STATEMENT (English + Urdu): one clean layout ─────────────────────
+     Header: title + English | اردو.
+     One card: party · from · to · month, then period chips + Clear + Show.
+     Above the statement, one bar: Include invoices · Stamp · Share · Save · Print.
+     Existing buttons and fields are moved, never rebuilt, so every old
+     handler keeps working. */
+  function statement(){ stmtPage('en'); stmtPage('ur'); }
+  function ymOff(n){ var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+  function stmtPage(L){
+    var en = L === 'en', pg = $(en ? 'page-search' : 'page-urdu-stmt'); if(!pg || pg.dataset.m15) return;
+    var ids = en ? { party:'s-party', from:'s-from', to:'s-to', month:'s-month', area:'statement-area', bar:'print-stmt-btn', empty:'search-empty' }
+                 : { party:'ur-party', from:'ur-from', to:'ur-to', month:'ur-month', area:'ur-stmt-area', bar:'ur-print-stmt-btn', empty:'ur-empty' };
+    var hd = pg.querySelector('.page-header'), right = hd && hd.children[1], panel = pg.querySelector('.search-panel'), area = $(ids.area), bar = $(ids.bar);
+    if(!hd || !right || !panel || !area || !bar) return;
+    pg.dataset.m15 = '1'; pg.classList.add('m15-stmt');
+    var run = function(){ if(en){ if(typeof runSearch === 'function') runSearch(); } else if(typeof runUrduStmt === 'function') runUrduStmt(); sync(); };
+    var clearBtn = right.querySelector(en ? '[onclick="clearSearch()"]' : '[onclick="clearUrduStmt()"]');
+    var runBtn = right.querySelector(en ? '[onclick="runSearch()"]' : '[onclick="runUrduStmt()"]');
+
+    /* header */
+    if(en){ var h1 = hd.querySelector('h1'), hp = hd.querySelector('p'); if(h1) h1.textContent = 'Statement'; if(hp) hp.textContent = 'The full account of a customer or vendor, for any period'; }
+    right.classList.add('m15-hr');
+
+    /* card: main fields */
+    panel.classList.add('m15-card');
+    var h3 = panel.querySelector('h3'); if(h3) h3.classList.add('m15-hide');
+    var grid = panel.querySelector('.search-filter-grid'); grid.classList.add('m15-grid');
+    [].forEach.call(grid.querySelectorAll('.form-group'), function(g){ g.style.maxWidth = ''; g.style.minWidth = ''; });
+    var grp = function(id){ var e = $(id); return e && e.closest('.form-group'); };
+    var lbl = function(id, t){ var g = grp(id), l = g && g.querySelector('label'); if(l) l.textContent = t; };
+    if(en){
+      lbl('s-party', 'Party'); lbl('s-from', 'From'); lbl('s-to', 'To'); lbl('s-month', 'Month');
+      [ids.party, ids.from, ids.to, ids.month].forEach(function(id){ var g = grp(id); if(g) grid.appendChild(g); });
+      /* the extra filters live in their own row, opened with "More filters" */
+      var extra = document.createElement('div'); extra.className = 'm15-grid m15-extra';
+      ['s-inv', 's-vehicle', 's-keyword', 's-desc'].forEach(function(id){ var g = grp(id); if(g) extra.appendChild(g); });
+      lbl('s-inv', 'Invoice no.'); lbl('s-vehicle', 'PO no.'); lbl('s-keyword', 'Keyword'); lbl('s-desc', 'Item');
+      grid.parentNode.insertBefore(extra, grid.nextSibling);
+    }
+
+    /* card: period chips + actions */
+    var row = document.createElement('div'); row.className = 'm15-row';
+    var chips = document.createElement('div'); chips.className = 'm15-chips'; chips.setAttribute('role', 'group'); chips.setAttribute('aria-label', 'Period');
+    var CH = en ? [['0', 'This month'], ['-1', 'Last month'], ['-2', '2 months ago'], ['-3', '3 months ago'], ['all', 'All time']]
+                : [['0', 'یہ مہینہ'], ['-1', 'پچھلا مہینہ'], ['-2', 'دو مہینے پہلے'], ['-3', 'تین مہینے پہلے'], ['all', 'تمام مدت']];
+    chips.innerHTML = CH.map(function(c){ return '<button type="button" class="m15-chip" data-q="' + c[0] + '">' + c[1] + '</button>'; }).join('');
+    chips.addEventListener('click', function(e){
+      var b = e.target.closest('[data-q]'); if(!b) return;
+      var q = b.dataset.q;
+      if(q === 'all'){ $(ids.from).value = ''; $(ids.to).value = ''; $(ids.month).value = ''; if($(ids.party).value) run(); else sync(); return; }
+      if(en){ if(typeof setQuickMonth === 'function') setQuickMonth(+q); }
+      else if(typeof urQuickMonth === 'function') urQuickMonth(-q);
+      sync();
+    });
+    var acts = document.createElement('div'); acts.className = 'm15-acts';
+    if(en){
+      var more = document.createElement('button'); more.type = 'button'; more.className = 'btn btn-ghost m15-more'; more.setAttribute('aria-expanded', 'false');
+      more.innerHTML = icon('filter') + '<span>More filters</span><i class="m15-cnt" hidden></i>';
+      more.addEventListener('click', function(){ var on = panel.classList.toggle('m15-open'); more.setAttribute('aria-expanded', on); more.querySelector('span').textContent = on ? 'Fewer filters' : 'More filters'; });
+      acts.appendChild(more);
+      var cnt = function(){ var n = ['s-inv', 's-vehicle', 's-keyword', 's-desc'].filter(function(id){ var e = $(id); return e && e.value; }).length, c = more.querySelector('.m15-cnt'); c.textContent = n; c.hidden = !n; };
+      ['s-inv', 's-vehicle', 's-keyword', 's-desc'].forEach(function(id){ var e = $(id); if(e){ e.addEventListener('input', cnt); e.addEventListener('change', cnt); } });
+      M8.after('clearSearch', cnt);
+    }
+    if(clearBtn){ clearBtn.classList.add('m15-clear'); if(!en) clearBtn.innerHTML = icon('x') + '<span class="m15-ur">صاف کریں</span>'; acts.appendChild(clearBtn); }
+    if(runBtn){ runBtn.classList.add('m15-run'); runBtn.innerHTML = icon('statement') + '<span' + (en ? '' : ' class="m15-ur"') + '>' + (en ? 'Show statement' : 'بیان دکھائیں') + '</span>'; acts.appendChild(runBtn); }
+    row.appendChild(chips); row.appendChild(acts);
+    var oldRow = panel.querySelector(en ? '.qmonth-row' : '.ur-quick-btns'); if(oldRow) oldRow.classList.add('m15-hide');
+    panel.appendChild(row);
+
+    /* the bar above the statement */
+    bar.classList.add('m15-bar');
+    area.parentNode.insertBefore(bar, area);
+    var tg = bar.querySelector('.ios-tgl'); if(tg) tg.classList.add('m15-tg');
+    var stamp = bar.querySelector(en ? '#stmt-stampbtn' : '#ur-stmt-stampbtn'); if(stamp) stamp.classList.add('m15-stamp');
+    var print = bar.querySelector(en ? '[onclick="printStatement()"]' : '#ur-print-btn'); if(print) print.classList.add('m15-print');
+    if(en && !bar.querySelector('.m13-share')){
+      var s1 = document.createElement('button'); s1.type = 'button'; s1.className = 'btn btn-ghost m13-share m15-sh'; s1.innerHTML = icon('share') + '<span>Share PDF</span>'; s1.onclick = function(){ if(typeof shareStatementWhatsApp === 'function') shareStatementWhatsApp(); };
+      var s2 = document.createElement('button'); s2.type = 'button'; s2.className = 'btn btn-ghost m13-share m15-sv'; s2.innerHTML = icon('download') + '<span>Save PDF</span>'; s2.onclick = function(){ if(typeof saveStatementPDF === 'function') saveStatementPDF(); };
+      bar.appendChild(s1); bar.appendChild(s2);
+    }
+
+    /* a friendly start: what to do when nothing is shown yet */
+    var hint = document.createElement('div'); hint.className = 'm15-hint';
+    hint.innerHTML = '<span class="m15-hint-ic">' + icon('statement') + '</span><b' + (en ? '' : ' class="m15-ur"') + '>' + (en ? 'Pick a party to see its statement' : 'پارٹی منتخب کریں، بیان خود بخود آ جائے گا') + '</b>' +
+      (en ? '<small>Choose a period too, or leave it on All time. The statement opens by itself.</small>' : '');
+    area.parentNode.insertBefore(hint, bar);
+    var emp = $(ids.empty); if(emp){ emp.classList.add('m15-empty'); if(!en) emp.classList.add('m15-hide'); }
+
+    /* runs by itself when the party or dates change */
+    var go = function(){ clearTimeout(go.t); go.t = setTimeout(function(){ if(($(ids.party) || {}).value) run(); else sync(); }, 160); };
+    [ids.party, ids.from, ids.to].forEach(function(id){ var el = $(id); if(el) el.addEventListener('change', go); });
+    if(!en){ var um = $(ids.month); if(um) um.addEventListener('change', function(){ $(ids.from).value = ''; $(ids.to).value = ''; go(); }); }
+    else { var sm = $(ids.month); if(sm) sm.addEventListener('change', function(){ setTimeout(sync, 0); }); }
+
+    /* which chip is on, and whether the hint shows */
+    function sync(){
+      var m = ($(ids.month) || {}).value, f = ($(ids.from) || {}).value, t = ($(ids.to) || {}).value, on = null;
+      if(!m && !f && !t) on = 'all';
+      else if(m){ for(var n = 0; n >= -3; n--) if(ymOff(n) === m){ var ok = en ? (f && f.slice(0, 7) === m) || !f : true; if(ok) on = String(n); } }
+      [].forEach.call(chips.querySelectorAll('[data-q]'), function(b){ var a = b.dataset.q === on; b.classList.toggle('on', a); b.setAttribute('aria-pressed', a); });
+      var shown = area.style.display !== 'none' && area.style.display !== '';
+      if(!en) shown = area.style.display === 'block';
+      var emptyOn = emp && en && pg.dataset.m15ran && getComputedStyle(emp).display !== 'none';
+      hint.hidden = shown || emptyOn;
+      if(!shown && bar.style.display !== 'none') bar.style.display = 'none';
+    }
+    new MutationObserver(sync).observe(area, { attributes:true, attributeFilter:['style'] });
+    if(emp) new MutationObserver(sync).observe(emp, { attributes:true, attributeFilter:['style'] });
+    M8.after(en ? 'clearSearch' : 'clearUrduStmt', function(){ delete pg.dataset.m15ran; setTimeout(sync, 0); });
+    if(en) M8.after('runSearch', function(){ pg.dataset.m15ran = '1'; setTimeout(sync, 0); });
+    sync();
+  }
+  function langSwitch(pg, which){
+    if(!pg || pg.querySelector('.m13-lang')) return;
+    var hd = pg.querySelector('.page-header'); if(!hd) return;
+    var w = document.createElement('div'); w.className = 'm13-lang'; w.setAttribute('role', 'tablist'); w.setAttribute('aria-label', 'Statement language');
+    w.innerHTML = '<button type="button" role="tab" data-l="en" aria-selected="' + (which === 'en') + '" class="' + (which === 'en' ? 'on' : '') + '">English</button><button type="button" role="tab" data-l="ur" aria-selected="' + (which === 'ur') + '" class="' + (which === 'ur' ? 'on' : '') + '">اردو</button>';
+    w.addEventListener('click', function(e){
+      var b = e.target.closest('[data-l]'); if(!b || b.dataset.l === which) return;
+      var map = which === 'en' ? [['s-party', 'ur-party'], ['s-from', 'ur-from'], ['s-to', 'ur-to'], ['s-month', 'ur-month']] : [['ur-party', 's-party'], ['ur-from', 's-from'], ['ur-to', 's-to'], ['ur-month', 's-month']];
+      map.forEach(function(m){ var a = $(m[0]), c = $(m[1]); if(a && c){ c.value = a.value; } });
+      if(which === 'en'){ navMain(DB.mode, 'urdu-stmt'); if(($('ur-party') || {}).value && typeof runUrduStmt === 'function') setTimeout(runUrduStmt, 60); }
+      else { navMain(DB.mode, 'search'); if(($('s-party') || {}).value && typeof runSearch === 'function') setTimeout(runSearch, 60); }
+    });
+    var r = hd.children[1]; if(r) r.insertBefore(w, r.firstChild); else hd.appendChild(w);
+  }
+
+  /* dashboard: the "Lock app" circle becomes a "Today" summary (lock stays on Ctrl+L, holding the logo, and More → Lock now) */
+  function todayTile(){
+    var b = document.querySelector('#m5-home .m5-lock[data-act="lock"]'); if(!b) return;
+    var t = today(), m = window._heroView || DB.mode, d = book(m);
+    var recs = (d.records || []).filter(function(r){ return r.date === t; }), pays = (d.payments || []).filter(function(p){ return p.date === t; });
+    var ra = recs.reduce(function(a, r){ return a + (+r.amount || 0); }, 0), pa = pays.reduce(function(a, p){ return a + (+p.amount || 0); }, 0), s = m === 'sales';
+    b.dataset.act = 'm13-today'; b.classList.add('m13-today'); b.setAttribute('aria-label', 'Today');
+    b.innerHTML = '<small>Today</small><b>' + recs.length + '</b><span>' + (s ? (recs.length === 1 ? 'invoice' : 'invoices') : (recs.length === 1 ? 'bill' : 'bills')) + ' · ' + short(ra) + '</span><em>' + (s ? 'received ' : 'paid ') + short(pa) + '</em>';
+  }
+
+  /* New Entry: credit limit check while you type */
+  function limitNote(){
+    var host = $('m12-quick-host'); if(!host) return;
+    var el = $('m13-limit'); if(!el){ el = document.createElement('div'); el.id = 'm13-limit'; el.className = 'm13-limit'; host.parentNode.insertBefore(el, host); }
+    var p = ($('e-party') || {}).value || '', info = p ? partyInfo(p) : {}, lim = +info.creditLimit || 0;
+    if(!p || !lim || typeof getPartyBalance !== 'function'){ el.hidden = true; return; }
+    var bal = getPartyBalance(p), sub = typeof entryItemsSubtotal === 'function' ? entryItemsSubtotal() : 0, tot = sub + (typeof entryVatAmount === 'function' ? entryVatAmount(sub) : 0);
+    var after = bal + tot, over = after > lim + 0.005;
+    el.hidden = false; el.className = 'm13-limit' + (over ? ' over' : '');
+    el.innerHTML = icon(over ? 'alert' : 'info') + '<span>' + (over ? 'Over the credit limit: ' : 'Credit limit ') + AED + ' ' + money(lim) + ' · balance after this ' + (sales() ? 'invoice' : 'bill') + ' ' + AED + ' ' + money(after) + (info.creditDays ? ' · terms ' + info.creditDays + ' days' : '') + '</span>';
+  }
+
+  /* menus: Reports in the side menu and More; Data Health moves to More; Urdu statement lives inside Statement now */
+  function menus(){
+    [].forEach.call(document.querySelectorAll('.zmenu .zm-item[data-nav="any:cheques"]'), function(it){
+      if(it.parentNode.querySelector('.zm-item[data-nav="any:reports"]')) return;
+      var c = it.cloneNode(true); c.setAttribute('data-nav', 'any:reports'); c.setAttribute('title', 'Reports & tools'); c.removeAttribute('onclick');
+      var plus = c.querySelector('.zsb-plus'); if(plus) plus.remove();
+      var svg = c.querySelector('svg.zm-ic'); if(svg) svg.outerHTML = icon('chart', 'zm-ic');
+      var lbl = c.querySelector('.zm-lbl') || c.querySelector('span:not(.zm-sp)'); if(lbl) lbl.textContent = 'Reports & tools';
+      c.addEventListener('click', function(){ if(typeof closeDrawer === 'function') closeDrawer(); open(); });
+      it.parentNode.insertBefore(c, it.nextSibling);
+    });
+    [].forEach.call(document.querySelectorAll('.zmenu .zm-sub'), function(sub){
+      if(!sub.querySelector('.m8-more-it') || sub.querySelector('.m13-more')) return;
+      var tpl = sub.querySelector('.m8-more-it');
+      [['zap', 'Data health check', function(){ if(typeof openDupeScan === 'function') openDupeScan(); }], ['lock', 'Lock now (Ctrl+L)', function(){ if(typeof lockNow === 'function') lockNow(); }]].forEach(function(m, i){
+        var c = tpl.cloneNode(true); c.classList.add('m13-more'); c.removeAttribute('data-more');
+        var ic = c.querySelector('.m8-subic'); if(ic) ic.innerHTML = icon(m[0]);
+        var l = c.querySelector('span:not(.m8-subic)'); if(l) l.textContent = m[1];
+        c.addEventListener('click', function(e){ e.stopPropagation(); if(typeof closeDrawer === 'function') closeDrawer(); if(typeof zsbCloseFly === 'function') try{ zsbCloseFly(); }catch(_){} setTimeout(m[2], 30); });
+        sub.insertBefore(c, sub.children[i] || null);
+      });
+    });
+  }
+
+  /* phone: the Purchase / Sales switch steps aside while you scroll down, comes back when you scroll up */
+  function scrollWatch(){
+    var sc = $('app-scroll'); if(!sc || sc.__m13) return; sc.__m13 = 1;
+    var last = 0;
+    sc.addEventListener('scroll', function(){
+      var y = sc.scrollTop;
+      if(y > last + 6 && y > 80) document.body.classList.add('m13-down');
+      else if(y < last - 6 || y < 40) document.body.classList.remove('m13-down');
+      last = y;
+    }, { passive:true });
+  }
+
+  /* G then R opens Reports (like the other G shortcuts) */
+  var gAt = 0;
+  window.addEventListener('keydown', function(e){
+    if(!e.isTrusted || e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target, ty = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    if(ty) return;
+    if(document.querySelector('.m8-ov.open, .modal-overlay.open, .modal-overlay.show, #lock-overlay[style*="flex"], #gsearch-overlay.open')) return;
+    var k = (e.key || '').toLowerCase();
+    if(k === 'g'){ gAt = Date.now(); return; }
+    if(k === 'r' && Date.now() - gAt < 900){ gAt = 0; e.preventDefault(); e.stopImmediatePropagation(); open(); }
+  }, true);
+
+  /* the header on Reports: its own title, and the Purchase / Sales switch stays visible */
+  function fixHeader(){
+    if(M8.page() !== 'reports') return;
+    var t2 = $('m5-t2'); if(t2 && t2.textContent !== 'Reports') t2.textContent = 'Reports';
+    var sw = $('m8-switch'); if(sw && !sw.classList.contains('show')) sw.classList.add('show');
+  }
+  function watchHeader(){
+    var t2 = $('m5-t2'), sw = $('m8-switch'), mo = new MutationObserver(fixHeader);
+    if(t2) mo.observe(t2, { childList:true, characterData:true, subtree:true });
+    if(sw) mo.observe(sw, { attributes:true, attributeFilter:['class'] });
+  }
+
+  /* ── BOOT ──────────────────────────────────────────────────────────── */
+  function boot(){
+    build(); menus(); langSwitch($('page-search'), 'en'); langSwitch($('page-urdu-stmt'), 'ur'); statement(); scrollWatch(); watchHeader();
+    M8.after('showPage', function(id){
+      if(id === 'reports'){ paint(); fixHeader(); }
+      if(id === 'search' || id === 'urdu-stmt') statement();
+      setTimeout(menus, 0);
+    });
+    M8.after('setAppMode', function(){ if(M8.page() === 'reports') setTimeout(paint, 0); });
+    M8.after('filterPayments', payKpis); M8.after('renderPayments', payKpis);
+    M8.after('syncMainMenu', function(){ setTimeout(menus, 0); if(M8.page() === 'urdu-stmt') [].forEach.call(document.querySelectorAll('.zmenu .zm-subitem[data-nav="' + DB.mode + ':search"]'), function(el){ el.classList.add('active'); }); [].forEach.call(document.querySelectorAll('.zmenu .zm-item[data-nav="any:reports"]'), function(el){ el.classList.toggle('active', M8.page() === 'reports'); }); });
+    M8.after('onEntryPartyChange', limitNote);
+    M8.after('updateGrandTotal', limitNote);
+    M8.after('clearEntry', function(){ setTimeout(limitNote, 120); });
+    var home = $('m5-home') || $('page-dashboard');
+    if(home){ var q = 0; new MutationObserver(function(){ if(q) return; q = 1; requestAnimationFrame(function(){ q = 0; todayTile(); }); }).observe(home, { childList:true, subtree:true }); todayTile(); }
+    document.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-act="m13-today"]'); if(b){ e.stopPropagation(); var m = window._heroView || DB.mode; navMain(m, 'records'); } }, true);
+    /* one copy of the data on this device per day, once it has loaded */
+    setTimeout(function tryB(){ if(!((DB.purchase.records || []).length || (DB.sales.records || []).length)){ setTimeout(tryB, 5000); return; } autoBackup(); }, 8000);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); }); else setTimeout(boot, 0);
+})();
+
+</script>
+<script id="m14-js">/* ══════════════════════════════════════════════════════════════════════
+   M14 · PC polish
+   1. Side menu: one orange pill that moves to the page you are on.
+   2. PC header: logo column · where you are · search · switch, lock, keys, bell.
+   3. Small PC screens: the dashboard and big numbers fit the space they have.
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var M8 = window.M8; if(!M8) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var icon = M8.icon;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function desk(){ return !M8.isDock(); }
+
+  /* ── 1 · the moving pill ───────────────────────────────────────────── */
+  var pill, menu, lastEl = null, loopT = 0;
+  function activeEl(){
+    var sb = $('sidebar'); if(!sb) return null;
+    var el = sb.querySelector('.zmenu .zm-subitem.active, .zmenu .zm-item.active, .zmenu .zm-item.m10-on');
+    if(!el) return null;
+    /* the Urdu statement has no menu row of its own now: it lives under Statement */
+    if(!el.getClientRects().length && /urdu-stmt$/.test(el.getAttribute('data-nav') || '')){
+      var alt = sb.querySelector('.zmenu .zm-subitem[data-nav="' + (DB.mode === 'sales' ? 'sales' : 'purchase') + ':search"]'); if(alt) el = alt;
+    }
+    var sub = el.closest('.zm-sub'), g = el.closest('.zm-group');
+    if(sub && g){
+      var er = el.getBoundingClientRect(), sr = sub.getBoundingClientRect();
+      /* the page sits inside a closed (or still opening) group: the pill marks the group */
+      if(!g.classList.contains('open') || document.body.classList.contains('sb-collapsed') || !el.getClientRects().length || sr.height < 4 || er.bottom > sr.bottom + 1 || er.top < sr.top - 1) el = g.querySelector('.zm-ghead');
+    }
+    return el;
+  }
+  function place(animate){
+    if(!pill || !menu) return;
+    var el = desk() ? activeEl() : null;
+    if(lastEl && lastEl !== el) lastEl.classList.remove('m14-on');
+    if(!el){ pill.style.opacity = '0'; lastEl = null; return; }
+    el.classList.add('m14-on');
+    var r = el.getBoundingClientRect(), z = menu.getBoundingClientRect();
+    if(r.height < 8){ pill.style.opacity = '0'; return; }
+    var moveTo = el !== lastEl && lastEl && animate !== false && !reduce.matches;
+    pill.classList.toggle('m14-anim', !!moveTo);
+    pill.style.width = r.width + 'px'; pill.style.height = r.height + 'px';
+    pill.style.transform = 'translate3d(' + (r.left - z.left) + 'px,' + (r.top - z.top) + 'px,0)';
+    pill.style.borderRadius = getComputedStyle(el).borderRadius || '999px';
+    pill.style.opacity = '1';
+    lastEl = el;
+  }
+  /* follow the menu for a short while (groups open and close with an animation) */
+  function follow(ms){
+    var end = performance.now() + (ms || 420);
+    cancelAnimationFrame(loopT);
+    var first = true;
+    (function tick(){ place(first ? undefined : false); first = false; if(performance.now() < end) loopT = requestAnimationFrame(tick); })();
+  }
+  function setupPill(){
+    var sb = $('sidebar'); menu = sb && sb.querySelector('.zmenu'); if(!menu || menu.querySelector('.m14-pill')) return;
+    pill = document.createElement('i'); pill.className = 'm14-pill'; pill.setAttribute('aria-hidden', 'true');
+    menu.insertBefore(pill, menu.firstChild);
+    document.body.classList.add('m14-pillon');
+    sb.addEventListener('click', function(){ setTimeout(function(){ follow(460); }, 0); });
+    sb.addEventListener('transitionend', function(e){ if(e.target === sb || (e.target.classList && e.target.classList.contains('zm-sub'))) place(false); });
+    var nav = sb.querySelector('.sb-nav'); if(nav) nav.addEventListener('scroll', function(){ place(false); }, { passive:true });
+    window.addEventListener('resize', function(){ place(false); }, { passive:true });
+    place(false);
+  }
+
+  /* ── 2 · PC header ─────────────────────────────────────────────────── */
+  var GROUP = { entry:1, records:1, payments:1, parties:1, search:1, 'urdu-stmt':1, 'edit-invoice':1, party:1 };
+  function crumb(){
+    var c = $('m14-crumb'); if(!c) return;
+    var pg = M8.page(), t2 = $('m5-t2'), title = t2 ? t2.textContent.trim() : '';
+    var grp = GROUP[pg] ? (DB.mode === 'sales' ? 'Sales' : 'Purchases') : '';
+    c.querySelector('.m14-c1').textContent = grp;
+    c.querySelector('.m14-c2').textContent = title;
+    c.classList.toggle('m14-solo', !grp);
+    document.body.classList.toggle('m14-onhome', pg === 'dashboard');
+  }
+  function sbWidth(){
+    var sb = $('sidebar'); if(!sb) return;
+    document.documentElement.style.setProperty('--m14-sbw', (desk() ? sb.getBoundingClientRect().width : 0) + 'px');
+  }
+  function setupHeader(){
+    var hdr = $('m5-hdr'); if(!hdr || $('m14-crumb')) return;
+    var ttl = hdr.querySelector('.m5-ttl'), right = $('m8-hdr-r');
+    var c = document.createElement('div'); c.id = 'm14-crumb'; c.className = 'm14-crumb';
+    c.innerHTML = '<span class="m14-c1"></span><i class="m14-sep" aria-hidden="true">/</i><b class="m14-c2"></b>';
+    var s = document.createElement('button'); s.type = 'button'; s.id = 'm14-search'; s.className = 'm14-search';
+    s.innerHTML = icon('search') + '<span>Search parties, bills, cheques…</span><kbd>Ctrl K</kbd>';
+    s.addEventListener('click', function(){ if(typeof openGlobalSearch === 'function') openGlobalSearch(); });
+    if(ttl && ttl.nextSibling) hdr.insertBefore(c, ttl.nextSibling); else hdr.appendChild(c);
+    hdr.insertBefore(s, right || null);
+    if(right && !$('m14-lock')){
+      var l = document.createElement('button'); l.type = 'button'; l.id = 'm14-lock'; l.className = 'm8-ib m14-lock';
+      l.setAttribute('aria-label', 'Lock the app (Ctrl+L)'); l.title = 'Lock the app (Ctrl+L)'; l.innerHTML = icon('lock');
+      l.addEventListener('click', function(){ if(typeof lockNow === 'function') lockNow(); });
+      var kb = $('m8-kbtn'); right.insertBefore(l, kb || right.firstChild);
+    }
+    var t2 = $('m5-t2'); if(t2) new MutationObserver(crumb).observe(t2, { childList:true, characterData:true, subtree:true });
+    crumb(); sbWidth();
+    var sb = $('sidebar'); if(sb && window.ResizeObserver) new ResizeObserver(function(){ sbWidth(); }).observe(sb);
+    window.addEventListener('resize', sbWidth, { passive:true });
+  }
+
+  /* ── 3 · fit the dashboard to the space it really has ──────────────── */
+  function fitLayout(){
+    var sc = $('app-scroll'), w = sc ? sc.clientWidth : window.innerWidth, b = document.body;
+    var d = desk();
+    b.classList.toggle('m14-mid', d && w >= 930 && w < 1120);
+    b.classList.toggle('m14-wide-s', d && w >= 1120 && w < 1500 && window.innerWidth >= 1280);
+    b.classList.toggle('m14-short', d && window.innerHeight < 760);
+    fitNumbers();
+  }
+  /* a big number that would not fit gets a little smaller, never cut off */
+  function fitNumbers(){
+    var els = document.querySelectorAll('#m5-home .m5-big, #m5-home .m5-tile .m5-mid, #m5-home .m5-wtot, .m13-kpi > b, #pay-kpis .pay-cell-val');
+    for(var i = 0; i < els.length; i++){
+      var e = els[i]; e.style.fontSize = '';
+      if(!e.clientWidth) continue;
+      var n = 0, fs = parseFloat(getComputedStyle(e).fontSize);
+      while(e.scrollWidth > e.clientWidth + 1 && n < 14 && fs > 14){ fs -= 1.5; e.style.fontSize = fs + 'px'; n++; }
+    }
+  }
+  var fq = 0;
+  function queueFit(){ if(fq) return; fq = requestAnimationFrame(function(){ fq = 0; fitLayout(); }); }
+
+  /* ── BOOT ──────────────────────────────────────────────────────────── */
+  function boot(){
+    setupPill(); setupHeader(); fitLayout();
+    M8.after('showPage', function(){ crumb(); follow(380); queueFit(); setTimeout(queueFit, 260); });
+    M8.after('setAppMode', function(){ crumb(); follow(300); queueFit(); });
+    M8.after('syncMainMenu', function(){ follow(420); });
+    M8.after('toggleSidebar', function(){ follow(520); setTimeout(function(){ sbWidth(); queueFit(); }, 380); });
+    if(window.m5RenderHome) M8.after('m5RenderHome', function(){ setTimeout(queueFit, 30); });
+    var home = $('m5-home');
+    if(home){ var q = 0; new MutationObserver(function(){ if(q) return; q = 1; requestAnimationFrame(function(){ q = 0; fitNumbers(); }); }).observe(home, { childList:true, subtree:true }); }
+    var kp = $('pay-kpis'); if(kp) new MutationObserver(function(){ requestAnimationFrame(fitNumbers); }).observe(kp, { childList:true, subtree:true, characterData:true });
+    window.addEventListener('resize', queueFit, { passive:true });
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ queueFit(); place(false); });
+    setTimeout(function(){ place(false); queueFit(); }, 400);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); }); else setTimeout(boot, 0);
+})();
+
 </script>
 </body>
 </html>
