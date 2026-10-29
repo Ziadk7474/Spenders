@@ -1,4 +1,4 @@
-/* Al Madhi — cheque reminder notifications.
+/* am. nexus — cheque reminder notifications.
    A small service worker that only shows reminders. The app registers it on
    its own (it does not replace or touch your existing sw.js).
    Put this file in the same folder as index.html. */
@@ -19,7 +19,7 @@ self.addEventListener('push', function(e){
     badge: APP_URL + 'icon-192.png',
     vibrate: [400, 150, 400, 150, 800],
     timestamp: Date.now(),
-    data: { chq: d.chq || null, db: d.db || null, url: APP_URL + '#cheques' },
+    data: { chq: d.chq || null, db: d.db || null, url: APP_URL + 'index.html#cheques' },
     actions: d.chq ? [ { action:'clear', title:'Mark as cleared' }, { action:'open', title:'Open' } ] : [ { action:'open', title:'Open' } ]
   };
   e.waitUntil(self.registration.showNotification(d.title || 'Cheque reminder', opts));
@@ -41,6 +41,6 @@ self.addEventListener('notificationclick', function(e){
       var c = list[i];
       if(c.url.indexOf(APP_URL) === 0 && 'focus' in c){ c.postMessage({ m8:'open-cheques', chq:data.chq }); return c.focus(); }
     }
-    return self.clients.openWindow(data.url || APP_URL);
+    return self.clients.openWindow(data.url || (APP_URL + 'index.html'));
   }));
 });
