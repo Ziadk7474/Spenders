@@ -30778,6 +30778,9 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     if(document.body.classList.contains('mobile-sidebar-open')) return function(){ if(typeof closeDrawer === 'function') closeDrawer(); else document.body.classList.remove('mobile-sidebar-open'); };
     var dr = $('drawer'); if(dr && (dr.classList.contains('open') || dr.classList.contains('show'))) return function(){ if(typeof closeDrawer === 'function') closeDrawer(); else dr.classList.remove('open'); };
     var dd = document.querySelector('.row-menu-panel.open, .drange-menu.open, .dropdown.open'); if(dd) return function(){ dd.classList.remove('open'); };
+    /* Reports → Summary: the groups panel, then a bill list, close back to the summary */
+    var ge = $('m16-gedit'); if(ge) return function(){ ge.remove(); if(window.M13REPAINT) M13REPAINT(); };
+    if(window.M16 && M16.inDrill() && M8.page() === 'reports') return function(){ M16.back(); };
     return null;
   }
   function closeTop(){ var c = topLayer(); if(!c) return false; c(); return true; }
@@ -31449,6 +31452,162 @@ html:not(#_#_#_) body:not(#_#_#_) .m15-stmt #search-empty.m15-empty{ margin:0 !i
   html:not(#_) body:not(#_) .m15-hint{ padding:34px 18px; }
 }
 }
+
+/* ══ M16 · Monthly summary ══════════════════════════════════════════ */
+@media screen{
+html:not(#_) body:not(#_) .m16{ display:flex; flex-direction:column; gap:14px; min-width:0; font-family:var(--k-font); color:var(--k-ink); --c-cash:#1f9d55; --c-bank:#3b6fd8; --c-unpaid:var(--k-acc); }
+html:not(#_) body:not(#_).dark-mode .m16, html:not(#_) body.dark-mode:not(#_) .m16-print{ --c-cash:#3fcf80; --c-bank:#7aa2ff; }
+
+/* period bar */
+html:not(#_) body:not(#_) .m16-period{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; }
+html:not(#_) body:not(#_) .m16-seg{ display:inline-flex; gap:2px; padding:3px; border-radius:999px; background:var(--k-card); }
+html:not(#_) body:not(#_) .m16-seg button{ height:34px; padding:0 15px; border:0; border-radius:999px; background:transparent; font:500 13px/1 var(--k-font); color:var(--k-ink2); cursor:pointer; white-space:nowrap; }
+html:not(#_) body:not(#_) .m16-seg button.on{ background:var(--k-tile); color:var(--k-ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.08), 0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m16-seg.sm button{ height:28px; padding:0 11px; font-size:12px; }
+html:not(#_) body:not(#_) .m16-step{ display:inline-flex; align-items:center; gap:6px; }
+html:not(#_) body:not(#_) .m16-step > b{ min-width:140px; text-align:center; font:650 15px/1 var(--k-font); letter-spacing:-.01em; }
+html:not(#_) body:not(#_) .m16-ib{ width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:50%; background:var(--k-tile); color:var(--k-ink); cursor:pointer; box-shadow:0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m16-ib .m8i{ width:17px; height:17px; }
+html:not(#_) body:not(#_) .m16-dates{ display:flex; gap:10px; flex-wrap:wrap; }
+html:not(#_) body:not(#_) .m16-dates label{ display:flex; flex-direction:column; gap:5px; width:180px; font-size:12px; font-weight:500; color:var(--k-ink3); }
+html:not(#_#_#_) body:not(#_#_#_) .m16 .m16-dates label > *{ width:100% !important; max-width:100% !important; box-sizing:border-box !important; }
+
+/* hero */
+html:not(#_) body:not(#_) .m16-hero{ display:grid; grid-template-columns:1.4fr repeat(3, minmax(0, 1fr)); gap:10px; }
+html:not(#_) body:not(#_) .m16-total, html:not(#_) body:not(#_) .m16-kp{ display:flex; flex-direction:column; gap:6px; padding:15px 16px; border-radius:18px; background:var(--k-card); min-width:0; }
+html:not(#_) body:not(#_) .m16-total{ background:var(--k-dark); color:var(--k-on-dark); }
+html:not(#_) body:not(#_) .m16-total span, html:not(#_) body:not(#_) .m16-kp span{ font-size:12px; font-weight:500; opacity:.8; }
+html:not(#_) body:not(#_) .m16-kp span{ color:var(--k-ink3); opacity:1; }
+html:not(#_) body:not(#_) .m16-total b{ font:700 24px/1.1 var(--k-font); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m16-total b small{ font-size:14px; font-weight:600; opacity:.75; }
+html:not(#_) body:not(#_) .m16-total > small{ font-size:12px; opacity:.7; }
+html:not(#_) body:not(#_) .m16-kp b{ font:700 19px/1.1 var(--k-font); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_) body:not(#_) .m16-kp small{ font-size:11.5px; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m16-kp.cash b{ color:var(--c-cash); } html:not(#_) body:not(#_) .m16-kp.bank b{ color:var(--c-bank); } html:not(#_) body:not(#_) .m16-kp.unpaid b{ color:var(--c-unpaid); }
+html:not(#_) body:not(#_) .m16-kp::before{ content:""; width:22px; height:4px; border-radius:99px; background:var(--k-line2); margin-bottom:2px; }
+html:not(#_) body:not(#_) .m16-kp.cash::before{ background:var(--c-cash); } html:not(#_) body:not(#_) .m16-kp.bank::before{ background:var(--c-bank); } html:not(#_) body:not(#_) .m16-kp.unpaid::before{ background:var(--c-unpaid); }
+html:not(#_) body:not(#_) .m16-hsplit{ grid-column:1 / -1; }
+html:not(#_) body:not(#_) .m16-hero.m16-hero5{ grid-template-columns:1.4fr repeat(4, minmax(0, 1fr)); }
+
+/* split bar */
+html:not(#_) body:not(#_) .m16-split{ display:flex; flex-direction:column; gap:7px; }
+html:not(#_) body:not(#_) .m16-sbar{ display:flex; gap:2px; height:8px; border-radius:99px; overflow:hidden; background:var(--k-line); }
+html:not(#_) body:not(#_) .m16-split.big .m16-sbar{ height:10px; }
+html:not(#_) body:not(#_) .m16-sbar i{ display:block; height:100%; min-width:3px; }
+html:not(#_) body:not(#_) :is(.m16-sbar, .m16-sleg) i.cash{ background:var(--c-cash); } html:not(#_) body:not(#_) :is(.m16-sbar, .m16-sleg) i.bank{ background:var(--c-bank); } html:not(#_) body:not(#_) :is(.m16-sbar, .m16-sleg) i.unpaid{ background:var(--c-unpaid); }
+html:not(#_) body:not(#_) .m16-sleg{ display:flex; flex-wrap:wrap; gap:4px 16px; font-size:12px; color:var(--k-ink2); font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m16-sleg i{ display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+
+/* group card */
+html:not(#_) body:not(#_) .m16-group{ display:flex; flex-direction:column; gap:12px; padding:16px; border-radius:22px; background:var(--k-card); min-width:0; }
+html:not(#_) body:not(#_) .m16-gh{ display:flex; align-items:center; gap:14px; cursor:pointer; border-radius:14px; margin:-6px; padding:6px; }
+html:not(#_) body:not(#_) .m16-gh.static{ cursor:default; }
+html:not(#_) body:not(#_) .m16-gh:not(.static):hover{ background:var(--k-tile); }
+html:not(#_) body:not(#_) .m16-gic{ flex:0 0 44px; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; background:var(--k-tile); color:var(--k-acc); box-shadow:0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m16-gic .m8i{ width:20px; height:20px; }
+html:not(#_) body:not(#_) .g-wood .m16-gic{ color:#b7791f; } html:not(#_) body:not(#_) .g-pallets .m16-gic{ color:var(--k-acc); } html:not(#_) body:not(#_) .g-others .m16-gic{ color:#6b7280; } html:not(#_) body:not(#_) .g-pay .m16-gic{ color:var(--c-cash); }
+html:not(#_) body:not(#_) .m16-gt{ display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 auto; }
+html:not(#_) body:not(#_) .m16-gt b{ font:650 17px/1.2 var(--k-font); letter-spacing:-.01em; }
+html:not(#_) body:not(#_) .m16-gt small{ font-size:12px; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m16-gq{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px 14px; font-size:12.5px; color:var(--k-ink2); }
+html:not(#_) body:not(#_) .m16-gq b{ font:700 20px/1 var(--k-font); color:var(--k-ink); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m16-ga{ display:flex; align-items:center; gap:6px; white-space:nowrap; }
+html:not(#_) body:not(#_) .m16-ga b{ font:700 16px/1 var(--k-font); font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m16-ga .m8i{ width:16px; height:16px; color:var(--k-ink3); }
+html:not(#_) body:not(#_) :is(.m16-gq, .m16-q) em{ font-style:normal; font-size:11px; font-weight:600; margin-left:6px; }
+html:not(#_) body:not(#_) :is(.m16-gq, .m16-q) em.up{ color:var(--c-cash); } html:not(#_) body:not(#_) :is(.m16-gq, .m16-q) em.down{ color:var(--k-neg); }
+
+/* tables */
+html:not(#_) body:not(#_) .m16-table{ display:flex; flex-direction:column; background:var(--k-tile); border-radius:16px; box-shadow:0 0 0 1px var(--k-line); overflow:hidden; font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m16-tr{ display:grid; grid-template-columns:minmax(0, 2.2fr) 1.2fr .9fr 1fr .9fr .9fr .9fr .6fr; gap:10px; align-items:center; padding:11px 14px; font-size:13px; }
+html:not(#_) body:not(#_) .m16-tr + .m16-tr{ border-top:1px solid var(--k-line); }
+html:not(#_) body:not(#_) .m16-tr[role="button"]{ cursor:pointer; }
+html:not(#_) body:not(#_) .m16-tr[role="button"]:hover{ background:var(--k-card); }
+html:not(#_) body:not(#_) .m16-tr[role="button"]:focus-visible{ outline:2px solid var(--k-acc); outline-offset:-2px; }
+html:not(#_) body:not(#_) .m16-th{ font-size:11px; font-weight:600; color:var(--k-ink3); text-transform:uppercase; letter-spacing:.04em; padding-top:9px; padding-bottom:9px; }
+html:not(#_) body:not(#_) .m16-tf{ font-weight:650; background:var(--k-card); }
+html:not(#_) body:not(#_) .m16-tr .r{ text-align:right; }
+html:not(#_) body:not(#_) .m16-tr .b{ font-weight:650; }
+html:not(#_) body:not(#_) .m16-nm{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+html:not(#_) body:not(#_) .m16-nm b{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+html:not(#_) body:not(#_) .m16-nm small, html:not(#_) body:not(#_) .m16-q small{ font-size:11px; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m16-q{ display:flex; flex-direction:column; align-items:flex-end; gap:1px; }
+html:not(#_) body:not(#_) .m16-q b{ font-size:14px; }
+html:not(#_) body:not(#_) .c-cash{ color:var(--c-cash); } html:not(#_) body:not(#_) .c-bank{ color:var(--c-bank); } html:not(#_) body:not(#_) .c-unpaid{ color:var(--c-unpaid); }
+html:not(#_) body:not(#_) .m16-pt .m16-tr{ grid-template-columns:minmax(0, 1.6fr) minmax(0, 2fr) 1fr .9fr .9fr .9fr; }
+html:not(#_) body:not(#_) .m16-what{ font-size:12px; color:var(--k-ink2); }
+html:not(#_) body:not(#_) .m16-bills .m16-tr{ grid-template-columns:100px minmax(0, 1.5fr) minmax(0, 1fr) .8fr .7fr .9fr 1fr; }
+html:not(#_) body:not(#_) .m16-bills.m16-table .m16-tr:has(> :nth-child(8)){ grid-template-columns:100px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.2fr) .8fr .7fr .9fr 1fr; }
+html:not(#_) body:not(#_) .m16-ell{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+html:not(#_) body:not(#_) .m16-st{ font-size:12px; font-weight:600; display:flex; flex-direction:column; gap:1px; }
+html:not(#_) body:not(#_) .m16-st small{ font-size:11px; font-weight:500; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m16-st.st-paid{ color:var(--c-bank); } html:not(#_) body:not(#_) .m16-st.st-paid.st-cash{ color:var(--c-cash); } html:not(#_) body:not(#_) .m16-st.st-partial{ color:var(--k-wait); } html:not(#_) body:not(#_) .m16-st.st-unpaid{ color:var(--c-unpaid); }
+
+/* payments chips */
+html:not(#_) body:not(#_) .m16-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+html:not(#_) body:not(#_) .m16-pchip{ display:flex; flex-direction:column; gap:4px; padding:10px 14px; border-radius:14px; background:var(--k-tile); box-shadow:0 0 0 1px var(--k-line); min-width:120px; }
+html:not(#_) body:not(#_) .m16-pchip small{ font-size:11.5px; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m16-pchip b{ font:700 16px/1 var(--k-font); font-variant-numeric:tabular-nums; }
+html:not(#_) body:not(#_) .m16-pchip.cash b{ color:var(--c-cash); }
+html:not(#_) body:not(#_) .m16-none{ font-size:13px; color:var(--k-ink3); }
+
+/* back, footer, groups editor */
+html:not(#_) body:not(#_) .m16-back{ align-self:flex-start; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 14px 0 10px; border:0; border-radius:999px; background:var(--k-card); color:var(--k-ink); font:600 13px/1 var(--k-font); cursor:pointer; }
+html:not(#_) body:not(#_) .m16-back .m8i{ width:16px; height:16px; }
+html:not(#_) body:not(#_) .m16-foot{ display:flex; flex-wrap:wrap; gap:8px; }
+html:not(#_) body:not(#_) .m16-gedit{ display:flex; flex-direction:column; gap:6px; padding:16px; margin-bottom:14px; border-radius:20px; background:var(--k-card); box-shadow:0 0 0 2px var(--k-acc); }
+html:not(#_) body:not(#_) .m16-ge-h{ display:flex; align-items:center; justify-content:space-between; }
+html:not(#_) body:not(#_) .m16-ge-h b{ font:650 15px/1.2 var(--k-font); }
+html:not(#_) body:not(#_) .m16-gedit p{ margin:0 0 6px; font-size:12.5px; color:var(--k-ink3); }
+html:not(#_) body:not(#_) .m16-ge-r{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 0; border-top:1px solid var(--k-line); font-size:13px; font-weight:500; }
+
+/* tablet */
+@media (max-width:1100px){
+  html:not(#_) body:not(#_) .m16-hero, html:not(#_) body:not(#_) .m16-hero.m16-hero5{ grid-template-columns:repeat(4, minmax(0, 1fr)); }
+  html:not(#_) body:not(#_) .m16-hero:not(.m16-hero5){ grid-template-columns:repeat(3, minmax(0, 1fr)); }
+  html:not(#_) body:not(#_) .m16-total{ grid-column:1 / -1; }
+  html:not(#_) body:not(#_) .m16-tr{ grid-template-columns:minmax(0, 2fr) 1.2fr 1fr .9fr .9fr .9fr; }
+  html:not(#_) body:not(#_) .m16-tr > :nth-child(3), html:not(#_) body:not(#_) .m16-tr > :nth-child(8){ display:none; }
+  html:not(#_) body:not(#_) .m16-pt .m16-tr{ grid-template-columns:minmax(0, 1.5fr) 1fr .9fr .9fr .9fr; }
+  html:not(#_) body:not(#_) .m16-pt .m16-tr > :nth-child(2){ display:none; }
+  html:not(#_) body:not(#_) .m16-pt .m16-tr > :nth-child(3){ display:block; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr, html:not(#_) body:not(#_) .m16-bills.m16-table .m16-tr:has(> :nth-child(8)){ grid-template-columns:84px minmax(0, 1.4fr) .8fr .9fr .9fr; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr > :nth-child(3){ display:none; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr:not(:has(> :nth-child(8))) > :nth-child(6){ display:none; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr:has(> :nth-child(8)) > :is(:nth-child(4), :nth-child(6)){ display:none; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr > :nth-child(8){ display:flex; }
+}
+/* phone */
+@media (max-width:599px){
+  html:not(#_) body:not(#_) .m16-hero, html:not(#_) body:not(#_) .m16-hero.m16-hero5, html:not(#_) body:not(#_) .m16-hero:not(.m16-hero5){ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+  html:not(#_) body:not(#_) .m16-hero:not(.m16-hero5) .m16-kp.unpaid{ grid-column:1 / -1; }
+  html:not(#_) body:not(#_) .m16-dates label{ width:calc(50% - 5px); }
+  html:not(#_) body:not(#_) .m16-total b{ font-size:22px; }
+  html:not(#_) body:not(#_) .m16-kp b{ font-size:17px; }
+  html:not(#_) body:not(#_) .m16-period{ gap:10px; }
+  html:not(#_) body:not(#_) .m16-seg{ width:100%; } html:not(#_) body:not(#_) .m16-seg button{ flex:1 1 0; padding:0 8px; }
+  html:not(#_) body:not(#_) .m16-step{ width:100%; justify-content:space-between; flex-wrap:wrap; }
+  html:not(#_) body:not(#_) .m16-group{ padding:14px; border-radius:20px; }
+  html:not(#_) body:not(#_) .m16-gh{ flex-wrap:wrap; gap:10px 12px; }
+  html:not(#_) body:not(#_) .m16-gq{ order:3; flex:1 1 100%; justify-content:flex-start; padding-left:56px; }
+  html:not(#_) body:not(#_) .m16-ga{ margin-left:auto; }
+  html:not(#_) body:not(#_) .m16-tr{ grid-template-columns:minmax(0, 1.6fr) 1fr 1fr; gap:8px; padding:11px 12px; font-size:12.5px; }
+  html:not(#_) body:not(#_) .m16-tr > :is(:nth-child(3), :nth-child(5), :nth-child(6), :nth-child(7), :nth-child(8)){ display:none; }
+  html:not(#_) body:not(#_) .m16-pt .m16-tr{ grid-template-columns:minmax(0, 1.4fr) 1fr; }
+  html:not(#_) body:not(#_) .m16-pt .m16-tr > :not(:nth-child(1)):not(:nth-child(3)){ display:none; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr, html:not(#_) body:not(#_) .m16-bills.m16-table .m16-tr:has(> :nth-child(8)){ grid-template-columns:86px minmax(0, 1fr) auto; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr > *{ display:none; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr > :nth-child(1), html:not(#_) body:not(#_) .m16-bills .m16-tr > :nth-child(2){ display:block; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr:not(:has(> :nth-child(8))) > :nth-child(6), html:not(#_) body:not(#_) .m16-bills .m16-tr:has(> :nth-child(8)) > :nth-child(7){ display:block; }
+  html:not(#_) body:not(#_) .m16-bills .m16-tr > .m16-st{ display:flex; grid-column:2 / -1; flex-direction:row; gap:8px; }
+  html:not(#_) body:not(#_) .m16-bills .m16-th{ display:none; }
+}
+}
+/* the audit print */
+.m16-print .m16-total{ background:#111 !important; color:#fff !important; }
+.m16-print .m16-group, .m16-print .m16-table{ break-inside:auto; }
+.m16-print .m16-gh{ break-after:avoid; }
+.m16-print .m13-intro span{ display:none; }
 </style>
 <script id="m13-js">/* ══════════════════════════════════════════════════════════════════════
    M13 · REPORTS & TOOLS + everyday fixes
@@ -31486,14 +31645,14 @@ html:not(#_#_#_) body:not(#_#_#_) .m15-stmt #search-empty.m15-empty{ margin:0 !i
   function bar(parts, cls){ var t = parts.reduce(function(a, b){ return a + b; }, 0) || 1; return '<div class="m13-bar">' + parts.map(function(v, i){ return v > 0 ? '<i class="b' + i + (cls ? ' ' + cls : '') + '" style="width:' + (v / t * 100).toFixed(2) + '%"></i>' : ''; }).join('') + '</div>'; }
 
   /* ── PAGE ──────────────────────────────────────────────────────────── */
-  var TABS = [['aging', 'Dues', 'alert'], ['cash', 'Cash book', 'pay'], ['items', 'Items', 'items'], ['trash', 'Trash', 'trash'], ['backup', 'Backups', 'backup']];
-  var cur = store('tab') || 'aging'; if(['aging','cash','items','trash','backup'].indexOf(cur) < 0) cur = 'aging';
+  var TABS = [['sum', 'Summary', 'chart'], ['aging', 'Dues', 'alert'], ['cash', 'Cash book', 'pay'], ['items', 'Items', 'items'], ['trash', 'Trash', 'trash'], ['backup', 'Backups', 'backup']];
+  var cur = store('tab') || 'sum'; if(['sum','aging','cash','items','trash','backup'].indexOf(cur) < 0) cur = 'sum';
   function build(){
     if($('page-reports')) return;
     var ref = $('page-cheques'); if(!ref) return;
     var pg = document.createElement('div'); pg.className = 'page'; pg.id = 'page-reports';
     pg.innerHTML =
-      '<div class="page-header m13-head"><div><h1>Reports &amp; tools</h1><p id="m13-sub">Dues, cash, items, deleted entries and daily backups</p></div></div>' +
+      '<div class="page-header m13-head"><div><h1>Reports &amp; tools</h1><p id="m13-sub">Monthly summary, dues, cash, items, deleted entries and backups</p></div></div>' +
       '<div class="m13-tabs" role="tablist" id="m13-tabs">' + TABS.map(function(t){ return '<button type="button" role="tab" class="m13-tab" data-t="' + t[0] + '">' + icon(t[2]) + '<span>' + t[1] + '</span></button>'; }).join('') + '</div>' +
       '<div id="m13-body" class="m13-body"></div>';
     ref.parentNode.insertBefore(pg, ref.nextSibling);
@@ -31507,12 +31666,13 @@ html:not(#_#_#_) body:not(#_#_#_) .m15-stmt #search-empty.m15-empty{ margin:0 !i
     if(typeof navMain === 'function') navMain(null, 'reports'); else showPage('reports');
   }
   window.openReports = open;
+  window.M13REPAINT = function(){ paint(); };
   function paint(){
     var b = $('m13-body'); if(!b) return;
     store('tab', cur);
     [].forEach.call(document.querySelectorAll('#m13-tabs .m13-tab'), function(t){ var on = t.dataset.t === cur; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
     var a = document.querySelector('#m13-tabs .m13-tab.on'); if(a && a.scrollIntoView) try{ a.scrollIntoView({ block:'nearest', inline:'nearest' }); }catch(e){}
-    var f = { aging:pAging, cash:pCash, items:pItems, trash:pTrash, backup:pBackup }[cur] || pAging;
+    var f = { sum:function(){ return window.M16 ? M16.html() : ''; }, aging:pAging, cash:pCash, items:pItems, trash:pTrash, backup:pBackup }[cur] || pAging;
     try{ b.innerHTML = f(); }catch(err){ console.error('[m13]', err); b.innerHTML = '<div class="m13-empty">Something went wrong here: ' + esc(err.message) + '</div>'; }
     if(cur === 'trash') loadTrash();
     if(cur === 'backup') listBackups();
@@ -31748,7 +31908,7 @@ html:not(#_#_#_) body:not(#_#_#_) .m15-stmt #search-empty.m15-empty{ margin:0 !i
   function onClick(e){
     var t = e.target.closest('button, a'); if(!t) return;
     var d = t.dataset;
-    if(d.t){ cur = d.t; paint(); return; }
+    if(d.t){ cur = d.t; if(window.M16) M16.reset(); paint(); return; }
     if(d.agingf){ setS('agingF', d.agingf); return; }
     if(d.cashp){ setS('cashP', d.cashp); return; }
     if(d.casha){ setS('cashAll', d.casha === 'all'); return; }
@@ -32162,6 +32322,329 @@ html:not(#_#_#_) body:not(#_#_#_) .m15-stmt #search-empty.m15-empty{ margin:0 !i
     setTimeout(function(){ place(false); queueFit(); }, 400);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); }); else setTimeout(boot, 0);
+})();
+
+</script>
+<script id="m16-js">/* ══════════════════════════════════════════════════════════════════════
+   M16 · MONTHLY SUMMARY (Reports & tools → Summary)
+   Everything bought (or sold) in a period, grouped Wood / Pallets / Others,
+   each size on its own line: quantity, rate, amount, and how much of it was
+   paid in cash, paid by cheque / bank, or is still unpaid.
+   Tap any line to see every bill behind it; tap a bill to open it.
+   Reads the app's data only — nothing is written.
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var M8 = window.M8; if(!M8) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var icon = M8.icon, esc = M8.esc;
+  var AED = '<svg class="aed-sym" viewBox="0 0 1000 870" aria-hidden="true" style="height:.8em;width:auto;vertical-align:-.04em;fill:currentColor"><use href="#aed-glyph"/></svg>';
+  function money(n){ n = +n || 0; return n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function qtyF(n){ n = +n || 0; return (Math.round(n * 100) / 100).toLocaleString('en-US', { maximumFractionDigits:2 }); }
+  function short(n){ n = +n || 0; var a = Math.abs(n); return a >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : a >= 1e4 ? (n / 1e3).toFixed(1) + 'K' : qtyF(n); }
+  function ymd(d){ return M8.ymd(d); }
+  function dShort(s){ if(!s) return ''; var d = new Date(s + 'T00:00:00'); return isNaN(d) ? s : d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }); }
+  function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem('am_m16_' + k) || 'null'); localStorage.setItem('am_m16_' + k, JSON.stringify(v)); }catch(e){ return null; } }
+  function sales(){ return DB.mode === 'sales'; }
+  function isCash(m){ return /CASH/i.test(m || ''); }
+  var MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  /* ── groups ────────────────────────────────────────────────────────── */
+  var GROUPS = [
+    { k:'wood',    name:'Wood',    ic:'items' },
+    { k:'pallets', name:'Pallets', ic:'grid' },
+    { k:'others',  name:'Others',  ic:'more' }
+  ];
+  var SIZE = /\d+(\.\d+)?\s*[x×*]\s*\d+/i;
+  function autoGroup(name){
+    var n = String(name || '').toUpperCase();
+    if(SIZE.test(n)) return 'pallets';
+    if(/WOOD|TIMBER|LUMBER|PLANK/.test(n)) return 'wood';
+    if(/PALLET/.test(n)) return 'pallets';
+    return 'others';
+  }
+  function overrides(){ return store('groups') || {}; }
+  function groupOf(name){ var o = overrides()[String(name || '').trim().toUpperCase()]; return o || autoGroup(name); }
+  function setGroup(name, g){ var o = overrides(), k = String(name || '').trim().toUpperCase(); if(!g || g === autoGroup(name)) delete o[k]; else o[k] = g; store('groups', o); }
+
+  /* ── period ────────────────────────────────────────────────────────── */
+  var S = store('state') || {};
+  if(!S.mode) S.mode = 'month';
+  if(!S.ym){ var n0 = new Date(); S.ym = n0.getFullYear() + '-' + String(n0.getMonth() + 1).padStart(2, '0'); }
+  function save(){ store('state', S); }
+  function range(){
+    if(S.mode === 'custom' && S.from && S.to) return [S.from, S.to];
+    if(S.mode === 'year'){ var y = S.ym.slice(0, 4); return [y + '-01-01', y + '-12-31']; }
+    if(S.mode === 'all') return ['0000-01-01', S.to || ymd(new Date())];
+    var p = S.ym.split('-'), y2 = +p[0], m = +p[1];
+    return [S.ym + '-01', ymd(new Date(y2, m, 0))];
+  }
+  function label(){
+    var r = range();
+    if(S.mode === 'month'){ var p = S.ym.split('-'); return MON[+p[1] - 1] + ' ' + p[0]; }
+    if(S.mode === 'year') return 'Year ' + S.ym.slice(0, 4);
+    if(S.mode === 'all') return 'All time until ' + dShort(r[1]);
+    return dShort(r[0]) + ' – ' + dShort(r[1]);
+  }
+  function prevRange(){
+    if(S.mode === 'month'){ var p = S.ym.split('-'), d = new Date(+p[0], +p[1] - 2, 1); return [ymd(d), ymd(new Date(d.getFullYear(), d.getMonth() + 1, 0))]; }
+    if(S.mode === 'year'){ var y = +S.ym.slice(0, 4) - 1; return [y + '-01-01', y + '-12-31']; }
+    return null;
+  }
+  function shiftMonth(n){
+    var p = S.ym.split('-');
+    if(S.mode === 'year'){ S.ym = (+p[0] + n) + '-' + p[1]; return; }
+    var d = new Date(+p[0], +p[1] - 1 + n, 1); S.ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+
+  /* ── the numbers ───────────────────────────────────────────────────── */
+  /* one line per item on every bill in the range, with its share of cash / bank / unpaid */
+  function lines(a, b){
+    if(typeof clearLedgerCache === 'function') clearLedgerCache();
+    var out = [], maps = {};
+    (AD().records || []).forEach(function(r){
+      if(!r.date || r.date < a || r.date > b) return;
+      var m = maps[r.party] || (maps[r.party] = partyAllocationMap(r.party));
+      var row = m.rows.find(function(x){ return x.rec === r || x.rec.id === r.id; }) || { invoiced:+r.amount || 0, paid:0, outstanding:+r.amount || 0, status:'unpaid', payments:[] };
+      var cash = 0; (row.payments || []).forEach(function(p){ if(isCash(p.pay && p.pay.method)) cash += +p.amount || 0; });
+      var bill = +r.amount || 0, paid = row.paid || 0, bank = Math.max(0, paid - cash), unpaid = row.outstanding || 0;
+      var items = (r.items && r.items.length) ? r.items : [{ desc:r.desc, qty:r.qty, unit:r.unit, price:r.price, amount:r.amount }];
+      var sub = items.reduce(function(t, it){ return t + (+it.amount || (+it.qty || 0) * (+it.price || 0)); }, 0) || 1;
+      items.forEach(function(it, i){
+        var name = String(it.desc || '').trim(); if(!name) return;
+        var amt = +it.amount || (+it.qty || 0) * (+it.price || 0), share = amt / sub;
+        var kg = (+it.kgPerBag || 0) > 0 ? (+it.qty || 0) * (+it.kgPerBag) : (+it.totalKg || 0);
+        out.push({ rec:r, i:i, name:name, key:name.toUpperCase() + '|' + (it.unit || ''), unit:it.unit || '', qty:+it.qty || 0, price:+it.price || 0, amount:amt, kg:kg,
+          total:bill * share, cash:cash * share, bank:bank * share, unpaid:unpaid * share, status:row.status, cashBill:cash > 0.005 && Math.abs(cash - paid) < 0.01 && unpaid < 0.005,
+          group:groupOf(name) });
+      });
+    });
+    return out;
+  }
+  function sum(list, k){ return list.reduce(function(t, x){ return t + (+x[k] || 0); }, 0); }
+  function byItem(list){
+    var m = {};
+    list.forEach(function(x){
+      var o = m[x.key] || (m[x.key] = { key:x.key, name:x.name, unit:x.unit, group:x.group, qty:0, amount:0, total:0, cash:0, bank:0, unpaid:0, kg:0, bills:{}, min:Infinity, max:0, last:null });
+      o.qty += x.qty; o.amount += x.amount; o.total += x.total; o.cash += x.cash; o.bank += x.bank; o.unpaid += x.unpaid; o.kg += x.kg; o.bills[x.rec.id] = 1;
+      if(x.price > 0){ o.min = Math.min(o.min, x.price); o.max = Math.max(o.max, x.price); if(!o.last || x.rec.date >= o.last.date) o.last = { date:x.rec.date, price:x.price }; }
+    });
+    return Object.keys(m).map(function(k){ var o = m[k]; o.n = Object.keys(o.bills).length; return o; });
+  }
+  function unitTotals(items){
+    var u = {}; items.forEach(function(o){ var k = (o.unit || 'units').toUpperCase(); u[k] = (u[k] || 0) + o.qty; });
+    return Object.keys(u).sort(function(a, b){ return u[b] - u[a]; }).map(function(k){ return { unit:k, qty:u[k] }; });
+  }
+
+  /* ── views ─────────────────────────────────────────────────────────── */
+  var view = null;     /* null = summary · { kind:'item'|'group', key, name } = bill list */
+  function html(){ return view ? drillHtml() : sumHtml(); }
+
+  function periodBar(){
+    var modes = [['month', 'Month'], ['year', 'Year'], ['all', 'All time'], ['custom', 'Custom']], r = range();
+    return '<div class="m16-period">' +
+      '<div class="m16-seg" role="tablist">' + modes.map(function(m){ return '<button type="button" data-s-mode="' + m[0] + '" class="' + (S.mode === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>' +
+      (S.mode === 'month' || S.mode === 'year' ?
+        '<div class="m16-step"><button type="button" class="m16-ib" data-s-step="-1" aria-label="Previous">' + icon('left') + '</button><b>' + esc(label()) + '</b><button type="button" class="m16-ib" data-s-step="1" aria-label="Next">' + icon('right') + '</button>' +
+'</div>' :
+       S.mode === 'all' ?
+        '<div class="m16-dates"><label>Until<input type="date" id="m16-until" value="' + r[1] + '"></label></div>' :
+        '<div class="m16-dates"><label>From<input type="date" id="m16-from" value="' + (S.from || r[0]) + '"></label><label>To<input type="date" id="m16-to" value="' + (S.to || r[1]) + '"></label></div>') +
+    '</div>';
+  }
+  function split(o, big){
+    var t = (o.cash + o.bank + o.unpaid) || 1;
+    return '<div class="m16-split' + (big ? ' big' : '') + '"><div class="m16-sbar">' +
+      ['cash', 'bank', 'unpaid'].map(function(k){ return o[k] > 0.005 ? '<i class="' + k + '" style="width:' + (o[k] / t * 100).toFixed(2) + '%"></i>' : ''; }).join('') + '</div>' +
+      (big ? '<div class="m16-sleg"><span><i class="cash"></i>Cash ' + money(o.cash) + '</span><span><i class="bank"></i>Cheque / bank ' + money(o.bank) + '</span><span><i class="unpaid"></i>Unpaid ' + money(o.unpaid) + '</span></div>' : '') +
+    '</div>';
+  }
+  function sumHtml(){
+    var r = range(), L = lines(r[0], r[1]), s = sales(), items = byItem(L);
+    var pr = prevRange(), P = pr ? byItem(lines(pr[0], pr[1])) : null, pmap = {};
+    if(P) P.forEach(function(o){ pmap[o.key] = o; });
+    var tot = { total:sum(L, 'total'), cash:sum(L, 'cash'), bank:sum(L, 'bank'), unpaid:sum(L, 'unpaid') };
+    var bills = {}, st = { paid:0, partial:0, unpaid:0 }, cashBills = 0;
+    L.forEach(function(x){ if(!bills[x.rec.id]){ bills[x.rec.id] = 1; st[x.status] = (st[x.status] || 0) + 1; if(x.cashBill) cashBills++; } });
+    var nb = Object.keys(bills).length, word = s ? 'invoices' : 'bills', verb = s ? 'sold' : 'bought';
+    /* payments made in the period, by method (money that actually moved) */
+    var pays = (AD().payments || []).filter(function(p){ return p.date >= r[0] && p.date <= r[1]; });
+    var pm = {}; pays.forEach(function(p){ var k = isCash(p.method) ? 'Cash' : (p.method || 'Other'); k = k.charAt(0).toUpperCase() + k.slice(1).toLowerCase(); pm[k] = (pm[k] || 0) + (+p.amount || 0); });
+    var payTot = sum(pays, 'amount');
+
+    var h = '<div class="m16">' +
+      '<div class="m13-intro"><b>' + (s ? 'Sales summary' : 'Purchase summary') + ' · ' + esc(label()) + '</b><span>Everything ' + verb + ', size by size, and how it was paid. Tap any line to see its ' + word + '. Switch Purchase / Sales at the top.</span></div>' +
+      periodBar() +
+      '<div class="m16-hero">' +
+        '<div class="m16-total"><span>Total ' + verb + '</span><b>' + AED + ' ' + money(tot.total) + '</b><small>' + nb + ' ' + word + ' · ' + items.length + ' items</small></div>' +
+        '<div class="m16-kp cash"><span>Paid in cash</span><b>' + money(tot.cash) + '</b><small>' + cashBills + ' cash ' + word + '</small></div>' +
+        '<div class="m16-kp bank"><span>Paid by cheque / bank</span><b>' + money(tot.bank) + '</b><small>' + st.paid + ' fully paid · ' + st.partial + ' part paid</small></div>' +
+        '<div class="m16-kp unpaid"><span>Still unpaid (credit)</span><b>' + money(tot.unpaid) + '</b><small>' + (st.unpaid + st.partial) + ' ' + word + ' with money due</small></div>' +
+        '<div class="m16-hsplit">' + split(tot, true) + '</div>' +
+      '</div>';
+
+    if(!L.length){ h += '<div class="m13-empty">No ' + word + ' in ' + esc(label()) + '.</div>'; }
+    GROUPS.forEach(function(g){
+      var gi = items.filter(function(o){ return o.group === g.k; }).sort(function(a, b){ return b.amount - a.amount; });
+      if(!gi.length) return;
+      var gt = { total:sum(gi, 'total'), cash:sum(gi, 'cash'), bank:sum(gi, 'bank'), unpaid:sum(gi, 'unpaid'), amount:sum(gi, 'amount'), kg:sum(gi, 'kg') };
+      var gb = {}; L.forEach(function(x){ if(x.group === g.k) gb[x.rec.id] = 1; });
+      var ut = unitTotals(gi), pct = tot.total ? Math.round(gt.total / tot.total * 100) : 0;
+      var pg = P ? P.filter(function(o){ return o.group === g.k; }) : null, pq = pg ? unitTotals(pg) : null;
+      h += '<section class="m16-group g-' + g.k + '">' +
+        '<header class="m16-gh" data-s-drill="group" data-s-key="' + g.k + '" role="button" tabindex="0">' +
+          '<span class="m16-gic">' + icon(g.ic) + '</span>' +
+          '<div class="m16-gt"><b>' + g.name + '</b><small>' + gi.length + ' item' + (gi.length === 1 ? '' : 's') + ' · ' + Object.keys(gb).length + ' ' + word + ' · ' + pct + '% of the total</small></div>' +
+          '<div class="m16-gq">' + ut.map(function(u){
+              var prev = pq && pq.find(function(z){ return z.unit === u.unit; }), ch = prev && prev.qty ? Math.round((u.qty - prev.qty) / prev.qty * 100) : null;
+              return '<span><b>' + qtyF(u.qty) + '</b> ' + esc(u.unit) + (ch != null ? '<em class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '▲' : '▼') + Math.abs(ch) + '%</em>' : '') + '</span>'; }).join('') +
+            (gt.kg > 0 ? '<span><b>' + qtyF(gt.kg) + '</b> KG</span>' : '') + '</div>' +
+          '<div class="m16-ga"><b>' + AED + ' ' + money(gt.total) + '</b>' + icon('right') + '</div>' +
+        '</header>' + split(gt, true) +
+        '<div class="m16-table"><div class="m16-tr m16-th"><span>Item / size</span><span class="r">Quantity</span><span class="r">Avg rate</span><span class="r">Amount</span><span class="r">Cash</span><span class="r">Cheque / bank</span><span class="r">Unpaid</span><span class="r">' + (s ? 'Invoices' : 'Bills') + '</span></div>' +
+          gi.map(function(o){
+            var pv = pmap[o.key], ch = pv && pv.qty ? Math.round((o.qty - pv.qty) / pv.qty * 100) : null, avg = o.qty ? o.amount / o.qty : 0;
+            return '<div class="m16-tr" data-s-drill="item" data-s-key="' + esc(o.key) + '" role="button" tabindex="0">' +
+              '<span class="m16-nm"><b>' + esc(o.name) + '</b><small>' + (o.min < Infinity && o.max - o.min > 0.004 ? 'rate ' + money(o.min) + '–' + money(o.max) + ' · ' : '') + (o.last ? 'last ' + money(o.last.price) + ' on ' + dShort(o.last.date) : '') + '</small></span>' +
+              '<span class="r m16-q"><b>' + qtyF(o.qty) + '</b> ' + esc(o.unit) + (o.kg > 0 ? '<small>' + qtyF(o.kg) + ' KG</small>' : '') + (ch != null ? '<em class="' + (ch >= 0 ? 'up' : 'down') + '">' + (ch >= 0 ? '▲' : '▼') + Math.abs(ch) + '% vs before</em>' : '') + '</span>' +
+              '<span class="r">' + money(avg) + '</span>' +
+              '<span class="r b">' + money(o.total) + '</span>' +
+              '<span class="r c-cash">' + (o.cash > 0.005 ? money(o.cash) : '—') + '</span>' +
+              '<span class="r c-bank">' + (o.bank > 0.005 ? money(o.bank) : '—') + '</span>' +
+              '<span class="r c-unpaid">' + (o.unpaid > 0.005 ? money(o.unpaid) : '—') + '</span>' +
+              '<span class="r">' + o.n + '</span></div>';
+          }).join('') +
+          '<div class="m16-tr m16-tf"><span>Total ' + g.name.toLowerCase() + '</span><span class="r">' + ut.map(function(u){ return qtyF(u.qty) + ' ' + esc(u.unit); }).join(' · ') + '</span><span class="r"></span><span class="r b">' + money(gt.total) + '</span>' +
+            '<span class="r c-cash">' + money(gt.cash) + '</span><span class="r c-bank">' + money(gt.bank) + '</span><span class="r c-unpaid">' + money(gt.unpaid) + '</span><span class="r">' + Object.keys(gb).length + '</span></div>' +
+        '</div></section>';
+    });
+
+    /* by party */
+    if(L.length){
+      var bp = {}; L.forEach(function(x){ var o = bp[x.rec.party] || (bp[x.rec.party] = { p:x.rec.party, total:0, cash:0, bank:0, unpaid:0, g:{}, bills:{} }); o.total += x.total; o.cash += x.cash; o.bank += x.bank; o.unpaid += x.unpaid; o.bills[x.rec.id] = 1; var gk = x.group + '|' + (x.unit || '').toUpperCase(); o.g[gk] = (o.g[gk] || 0) + x.qty; });
+      var bl = Object.keys(bp).map(function(k){ return bp[k]; }).sort(function(a, b){ return b.total - a.total; });
+      h += '<section class="m16-group g-party"><header class="m16-gh static"><span class="m16-gic">' + icon('parties') + '</span><div class="m16-gt"><b>By ' + (s ? 'customer' : 'vendor') + '</b><small>Who ' + (s ? 'bought from you' : 'you bought from') + ' in ' + esc(label()) + '</small></div></header>' +
+        '<div class="m16-table m16-pt"><div class="m16-tr m16-th"><span>' + (s ? 'Customer' : 'Vendor') + '</span><span>What</span><span class="r">Amount</span><span class="r">Cash</span><span class="r">Cheque / bank</span><span class="r">Unpaid</span></div>' +
+        bl.map(function(o){
+          var what = Object.keys(o.g).map(function(k){ var p = k.split('|'), gn = (GROUPS.find(function(g){ return g.k === p[0]; }) || {}).name; return qtyF(o.g[k]) + ' ' + (p[1] || '') + ' ' + gn.toLowerCase(); }).join(' · ');
+          return '<div class="m16-tr" data-s-party="' + encodeURIComponent(o.p) + '" role="button" tabindex="0"><span class="m16-nm"><b>' + esc(o.p) + '</b><small>' + Object.keys(o.bills).length + ' ' + word + '</small></span><span class="m16-what">' + esc(what) + '</span>' +
+            '<span class="r b">' + money(o.total) + '</span><span class="r c-cash">' + (o.cash > 0.005 ? money(o.cash) : '—') + '</span><span class="r c-bank">' + (o.bank > 0.005 ? money(o.bank) : '—') + '</span><span class="r c-unpaid">' + (o.unpaid > 0.005 ? money(o.unpaid) : '—') + '</span></div>';
+        }).join('') + '</div></section>';
+    }
+    /* money that moved in the period */
+    h += '<section class="m16-group g-pay"><header class="m16-gh static"><span class="m16-gic">' + icon('pay') + '</span><div class="m16-gt"><b>' + (s ? 'Money received' : 'Money paid out') + ' in ' + esc(label()) + '</b><small>All ' + (s ? 'receipts' : 'payments') + ' dated in this period, for any bill (also older ones)</small></div><div class="m16-ga"><b>' + AED + ' ' + money(payTot) + '</b></div></header>' +
+      '<div class="m16-chips">' + (Object.keys(pm).length ? Object.keys(pm).sort(function(a, b){ return pm[b] - pm[a]; }).map(function(k){ return '<span class="m16-pchip' + (k === 'Cash' ? ' cash' : '') + '"><small>' + esc(k) + '</small><b>' + money(pm[k]) + '</b></span>'; }).join('') : '<span class="m16-none">No ' + (s ? 'receipts' : 'payments') + ' in this period.</span>') + '</div></section>';
+
+    h += '<div class="m16-foot"><button type="button" class="m13-btn" data-s-print="1">' + icon('print') + '<span>Print for audit</span></button><button type="button" class="m13-btn" data-s-csv="1">' + icon('excel') + '<span>Download for Excel</span></button>' +
+      '<button type="button" class="m13-btn" data-s-groups="1">' + icon('settings') + '<span>Wood / Pallets / Others</span></button></div>' +
+      '<p class="m13-note">Paid / unpaid is as of today. Items are put in a group by their name (sizes like 100 X 120 go to Pallets, names with WOOD go to Wood). Change it with "Wood / Pallets / Others".</p></div>';
+    return h;
+  }
+
+  /* every bill for one item, a whole group, or one party */
+  function drillHtml(){
+    var r = range(), L = lines(r[0], r[1]), s = sales(), word = s ? 'invoices' : 'bills';
+    var pick = view.kind === 'item' ? L.filter(function(x){ return x.key === view.key; })
+             : view.kind === 'group' ? L.filter(function(x){ return x.group === view.key; })
+             : L.filter(function(x){ return x.rec.party === view.key; });
+    var title = view.kind === 'group' ? (GROUPS.find(function(g){ return g.k === view.key; }) || {}).name : view.kind === 'item' ? view.key.split('|')[0] : view.key;
+    var items = byItem(pick), ut = unitTotals(items), t = { total:sum(pick, 'total'), cash:sum(pick, 'cash'), bank:sum(pick, 'bank'), unpaid:sum(pick, 'unpaid'), amount:sum(pick, 'amount'), qty:sum(pick, 'qty'), kg:sum(pick, 'kg') };
+    var showItem = view.kind !== 'item';
+    var rows = pick.slice().sort(function(a, b){ return (b.rec.date || '').localeCompare(a.rec.date || '') || (b.rec.id - a.rec.id); });
+    var ST = { paid:'Paid', partial:'Part paid', unpaid:'Unpaid' };
+    return '<div class="m16">' +
+      '<button type="button" class="m16-back" data-s-back="1">' + icon('left') + '<span>Summary</span></button>' +
+      '<div class="m13-intro"><b>' + esc(title) + ' · ' + esc(label()) + '</b><span>Every ' + (s ? 'invoice' : 'bill') + ' line' + (showItem ? '' : ' for this item') + ' in the period. Tap one to open it.</span></div>' +
+      periodBar() +
+      '<div class="m16-hero m16-hero5">' +
+        '<div class="m16-total"><span>' + (s ? 'Sold' : 'Bought') + '</span><b>' + ut.map(function(u){ return qtyF(u.qty) + ' <small>' + esc(u.unit) + '</small>'; }).join(' · ') + '</b><small>' + rows.length + ' line' + (rows.length === 1 ? '' : 's') + (t.kg > 0 ? ' · ' + qtyF(t.kg) + ' KG' : '') + (view.kind === 'item' && t.qty ? ' · avg rate ' + money(t.amount / t.qty) : '') + '</small></div>' +
+        '<div class="m16-kp"><span>Amount</span><b>' + money(t.total) + '</b></div>' +
+        '<div class="m16-kp cash"><span>Paid in cash</span><b>' + money(t.cash) + '</b></div>' +
+        '<div class="m16-kp bank"><span>Cheque / bank</span><b>' + money(t.bank) + '</b></div>' +
+        '<div class="m16-kp unpaid"><span>Still unpaid</span><b>' + money(t.unpaid) + '</b></div>' +
+      '</div>' +
+      (rows.length ? '<div class="m16-table m16-bills"><div class="m16-tr m16-th"><span>Date</span><span>' + (s ? 'Customer' : 'Vendor') + '</span><span>' + (s ? 'Invoice' : 'Bill') + ' · PO</span>' + (showItem ? '<span>Item</span>' : '') + '<span class="r">Qty</span><span class="r">Rate</span><span class="r">Amount</span><span>Paid</span></div>' +
+        rows.map(function(x){
+          var how = x.status === 'paid' ? (x.cashBill ? 'Cash' : (x.cash > 0.005 ? 'Cash + bank' : 'Cheque / bank')) : ST[x.status];
+          return '<div class="m16-tr" data-s-open="' + x.rec.id + '" role="button" tabindex="0"><span>' + dShort(x.rec.date) + '</span><span class="m16-ell"><b>' + esc(x.rec.party || '') + '</b></span><span class="m16-ell">' + esc(x.rec.invNo || '—') + (x.rec.vehicle ? ' · ' + esc(x.rec.vehicle) : '') + '</span>' +
+            (showItem ? '<span class="m16-ell">' + esc(x.name) + '</span>' : '') +
+            '<span class="r"><b>' + qtyF(x.qty) + '</b> ' + esc(x.unit) + '</span><span class="r">' + money(x.price) + '</span><span class="r b">' + money(x.total) + '</span>' +
+            '<span class="m16-st st-' + x.status + (x.cashBill ? ' st-cash' : '') + '">' + how + (x.unpaid > 0.005 && x.status === 'partial' ? '<small>' + money(x.unpaid) + ' due</small>' : '') + '</span></div>';
+        }).join('') + '</div>' : '<div class="m13-empty">Nothing in this period.</div>') +
+      '<div class="m16-foot"><button type="button" class="m13-btn" data-s-print="1">' + icon('print') + '<span>Print</span></button><button type="button" class="m13-btn" data-s-csv="1">' + icon('excel') + '<span>Download for Excel</span></button></div>' +
+    '</div>';
+  }
+
+  /* groups editor (small sheet inside the page) */
+  function groupsHtml(){
+    var names = {}; (AD().records || []).forEach(function(r){ ((r.items && r.items.length) ? r.items : [{ desc:r.desc }]).forEach(function(it){ var n = String(it.desc || '').trim(); if(n) names[n.toUpperCase()] = n; }); });
+    var list = Object.keys(names).sort();
+    return '<div class="m16-gedit" id="m16-gedit"><div class="m16-ge-h"><b>Which group is each item in?</b><button type="button" class="m16-ib" data-s-gclose="1" aria-label="Close">' + icon('x') + '</button></div>' +
+      '<p>Pick a group for any item. The summary updates at once. Saved on this device.</p>' +
+      list.map(function(k){ var g = groupOf(names[k]); return '<div class="m16-ge-r"><span>' + esc(names[k]) + '</span><div class="m16-seg sm">' + GROUPS.map(function(G){ return '<button type="button" data-s-setg="' + G.k + '" data-s-name="' + esc(names[k]) + '" class="' + (g === G.k ? 'on' : '') + '">' + G.name + '</button>'; }).join('') + '</div></div>'; }).join('') + '</div>';
+  }
+
+  /* ── print & CSV ───────────────────────────────────────────────────── */
+  function csv(){
+    var r = range(), L = lines(r[0], r[1]), s = sales();
+    var c = function(v){ v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var pick = !view ? L : view.kind === 'item' ? L.filter(function(x){ return x.key === view.key; }) : view.kind === 'group' ? L.filter(function(x){ return x.group === view.key; }) : L.filter(function(x){ return x.rec.party === view.key; });
+    var out = [['Group', 'Item', 'Date', s ? 'Customer' : 'Vendor', s ? 'Invoice no' : 'Bill no', 'PO', 'Qty', 'Unit', 'KG', 'Rate', 'Amount', 'Cash', 'Cheque/bank', 'Unpaid', 'Status'].join(',')];
+    pick.slice().sort(function(a, b){ return a.group.localeCompare(b.group) || a.name.localeCompare(b.name) || (a.rec.date || '').localeCompare(b.rec.date || ''); }).forEach(function(x){
+      out.push([(GROUPS.find(function(g){ return g.k === x.group; }) || {}).name, x.name, x.rec.date, x.rec.party, x.rec.invNo, x.rec.vehicle, x.qty, x.unit, x.kg ? x.kg.toFixed(2) : '', x.price.toFixed(2), x.total.toFixed(2), x.cash.toFixed(2), x.bank.toFixed(2), x.unpaid.toFixed(2), x.status].map(c).join(','));
+    });
+    var b = new Blob(['﻿' + out.join('\n')], { type:'text/csv' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = 'am-nexus-' + (s ? 'sales' : 'purchase') + '-summary-' + r[0] + '-to-' + r[1] + '.csv'; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  }
+  function print(){
+    var body = $('m13-body'); if(!body) return;
+    var clone = body.cloneNode(true);
+    [].forEach.call(clone.querySelectorAll('.m16-period, .m16-foot, .m16-back, .m13-note, .m16-gedit, .m16-ga svg'), function(e){ e.remove(); });
+    var css = document.getElementById('m13-style') ? document.getElementById('m13-style').textContent : '';
+    var s = sales(), r = range();
+    var doc = '<!doctype html><html><head><meta charset="utf-8"><title>' + (s ? 'Sales' : 'Purchase') + ' summary ' + esc(label()) + '</title><style>' + css +
+      '@page{size:A4 portrait;margin:10mm}body{margin:0;font:12px/1.4 Inter,Arial,sans-serif;color:#111;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+      '.ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:12px}.ph b{font-size:18px}.ph small{color:#555}' +
+      '.m16-tr{break-inside:avoid}.m16-group{break-inside:auto}</style></head><body class="m16-print">' +
+      '<div class="ph"><div><b>Al Madhi Carpentry</b><br><small>' + (s ? 'Sales' : 'Purchase') + ' summary · ' + esc(label()) + ' (' + dShort(r[0]) + ' – ' + dShort(r[1]) + ')</small></div><small>Printed ' + dShort(ymd(new Date())) + '</small></div>' +
+      clone.innerHTML + '</body></html>';
+    var f = document.createElement('iframe'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
+    var d = f.contentWindow.document; d.open(); d.write(doc); d.close();
+    setTimeout(function(){ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){} setTimeout(function(){ f.remove(); }, 2000); }, 400);
+  }
+
+  /* ── events (on the Reports page body) ─────────────────────────────── */
+  function rerender(){ if(window.M13REPAINT) window.M13REPAINT(); }
+  function onClick(e){
+    var t = e.target.closest('[data-s-mode],[data-s-step],[data-s-drill],[data-s-back],[data-s-open],[data-s-party],[data-s-print],[data-s-csv],[data-s-groups],[data-s-gclose],[data-s-setg]'); if(!t || !t.closest('.m16, .m16-gedit')) return;
+    var d = t.dataset;
+    if(d.sMode){ S.mode = d.sMode; if(d.sMode === 'custom' && !S.from){ var rr = range(); S.from = rr[0]; S.to = rr[1]; } save(); rerender(); return; }
+    if(d.sStep){ shiftMonth(+d.sStep); save(); rerender(); return; }
+    if(d.sDrill){ enter({ kind:d.sDrill, key:d.sKey }); return; }
+    if(d.sParty){ enter({ kind:'party', key:decodeURIComponent(d.sParty) }); return; }
+    if(d.sBack){ view = null; rerender(); return; }
+    if(d.sOpen){ if(typeof viewRecord === 'function') viewRecord(+d.sOpen); return; }
+    if(d.sPrint){ print(); return; }
+    if(d.sCsv){ csv(); return; }
+    if(d.sGroups){ var b = $('m13-body'), x = $('m16-gedit'); if(x){ x.remove(); return; } if(b){ b.insertAdjacentHTML('afterbegin', groupsHtml()); } return; }
+    if(d.sGclose){ var g = $('m16-gedit'); if(g) g.remove(); rerender(); return; }
+    if(d.sSetg){ setGroup(d.sName, d.sSetg); [].forEach.call(t.parentNode.children, function(c){ c.classList.toggle('on', c === t); }); return; }
+  }
+  /* a bill list gets its own Back step (phone back / Esc returns to the summary) */
+  function enter(v){ var was = !!view; view = v; if(!was){ try{ history.pushState({ amc:((history.state && history.state.amc) || 0) + 1, k:'m16' }, ''); }catch(e){} } rerender(); top(); }
+  function top(){ var sc = $('app-scroll'), pg = $('page-reports'); if(sc && pg) sc.scrollTop = Math.max(0, pg.offsetTop - 10); }
+  function onChange(e){
+    var t = e.target; if(!t.closest || !t.closest('.m16')) return;
+    if(t.id === 'm16-ym' && t.value){ S.ym = t.value; save(); rerender(); }
+    else if(t.id === 'm16-until' && t.value){ S.to = t.value; save(); rerender(); }
+    else if((t.id === 'm16-from' || t.id === 'm16-to') && t.value){ S[t.id === 'm16-from' ? 'from' : 'to'] = t.value; save(); rerender(); }
+  }
+  function onKey(e){ if((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.m16 [role="button"]')){ e.preventDefault(); e.target.click(); } }
+  document.addEventListener('click', onClick);
+  document.addEventListener('change', onChange);
+  document.addEventListener('keydown', onKey);
+
+  window.M16 = { html:html, reset:function(){ view = null; }, inDrill:function(){ return !!view; }, back:function(){ if(view){ view = null; rerender(); return true; } return false; }, _lines:lines, _groupOf:groupOf };
 })();
 
 </script>
