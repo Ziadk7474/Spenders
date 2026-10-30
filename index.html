@@ -26562,8 +26562,9 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     return navigator.serviceWorker.getRegistration(PUSH_SCOPE).then(function(reg){
       if(!reg) return null; return reg.pushManager.getSubscription();
     }).then(function(sub){
-      PS.state = (sub && id) ? 'on' : (perm() === 'denied' ? 'denied' : 'off');
-      return fbReadRaw('almadhi/push/lastRun').then(function(v){ PS.lastRun = v; return PS; });
+      PS.state = (sub && perm() === 'granted') ? 'on' : (perm() === 'denied' ? 'denied' : 'off');
+      if(sub){ PS.id = hash(sub.toJSON().endpoint); if(PS.id !== id) M8.store.set('m8.pushId', PS.id); }
+      return Promise.all([fbReadRaw('almadhi/push/lastRun'), fbReadRaw('almadhi/push/lastBy')]).then(function(v){ PS.lastRun = v[0]; PS.lastBy = v[1]; return PS; });
     }).catch(function(){ PS.state = 'off'; return PS; });
   }
   function enablePush(){
@@ -26576,7 +26577,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
       return reg.pushManager.getSubscription().then(function(s){ return s || reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64(PUSH_KEY) }); });
     }).then(function(sub){
       var j = sub.toJSON(), id = hash(j.endpoint);
-      M8.store.set('m8.pushId', id);
+      M8.store.set('m8.pushId', id); M8.store.set('m8.pushWant', true);
       return fbWriteRaw('almadhi/push/subs/' + id, { sub:j, cfg:pushCfg(), app: window.M8_VIEWER ? 'viewer' : 'erp', device:(navigator.userAgent||'').slice(0,140), at:Date.now() });
     }).then(function(){
       PS.state = 'on'; paintCenter(); toastMsg('Done — reminders will reach this phone even when the app is closed');
@@ -26593,14 +26594,34 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     var id = M8.store.get('m8.pushId', null);
     navigator.serviceWorker.getRegistration(PUSH_SCOPE).then(function(reg){ return reg && reg.pushManager.getSubscription(); }).then(function(s){ return s && s.unsubscribe(); }).catch(function(){})
       .then(function(){ if(id) return fbWriteRaw('almadhi/push/subs/' + id, null).catch(function(){}); })
-      .then(function(){ M8.store.set('m8.pushId', null); PS.state = 'off'; paintCenter(); toastMsg('Turned off for this phone'); });
+      .then(function(){ M8.store.set('m8.pushId', null); M8.store.set('m8.pushWant', false); PS.state = 'off'; paintCenter(); toastMsg('Turned off for this phone'); });
   }
+  /* keep this phone signed up by itself: if notifications are allowed and you did not turn them
+     off, make sure the phone has a push address and the reminder service knows it — no tapping needed */
+  var healAt = 0;
+  function healPush(force){
+    if(!pushSupported() || perm() !== 'granted' || M8.store.get('m8.pushWant', null) === false) return;
+    if(!force && Date.now() - healAt < 10 * 60e3) return; healAt = Date.now();
+    pushReg().then(function(reg){
+      return reg.pushManager.getSubscription().then(function(s){ return s || reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64(PUSH_KEY) }); });
+    }).then(function(sub){
+      var j = sub.toJSON(), id = hash(j.endpoint);
+      M8.store.set('m8.pushId', id);
+      return fbReadRaw('almadhi/push/subs/' + id).then(function(rec){
+        if(rec && rec.sub && rec.sub.endpoint === j.endpoint && !rec.off) return fbWriteRaw('almadhi/push/subs/' + id + '/cfg', pushCfg());
+        return fbWriteRaw('almadhi/push/subs/' + id, { sub:j, cfg:pushCfg(), app: window.M8_VIEWER ? 'viewer' : 'erp', device:(navigator.userAgent||'').slice(0,140), at:Date.now(), healed:true });
+      });
+    }).then(function(){ return pushStatus(); }).then(function(){ if(typeof paintCenter === 'function' && $('m8-rem-b')) paintCenter(); }).catch(function(){ healAt = 0; });
+  }
+  M8.healPush = healPush;
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) healPush(); });
   function syncPushCfg(){
     var id = M8.store.get('m8.pushId', null); if(!id) return;
     fbWriteRaw('almadhi/push/subs/' + id + '/cfg', pushCfg()).catch(function(){});
   }
 
   function show(title, body, tag, q){
+    tag = String(tag || '').replace(/^m8-chq-/, 'almadhi-chq-');
     var opts = { body:body, tag:tag, icon:'icon-192.png', badge:'icon-192.png', requireInteraction:true, renotify:true, vibrate:[400,150,400,150,800], data:{ chq:q ? q.id : null, url:location.href.split('#')[0] + '#cheques' } };
     if(q) opts.actions = [{ action:'open', title:'Open' }];
     if(perm() === 'granted' && secure()){
@@ -26609,7 +26630,8 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
         .catch(function(){ try{ var n = new Notification(title, opts); n.onclick = function(){ window.focus(); openCheques(); n.close(); }; }catch(e){} });
     }
     if(!document.hidden){ ring(); buzz(); }
-    banner(title, body, q);
+    /* the in-app popup is only a fallback for phones where notifications are not allowed */
+    if(perm() !== 'granted' || !secure()) banner(title, body, q);
   }
   if(navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){ if(e.data && e.data.m8 === 'open-cheques') openCheques(); });
   /* in-app banner — always shown, also when phone notifications are off */
@@ -26646,6 +26668,12 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     if(due.length){
       due.forEach(function(x){ fired[x.key] = now; });
       M8.store.set(FIRED, fired);
+      var pid = M8.store.get('m8.pushId', null);
+      if(pid && PS.state === 'on'){
+        var up = {};
+        due.forEach(function(x){ var k = x.key.split('|'), sk = k[0] + '|' + k[1] + '|' + (k[1] === 'o' ? k.slice(2).join('|') : x.t.getTime()); up[sk.replace(/[.#$\[\]\/]/g, '_')] = now; });
+        Object.keys(up).forEach(function(k){ fbWriteRaw('almadhi/push/fired/' + pid + '/' + k, up[k]).catch(function(){}); });
+      }
       /* one message per cheque, newest trigger wins */
       var seen = {}, uniq = due.filter(function(x){ if(seen[x.q.id]) return false; seen[x.q.id] = 1; return true; });
       if(uniq.length > 2){
@@ -26723,16 +26751,16 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
   function ago(ms){ var m = Math.round((Date.now()-ms)/60000); return m < 1 ? 'just now' : m < 60 ? m+' min ago' : m < 1440 ? Math.round(m/60)+' h ago' : Math.round(m/1440)+' days ago'; }
   function channels(){
     var c = cfg(), s = PS.state;
-    var pushTxt = s==='on' ? (PS.lastRun ? 'On · reminder service last checked '+ago(PS.lastRun) : 'On for this phone · waiting for the reminder service to start (see setup notes)') :
+    var pushTxt = s==='on' ? (PS.lastRun ? 'On · arrives even when the app is closed · checked '+ago(PS.lastRun) : 'On for this phone · waiting for the reminder service to start') :
       s==='busy' ? 'Turning on…' :
       s==='nosecure' ? 'Open am. nexus from its home-screen icon (not a downloaded file) to use this.' :
       s==='unsupported' ? 'This browser can’t do this — use the phone calendar below.' :
       s==='denied' ? 'Notifications are blocked. Allow them in the phone’s settings for this app.' :
       'Get a phone notification at each reminder time, with vibration — even when the app is closed.';
-    var stale = s==='on' && PS.lastRun && Date.now()-PS.lastRun > 3*3600e3;
+    var stale = s==='on' && PS.lastRun && Date.now()-PS.lastRun > 20*60e3;
     return '<div class="m8-ch">'+
-      '<div class="m8-ch-r'+(s==='on'?(stale?' warn':' on'):'')+'"><span class="m8-ch-i">'+icon('bell')+'</span><div><b>Phone notifications</b><small>'+(stale?'On, but the reminder service has not checked for '+ago(PS.lastRun).replace(' ago','')+'. Open GitHub → Actions to see why.':pushTxt)+'</small></div>'+
-        (s==='on' ? '<button type="button" class="m8-btn ghost sm" data-a="push-off">Turn off</button>' : (s==='off'||s==='denied') ? '<button type="button" class="m8-btn acc sm" data-a="push-on">Turn on</button>' : '')+'</div>'+
+      '<div class="m8-ch-r'+(s==='on'?(stale?' warn':' on'):'')+'"><span class="m8-ch-i">'+icon('bell')+'</span><div><b>Phone notifications</b><small>'+(stale?'On, but the reminder service last checked '+ago(PS.lastRun)+', so reminders can come late. The on-time service (Cloudflare) is not running yet.':pushTxt)+'</small></div>'+
+        (s==='on' ? '<button type="button" class="m8-btn ghost sm" data-a="test-server">Test</button><button type="button" class="m8-btn ghost sm" data-a="push-off">Turn off</button>' : (s==='off'||s==='denied') ? '<button type="button" class="m8-btn acc sm" data-a="push-on">Turn on</button>' : '')+'</div>'+
       '<div class="m8-ch-r"><span class="m8-ch-i">'+icon('zap')+'</span><div><b>Sound & vibration</b><small>Plays when a reminder comes while the app is open.</small>'+
         '<div class="m8-chips m8-tones">'+Object.keys(TONES).map(function(k){ return '<button type="button" class="m8-chip'+((c.sound||'chime')===k?' on':'')+'" data-a="tone" data-t="'+k+'">'+TONES[k].name+'</button>'; }).join('')+
           '<button type="button" class="m8-chip'+(c.sound==='off'?' on':'')+'" data-a="tone" data-t="off">Silent</button></div>'+
@@ -26777,6 +26805,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     else if(k === 'push-on') enablePush();
     else if(k === 'push-off') disablePush();
     else if(k === 'tone'){ c.sound = a.dataset.t; save(c); paintCenter(); if(c.sound !== 'off') ring(c.sound); }
+    else if(k === 'test-server'){ var pid2 = M8.store.get('m8.pushId', null); if(PS.state !== 'on' || !pid2){ toastMsg('Turn on phone notifications first', 'error'); return; } fbWriteRaw('almadhi/push/test/' + pid2, Date.now()).then(function(){ toastMsg('Sent. Close the app — the test notification arrives within 5 minutes.'); }).catch(function(){ toastMsg('Could not reach the database — check the internet', 'error'); }); }
     else if(k === 'test'){ if(perm()==='default' && secure()) askPermission(); var q = all().filter(function(x){ return !x.cleared; }).sort(function(a,b){ return a.date.localeCompare(b.date); })[0]; if(q){ var m = message(q); show(m.title, m.body, 'm8-test', q); } else show('Cheque reminders are working', 'You will see your next cheque here.', 'm8-test', null); }
     else if(k === 'add-rule'){ c.rules.push({ days:2, time:'10:00' }); save(c); paintCenter(); }
     else if(k === 'del-rule'){ c.rules.splice(+a.dataset.i, 1); save(c); paintCenter(); }
@@ -27103,7 +27132,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     chqFns.forEach(function(n){ M8.after(n, function(){ setTimeout(schedule, 50); }); });
     setTimeout(schedule, 1500);
     if(location.hash === '#cheques') setTimeout(function(){ openCheques(); try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} }, 900);
-    setTimeout(function(){ pushStatus(); }, 2500);
+    setTimeout(function(){ pushStatus().then(function(){ healPush(true); }); }, 2500);
     setTimeout(paintBell, 400);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
