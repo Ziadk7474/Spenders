@@ -1,7 +1,7 @@
 name: Cheque reminders
 on:
   schedule:
-    - cron: '*/10 * * * *'   # every 10 minutes (GitHub may run it a few minutes late)
+    - cron: '*/10 * * * *'   # backup only: GitHub really starts it every few hours; the Cloudflare Worker is the main sender
   workflow_dispatch: {}      # lets you press "Run workflow" to test
 concurrency: { group: cheque-reminders, cancel-in-progress: false }
 jobs:
@@ -11,9 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm install --omit=dev --no-audit --no-fund
-        working-directory: reminders
+        with: { node-version: 22 }
       - run: node send.js
         working-directory: reminders
         env:

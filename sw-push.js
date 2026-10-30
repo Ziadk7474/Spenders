@@ -44,3 +44,25 @@ self.addEventListener('notificationclick', function(e){
     return self.clients.openWindow(data.url || (APP_URL + 'index.html'));
   }));
 });
+
+/* the phone's push address can change (browser update, reset). Sign up again at once and
+   tell the reminder service, so reminders keep coming without opening the app. */
+var DB_URL = 'https://al-madhi-ledger-default-rtdb.firebaseio.com';
+var PUSH_KEY = 'BB23MY9TC7NYtjiLhXlUMsZdX77Kgl-jQt3QOQxPVMdCkivHZqRE1Lh_BdIwBdWph_N7FggWa8Z_K0ThNfoZxRo';
+function b64(s){ var p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g,'+').replace(/_/g,'/')), u = new Uint8Array(b.length); for(var i=0;i<b.length;i++) u[i] = b.charCodeAt(i); return u; }
+function hash(s){ var h = 5381; for(var i=0;i<s.length;i++) h = ((h<<5) + h + s.charCodeAt(i)) >>> 0; return 'd' + h.toString(36) + s.length.toString(36); }
+self.addEventListener('pushsubscriptionchange', function(e){
+  e.waitUntil((async function(){
+    var old = e.oldSubscription, sub = e.newSubscription;
+    if(!sub) sub = await self.registration.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64(PUSH_KEY) });
+    var j = sub.toJSON(), id = hash(j.endpoint), rec = null;
+    if(old && old.endpoint){
+      var oid = hash(old.endpoint);
+      try{ rec = await (await fetch(DB_URL + '/almadhi/push/subs/' + oid + '.json')).json(); }catch(err){}
+      try{ await fetch(DB_URL + '/almadhi/push/subs/' + oid + '.json', { method:'PATCH', body:JSON.stringify({ off:true, movedTo:id }) }); }catch(err){}
+    }
+    await fetch(DB_URL + '/almadhi/push/subs/' + id + '.json', { method:'PUT', body:JSON.stringify({
+      sub:j, cfg:(rec && rec.cfg) || { rules:[{ days:1, time:'09:00' }, { days:0, time:'08:30' }], overdue:true, custom:{}, tzOff:-240 },
+      app:(rec && rec.app) || 'erp', at:Date.now(), renewed:true }) });
+  })().catch(function(){}));
+});
