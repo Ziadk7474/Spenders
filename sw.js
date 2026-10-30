@@ -1,9 +1,9 @@
-// am. nexus service worker — v7
+// am. nexus service worker — v8
 // Pages, the manifest and the icons always come from the internet first, so a new
 // upload (or a new logo) shows at once. The saved copy is only used when offline.
 // Firebase traffic is never touched.
-const CACHE = 'almadhi-v6';
-const CORE = ['./', 'index.html', 'manifest.json?v=7', 'icon-192.png?v=6', 'icon-512.png?v=6', 'apple-touch-icon.png?v=6'];
+const CACHE = 'almadhi-v7';
+const CORE = ['./', 'index.html', 'manifest.json?v=8', 'icon-192.png?v=6', 'icon-512.png?v=6', 'apple-touch-icon.png?v=6'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
