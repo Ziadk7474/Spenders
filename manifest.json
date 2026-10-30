@@ -6,23 +6,23 @@
   "start_url": "index.html",
   "scope": "index.html",
   "display": "standalone",
-  "background_color": "#ED532D",
-  "theme_color": "#ED532D",
+  "background_color": "#EFEFEF",
+  "theme_color": "#EFEFEF",
   "icons": [
     {
-      "src": "splash-192.png?v=7",
+      "src": "splash-192.png?v=8",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "splash-512.png?v=7",
+      "src": "splash-512.png?v=8",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "splash-1024.png?v=7",
+      "src": "splash-1024.png?v=8",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"
