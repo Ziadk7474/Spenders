@@ -14,6 +14,10 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=6">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://al-madhi-ledger-default-rtdb.firebaseio.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6">
 <link rel="manifest" href="manifest.json?v=9">
 <title>am. nexus</title>
@@ -4606,6 +4610,7 @@ function start(e){cleanup();timers.forEach(clearTimeout);timers=[];layout();
  const go=()=>{measure();if(tg)morph(elapsed());else timers.push(setTimeout(settle,Math.max(0,(6.4-elapsed())*1000)))};
  if(e>=6)go();else timers.push(setTimeout(go,(6-e)*1000));timers.push(setTimeout(finish,14000))}
 start(0);
+try{ if(localStorage.getItem('am_intro_seen')){ finish(); } else { localStorage.setItem('am_intro_seen','1'); } }catch(e){}
 let rz=0,lw=W,lh=H;const onResize=()=>{clearTimeout(rz);rz=setTimeout(()=>{if(done)return;const r=root.getBoundingClientRect();if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;const e=Math.min(elapsed(),TA+1.05);tg=null;start(e);lw=W;lh=H},120)};
 lw=W;lh=H;addEventListener('resize',onResize);addEventListener('orientationchange',onResize);
 root.addEventListener('click',finish)
@@ -4853,6 +4858,101 @@ catch (e) { document.documentElement.classList.add('in-frame'); }
 .pin-setup-step.active { display: block; }
 </style>
 
+<!-- ═════════ AM AUTH (sign in / sign up) ═════════ -->
+<style>
+#am-auth{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;padding:20px;background:#f4f2ee;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;overflow:auto;-webkit-font-smoothing:antialiased}
+#am-auth.on{display:flex}
+#am-auth *{box-sizing:border-box;font-family:inherit}
+#am-auth .amA-card{width:100%;max-width:400px;background:#fff;border-radius:28px;padding:28px 24px;box-shadow:0 10px 40px rgba(0,0,0,.08);color:#121212}
+#am-auth .amA-brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px}
+#am-auth .amA-logo{width:44px;height:44px;border-radius:50%;background:#ED532D;color:#fff;display:grid;place-items:center;font-weight:800;font-size:17px}
+#am-auth .amA-name{font-size:24px;font-weight:600;letter-spacing:-.03em;color:#121212}
+#am-auth .amA-tabs{display:grid;grid-template-columns:1fr 1fr;background:#f1efeb;border-radius:999px;padding:4px;margin-bottom:16px}
+#am-auth .amA-tabs button{border:0;background:none;padding:10px;border-radius:999px;font-weight:600;font-size:13px;color:#666;cursor:pointer}
+#am-auth .amA-tabs button.on{background:#fff;color:#121212;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+#am-auth .amA-btn{width:100%;height:50px;border-radius:999px;border:0;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+#am-auth .amA-btn.google{background:#fff;border:1.5px solid #ddd;color:#121212}
+#am-auth .amA-btn.main{background:#121212;color:#fff;margin-top:12px}
+#am-auth .amA-btn:disabled{opacity:.55;cursor:default}
+#am-auth .amA-or{text-align:center;color:#999;font-size:11px;font-weight:600;letter-spacing:.08em;margin:14px 0;text-transform:uppercase}
+#am-auth .amA-in{width:100%;height:50px;border-radius:999px;border:1.5px solid #e4e1db;background:#faf9f7;padding:0 18px;font-weight:500;font-size:16px;margin-top:10px;outline:none;color:#121212;display:block}
+#am-auth .amA-in:focus{border-color:#121212}
+#am-auth .amA-how{display:flex;gap:8px;margin-bottom:4px}
+#am-auth .amA-how button{flex:1;border:1.5px solid #e4e1db;background:none;border-radius:999px;padding:8px;font-weight:600;font-size:12px;color:#666;cursor:pointer}
+#am-auth .amA-how button.on{border-color:#121212;color:#121212}
+#am-auth .amA-err{color:#c0392b;font-size:12.5px;font-weight:600;min-height:18px;margin-top:10px;text-align:center}
+#am-auth .amA-err.ok{color:#1a7f4b}
+#am-auth .amA-link{background:none;border:0;color:#666;font-weight:600;font-size:12px;margin-top:10px;cursor:pointer;width:100%;text-decoration:underline}
+#am-auth .amA-uid{font:600 12px ui-monospace,monospace;background:#f1efeb;border-radius:12px;padding:12px;word-break:break-all;margin:12px 0;color:#121212;text-align:center}
+#am-auth .amA-p{font-size:13.5px;color:#555;line-height:1.5;text-align:center;margin:0}
+#am-auth .amA-view{display:none}
+#am-auth .amA-view.on{display:block}
+</style>
+
+<div id="am-auth">
+  <div class="amA-card">
+    <div class="amA-brand"><div class="amA-logo">am.</div><div class="amA-name">nexus</div></div>
+
+    <!-- SIGN IN / SIGN UP -->
+    <div class="amA-view on" id="amA-v-main">
+      <div class="amA-tabs">
+        <button id="amA-t-in" class="on" onclick="amA.setMode('in')">Sign in</button>
+        <button id="amA-t-up" onclick="amA.setMode('up')">Create account</button>
+      </div>
+
+      <button class="amA-btn google" onclick="amA.google()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+      <div class="amA-or">or</div>
+
+      <div class="amA-how">
+        <button id="amA-h-email" class="on" onclick="amA.setHow('email')">Email</button>
+        <button id="amA-h-phone" onclick="amA.setHow('phone')">Phone</button>
+      </div>
+
+      <div id="amA-f-email">
+        <input class="amA-in" id="amA-name" placeholder="Your name" autocomplete="name" style="display:none">
+        <input class="amA-in" id="amA-email" type="email" placeholder="Email" autocomplete="email" inputmode="email">
+        <input class="amA-in" id="amA-pass" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" onkeydown="if(event.key==='Enter')amA.emailGo()">
+        <button class="amA-btn main" id="amA-go" onclick="amA.emailGo()">Sign in</button>
+        <button class="amA-link" id="amA-forgot" onclick="amA.forgot()">Forgot password?</button>
+      </div>
+
+      <div id="amA-f-phone" style="display:none">
+        <input class="amA-in" id="amA-phone" type="tel" placeholder="Phone e.g. 50 123 4567" autocomplete="tel" inputmode="tel" onkeydown="if(event.key==='Enter')amA.sendCode()">
+        <button class="amA-btn main" id="amA-send" onclick="amA.sendCode()">Send code</button>
+        <div id="amA-recaptcha"></div>
+      </div>
+      <div class="amA-err" id="amA-err"></div>
+    </div>
+
+    <!-- SMS CODE -->
+    <div class="amA-view" id="amA-v-otp">
+      <p class="amA-p">Enter the 6-digit code we sent to <b id="amA-otp-to"></b></p>
+      <input class="amA-in" id="amA-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" style="text-align:center;letter-spacing:.4em;font-size:20px" onkeydown="if(event.key==='Enter')amA.verify()">
+      <button class="amA-btn main" id="amA-verify" onclick="amA.verify()">Verify</button>
+      <button class="amA-link" onclick="amA.show('main')">Back</button>
+      <div class="amA-err" id="amA-err2"></div>
+    </div>
+
+    <!-- CHECKING -->
+    <div class="amA-view" id="amA-v-chk">
+      <p class="amA-p"><b>Signing you in…</b><br>The first time on a device this needs an internet connection.</p>
+      <button class="amA-link" onclick="amSignOut(true)">Use a different account</button>
+    </div>
+
+    <!-- WAITING FOR APPROVAL -->
+    <div class="amA-view" id="amA-v-wait">
+      <p class="amA-p"><b>Account created ✔</b><br>The owner must approve it before you can open the ledger. Send this ID to the owner:</p>
+      <div class="amA-uid" id="amA-uid"></div>
+      <button class="amA-btn main" onclick="amA.copyUid()">Copy ID</button>
+      <button class="amA-link" onclick="amSignOut(true)">Sign out</button>
+      <p class="amA-p" style="margin-top:10px;font-size:12px">This page opens automatically once you are approved.</p>
+    </div>
+  </div>
+</div>
+
 <!-- LOCK OVERLAY HTML -->
 <div id="lock-overlay" style="display:none">
   <div class="lock-logo-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1254 1254" aria-hidden="true"><rect width="1254" height="1254" fill="#ED532D"/><path fill="#FFFFFF" d="M301.9 766.9C262.8 763.7 232.5 744.3 220.2 714.8C215.3 703.1 213.7 692.9 214.3 677.6C214.8 662.9 216.3 656.2 221.6 645.0C235.4 615.7 264.6 598.7 315.7 590.1C322.5 589.0 338.9 586.9 352.2 585.5C380.6 582.5 386.4 581.6 393.7 578.8C406.8 573.9 412.1 562.8 406.5 552.0C404.2 547.5 396.6 541.4 390.6 539.1C374.4 533.0 351.0 534.1 335.2 541.5C326.4 545.7 318.2 553.5 315.6 560.3L313.8 565.0 L272.4 565.0L231.0 565.0 L231.0 562.7C231.0 555.3 238.7 535.7 245.8 525.3C270.5 488.9 325.4 468.3 385.0 473.0C441.2 477.4 479.0 500.4 493.0 538.8C499.0 555.4 499.0 554.8 499.0 662.1L499.0 760.0 L496.8 760.5C495.5 760.8 475.6 760.9 452.5 760.8L410.5 760.5 L410.0 742.0L409.5 723.5 L407.2 727.2C404.3 731.8 393.7 741.7 386.3 746.8C363.9 762.0 332.4 769.5 301.9 766.9ZM522.0 664.6C522.0 560.1 521.9 561.8 527.6 545.4C538.8 512.6 564.0 487.1 597.6 474.4C614.3 468.1 637.5 465.1 654.8 467.0C687.8 470.5 710.1 482.7 730.2 508.1C732.6 511.0 733.1 511.3 733.9 509.9C736.9 505.0 745.3 496.1 751.7 491.0C781.9 466.6 824.8 459.9 865.0 473.1C903.0 485.6 928.7 514.5 936.7 553.7C938.4 561.8 938.5 570.2 938.5 661.5L938.5 760.5 L895.5 760.5L852.5 760.5 L852.0 668.0C851.5 566.5 851.9 573.3 845.5 562.4C835.1 544.6 809.2 539.2 787.4 550.3C778.9 554.6 774.4 559.4 769.8 568.7L765.5 577.3 L765.0 668.9L764.5 760.5 L723.8 760.8L683.0 761.0 L683.0 673.8C683.0 625.1 682.5 583.2 682.0 579.0C680.7 568.6 675.3 558.0 668.5 552.5C662.1 547.4 653.8 544.6 644.5 544.6C626.0 544.7 611.4 554.9 604.8 572.5L602.5 578.5 L602.2 669.8L601.9 761.0 L562.0 761.0L522.0 761.0 L522.0 664.6ZM358.7 703.4C383.4 698.3 402.0 682.4 407.4 661.7C408.2 658.6 409.2 649.4 409.6 641.4C410.2 628.0 410.2 626.7 408.7 627.3C400.1 630.6 386.9 633.6 368.0 636.5C341.1 640.7 334.8 642.2 325.3 646.5C311.4 652.9 304.0 662.8 304.0 674.9C304.0 683.7 305.3 687.8 309.6 692.8C316.6 701.1 326.7 704.8 342.3 704.9C347.1 705.0 354.5 704.3 358.7 703.4Z"/><circle cx="1010.7" cy="712.2" r="49.8" fill="#121212"/></svg></div>
@@ -4978,7 +5078,7 @@ const LOCK = {
     return 's2$' + [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
   },
 
-  hasPin()      { return !!(DB.settings && DB.settings.pinHash) || !!localStorage.getItem(this.STORAGE_KEY); },
+  hasPin()      { return false; /* old PIN screen replaced by account sign-in (am-auth) */ },
   bioEnabled()  { return localStorage.getItem(this.BIO_KEY) === '1'; },
   isUnlocked()  { return sessionStorage.getItem(this.SESSION_KEY) === '1'; },
   setUnlocked() { sessionStorage.setItem(this.SESSION_KEY, '1'); },
@@ -5149,10 +5249,7 @@ function hideLockScreen() {
   LOCK.setUnlocked();
 }
 
-function lockNow() {
-  LOCK.clearSession();
-  showLockScreen();
-}
+function lockNow() { /* old PIN lock removed — account sign-in replaces it */ }
 
 // Instant-but-accurate unlock: once we know how long the password is, the
 // field is never checked until exactly that many characters are in — so
@@ -7072,7 +7169,7 @@ function amqLibAll(){
 }
 function amqAttachFb(){
   if(window._amqFbOn) return;
-  if(!window._firebaseReady || !window._fbOnValue){ setTimeout(amqAttachFb, 1500); return; }
+  if(!window._firebaseReady || !window._fbOnValue || !window._amAuthOk){ setTimeout(amqAttachFb, 1500); return; }
   window._amqFbOn = true;
   try{
     window._fbOnValue(window._fbRef(window._db, AMQ_FB_PATH), function(snap){
@@ -8335,6 +8432,12 @@ document.addEventListener('keydown', function(e){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, push, update, remove, get, runTransaction, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import {
+  initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver,
+  onAuthStateChanged, signInWithPopup, GoogleAuthProvider,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail,
+  RecaptchaVerifier, signInWithPhoneNumber, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAnkBfzZQN_CzbB9QoZrhhOLb3mABJzxK8",
@@ -8346,9 +8449,14 @@ const firebaseConfig = {
   appId: "1:861977492810:web:8c35d0c82c1011317e95b3"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-window._db = db;
+const app  = initializeApp(firebaseConfig);
+// Auth is created BEFORE the database so every database call carries the signed-in user's token.
+// The popup resolver is deliberately NOT passed here: Google's login iframe is then not loaded on
+// every launch (faster start). It is passed only when someone taps "Continue with Google".
+const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] });
+const db   = getDatabase(app);
+
+window._db = db; window._auth = auth;
 window._fbRef = ref; window._fbSet = set; window._fbOnValue = onValue;
 window._fbPush = push; window._fbUpdate = update; window._fbRemove = remove; window._fbGet = get; window._fbTransaction = runTransaction;
 window._firebaseReady = true;
@@ -8360,6 +8468,153 @@ window.dispatchEvent(new Event("firebaseReady"));
 window._writeQueue = [];
 window.addEventListener('online',  () => { if(window._fbGoOnline  && window._db) window._fbGoOnline(window._db);  replayWriteQueue(); });
 window.addEventListener('offline', () => { if(window._fbGoOffline && window._db) window._fbGoOffline(window._db); });
+
+/* ───────────────────────── AUTH ───────────────────────── */
+const DEFAULT_CC = '+971';   // country code used when a phone number is typed without one (change if needed)
+const $ = id => document.getElementById(id);
+const gate = $('am-auth');
+let mode = 'in', how = 'email', verifier = null, confirmation = null, unsubAllow = null;
+
+const MSG = {
+  'auth/invalid-credential':'Wrong email or password.',
+  'auth/wrong-password':'Wrong email or password.',
+  'auth/user-not-found':'No account with this email. Tap "Create account".',
+  'auth/email-already-in-use':'This email already has an account — use "Sign in".',
+  'auth/weak-password':'Password must be at least 6 characters.',
+  'auth/invalid-email':'That email address is not valid.',
+  'auth/missing-password':'Enter your password.',
+  'auth/too-many-requests':'Too many attempts. Wait a few minutes and try again.',
+  'auth/network-request-failed':'No internet connection.',
+  'auth/invalid-phone-number':'Phone number is not valid. Include the country code, e.g. +971…',
+  'auth/invalid-verification-code':'Wrong code. Try again.',
+  'auth/code-expired':'Code expired. Go back and send a new one.',
+  'auth/popup-closed-by-user':'', 'auth/cancelled-popup-request':'',
+  'auth/popup-blocked':'Popup was blocked. Allow popups for this site, or use email / phone.',
+  'auth/operation-not-allowed':'This sign-in method is not enabled yet (Firebase Console → Authentication → Sign-in method).',
+  'auth/unauthorized-domain':'This website address is not authorised yet (Firebase Console → Authentication → Settings → Authorized domains).',
+  'auth/operation-not-supported-in-this-environment':'Google sign-in is not supported here. Use email or phone.'
+};
+const say = (e, id) => {
+  const el = $(id || 'amA-err'); if(!el) return;
+  el.classList.remove('ok');
+  el.textContent = (typeof e === 'string') ? e : ((e && e.code in MSG) ? MSG[e.code] : ('Error: ' + ((e && (e.code || e.message)) || e)));
+};
+const busy = (id, on) => { const b = $(id); if(b) b.disabled = on; };
+
+function show(v){
+  ['main','otp','chk','wait'].forEach(k => $('amA-v-' + k).classList.toggle('on', k === v));
+  gate.classList.add('on');
+  say('', 'amA-err'); say('', 'amA-err2');
+}
+function hideGate(){ gate.classList.remove('on'); }
+
+window.amA = {
+  show,
+  setMode(m){
+    mode = m;
+    $('amA-t-in').classList.toggle('on', m === 'in'); $('amA-t-up').classList.toggle('on', m === 'up');
+    $('amA-name').style.display = (m === 'up' && how === 'email') ? '' : 'none';
+    $('amA-go').textContent = m === 'up' ? 'Create account' : 'Sign in';
+    $('amA-forgot').style.display = m === 'up' ? 'none' : '';
+    $('amA-pass').autocomplete = m === 'up' ? 'new-password' : 'current-password';
+    say('');
+  },
+  setHow(h){
+    how = h;
+    $('amA-h-email').classList.toggle('on', h === 'email'); $('amA-h-phone').classList.toggle('on', h === 'phone');
+    $('amA-f-email').style.display = h === 'email' ? '' : 'none';
+    $('amA-f-phone').style.display = h === 'phone' ? '' : 'none';
+    window.amA.setMode(mode);
+  },
+  async google(){
+    const p = new GoogleAuthProvider(); p.setCustomParameters({ prompt:'select_account' });
+    try { await signInWithPopup(auth, p, browserPopupRedirectResolver); } catch(e){ say(e); }
+  },
+  async emailGo(){
+    const email = $('amA-email').value.trim(), pass = $('amA-pass').value, name = $('amA-name').value.trim();
+    if(!email || !pass) return say('Enter your email and password.');
+    busy('amA-go', true);
+    try {
+      if(mode === 'up'){
+        const c = await createUserWithEmailAndPassword(auth, email, pass);
+        if(name) { try { await updateProfile(c.user, { displayName: name }); } catch(_){} }
+      } else {
+        await signInWithEmailAndPassword(auth, email, pass);
+      }
+    } catch(e){ say(e); }
+    busy('amA-go', false);
+  },
+  async forgot(){
+    const email = $('amA-email').value.trim();
+    if(!email) return say('Type your email first, then tap "Forgot password?".');
+    try { await sendPasswordResetEmail(auth, email); say('Reset link sent — check your email (and spam).'); $('amA-err').classList.add('ok'); }
+    catch(e){ say(e); }
+  },
+  async sendCode(){
+    let v = $('amA-phone').value.replace(/[\s()\-]/g, '');
+    if(!v) return say('Enter your phone number.');
+    if(v.indexOf('00') === 0) v = '+' + v.slice(2);
+    if(v.charAt(0) !== '+'){ if(v.charAt(0) === '0') v = v.slice(1); v = DEFAULT_CC + v; }
+    busy('amA-send', true);
+    try {
+      if(!verifier) verifier = new RecaptchaVerifier(auth, 'amA-recaptcha', { size:'invisible' });
+      confirmation = await signInWithPhoneNumber(auth, v, verifier);
+      $('amA-otp-to').textContent = v; show('otp'); setTimeout(() => $('amA-code').focus(), 150);
+    } catch(e){
+      say(e); try { verifier && verifier.clear(); } catch(_){} verifier = null;
+    }
+    busy('amA-send', false);
+  },
+  async verify(){
+    const code = $('amA-code').value.trim();
+    if(code.length < 6) return say('Enter the 6-digit code.', 'amA-err2');
+    busy('amA-verify', true);
+    try { await confirmation.confirm(code); } catch(e){ say(e, 'amA-err2'); }
+    busy('amA-verify', false);
+  },
+  copyUid(){ const t = $('amA-uid').textContent; try { navigator.clipboard.writeText(t); } catch(_){} }
+};
+
+/* Sign out + wipe this device's cached business data */
+window.amSignOut = async function(skipConfirm){
+  if(skipConfirm !== true && !confirm('Sign out of this device?')) return;
+  try { await signOut(auth); } catch(e){}
+  try {
+    Object.keys(localStorage).filter(k => k.indexOf('almadhi_cache_') === 0 || k.indexOf('am_ok_') === 0).forEach(k => localStorage.removeItem(k));
+  } catch(e){}
+  location.reload();
+};
+
+function openApp(user){
+  if(window._amAuthOk) return;
+  window._amAuthOk = true; window._amUser = user;
+  hideGate();
+  window._amWho = user.email || user.phoneNumber || user.displayName || 'Signed in';
+  if(typeof attachFirebaseListeners === 'function') attachFirebaseListeners();
+  window.dispatchEvent(new Event('amAuthOk'));
+}
+
+/* Fires from the session saved ON THE PHONE (~100 ms) — returning users never wait for the network. */
+onAuthStateChanged(auth, user => {
+  if(unsubAllow){ unsubAllow(); unsubAllow = null; }
+  if(!user){ window._amAuthOk = false; show('main'); return; }
+
+  const key = 'am_ok_' + user.uid;
+  let known = false; try { known = localStorage.getItem(key) === '1'; } catch(_){}
+  if(known) openApp(user);        // approved before on this device → open instantly, re-check in background
+  else show('chk');
+
+  unsubAllow = onValue(ref(db, 'allowedUsers/' + user.uid), snap => {
+    if(snap.val() === true){
+      try { localStorage.setItem(key, '1'); } catch(_){}
+      openApp(user);
+    } else {
+      try { localStorage.removeItem(key); } catch(_){}
+      if(window._amAuthOk){ location.reload(); return; }   // approval was removed while using the app
+      $('amA-uid').textContent = user.uid; show('wait');
+    }
+  }, () => { if(!window._amAuthOk){ $('amA-uid').textContent = user.uid; show('wait'); } });
+});
 </script>
 
 <script>
@@ -8515,7 +8770,7 @@ async function runCashDateRepair() {
 }
 
 function attachFirebaseListeners() {
-  if(_fbListenersAttached || !window._firebaseReady) return;
+  if(_fbListenersAttached || !window._firebaseReady || !window._amAuthOk) return;
   _fbListenersAttached = true;
 
   const {_db:db, _fbRef:ref, _fbOnValue:onValue} = window;
@@ -26329,7 +26584,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
   var MORE = [
     ['bell', 'Cheque reminders', function(){ if(M8.openReminders) M8.openReminders(true); }],
     ['keyboard', 'Shortcuts & gestures', function(){ openKeys(); }],
-    ['lock', 'App lock & biometrics', function(){ if(typeof openLockSettings==='function') openLockSettings(); }],
+    ['lock', 'Sign out', function(){ if(typeof amSignOut==='function') amSignOut(); }],
     ['moon', 'Dark mode', function(){ if(typeof toggleThemeQuick==='function') toggleThemeQuick(); }, 'theme'],
     ['excel', 'Export full Excel', function(){ if(typeof exportFullXLSX==='function') exportFullXLSX(); }],
     ['download', 'Export records (CSV)', function(){ if(typeof exportRecordsCSV==='function') exportRecordsCSV(); }],
@@ -27678,7 +27933,7 @@ html:not(#_) body:not(#_) .amx-drawer{ height:16px; }
     ['Urdu statement', 'urdu', 'urdu statement', function(){ navMain(DB.mode,'urdu-stmt'); }],
     ['Quotation maker', 'quote', 'quotation quote', function(){ navMain('sales','quotation'); }],
     ['Items & lists', 'items', 'items lists descriptions units methods', function(){ navMain('items'); }],
-    ['App lock & biometrics', 'lock', 'lock password pin biometric fingerprint', function(){ openLockSettings && openLockSettings(); }],
+    ['Sign out', 'lock', 'sign out logout log out account', function(){ window.amSignOut && window.amSignOut(); }],
     ['Dark / light mode', 'moon', 'dark light theme mode night', function(){ toggleThemeQuick && toggleThemeQuick(); }],
     ['Full backup (JSON)', 'backup', 'backup download json', function(){ downloadBackup && downloadBackup(); }],
     ['Shortcuts & gestures', 'keyboard', 'shortcuts keyboard gestures help', function(){ M8.openKeys && M8.openKeys(); }]
@@ -32209,7 +32464,7 @@ html:not(#_) body:not(#_) .m16-ge-r{ display:flex; align-items:center; justify-c
     [].forEach.call(document.querySelectorAll('.zmenu .zm-sub'), function(sub){
       if(!sub.querySelector('.m8-more-it') || sub.querySelector('.m13-more')) return;
       var tpl = sub.querySelector('.m8-more-it');
-      [['zap', 'Data health check', function(){ if(typeof openDupeScan === 'function') openDupeScan(); }], ['lock', 'Lock now (Ctrl+L)', function(){ if(typeof lockNow === 'function') lockNow(); }]].forEach(function(m, i){
+      [['zap', 'Data health check', function(){ if(typeof openDupeScan === 'function') openDupeScan(); }]].forEach(function(m, i){
         var c = tpl.cloneNode(true); c.classList.add('m13-more'); c.removeAttribute('data-more');
         var ic = c.querySelector('.m8-subic'); if(ic) ic.innerHTML = icon(m[0]);
         var l = c.querySelector('span:not(.m8-subic)'); if(l) l.textContent = m[1];
