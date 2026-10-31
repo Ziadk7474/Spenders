@@ -1,8 +1,8 @@
-// am. nexus service worker — v10
+// am. nexus service worker — v9
 // Pages, the manifest and the icons always come from the internet first, so a new
 // upload (or a new logo) shows at once. The saved copy is only used when offline.
 // Firebase traffic is never touched.
-const CACHE = 'almadhi-v10';
+const CACHE = 'almadhi-v9';
 const CORE = ['./', 'index.html', 'manifest.json?v=10', 'icon-192.png?v=6', 'icon-512.png?v=6', 'apple-touch-icon.png?v=6'];
 
 self.addEventListener('install', e => {
@@ -21,7 +21,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.hostname.includes('firebaseio.com') || url.hostname.includes('firebasedatabase.app')) return;
   // fonts / Firebase SDK from gstatic: cache-first (they never change for a given URL)
-  if ((url.hostname === 'www.gstatic.com' && url.pathname.indexOf('/firebasejs/') === 0) || url.hostname === 'fonts.gstatic.com') {
+  if (url.hostname === 'www.gstatic.com' || url.hostname === 'fonts.gstatic.com') {
     e.respondWith(caches.open(CACHE).then(c => c.match(req).then(hit =>
       hit || fetch(req).then(res => { if (res && res.ok) c.put(req, res.clone()); return res; })
     )));
@@ -30,14 +30,11 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return;
   // the push worker and other folders (Cheque-viewer) look after themselves
   if (url.pathname.indexOf('/Cheque-viewer/') >= 0 || url.pathname.endsWith('sw-push.js')) return;
-  // everything else of ours: show the saved copy instantly, refresh it in the background
-  // (a new upload appears on the NEXT open)
-  e.respondWith(caches.open(CACHE).then(async c => {
-    const hit = await c.match(req);
-    const net = fetch(req, { cache: 'no-cache' })
-      .then(res => { if (res && res.ok) c.put(req, res.clone()); return res; })
-      .catch(() => null);
-    if (hit) { e.waitUntil(net); return hit; }
-    return (await net) || (req.mode === 'navigate' ? c.match('index.html') : Response.error());
-  }));
+  // everything else of ours: internet first, saved copy when offline
+  e.respondWith(
+    fetch(req, { cache: 'no-cache' }).then(res => {
+      if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+      return res;
+    }).catch(() => caches.match(req).then(hit => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
+  );
 });
