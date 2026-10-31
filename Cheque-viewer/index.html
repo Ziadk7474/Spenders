@@ -2248,7 +2248,6 @@ function printChequeListPdf(){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, update, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 const app = initializeApp({
   apiKey: "AIzaSyAnkBfzZQN_CzbB9QoZrhhOLb3mABJzxK8",
   authDomain: "al-madhi-ledger.firebaseapp.com",
@@ -2258,22 +2257,15 @@ const app = initializeApp({
   messagingSenderId: "861977492810",
   appId: "1:861977492810:web:8c35d0c82c1011317e95b3"
 });
-// Same website as the main app => it shares the main app's saved sign-in. Not signed in => go to the main app to sign in.
-const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] });
 const db = getDatabase(app);
 window._db = db; window._fbRef = ref; window._fbUpdate = update; window._fbSet = set; window._fbGet = get;
 const sync = document.getElementById('v-sync');
 onValue(ref(db, '.info/connected'), s => { const on = !!s.val(); sync.classList.toggle('live', on); sync.lastChild.textContent = on ? 'Live' : 'Offline'; });
-let _chqAttached = false;
-onAuthStateChanged(auth, user => {
-  if(!user){ location.replace('../'); return; }
-  if(_chqAttached) return; _chqAttached = true;
-  onValue(ref(db, 'almadhi/cheques'), snap => {
-    const v = snap.val() || {};
-    DB.purchase.cheques = Object.keys(v).map(k => Object.assign({ id:k }, v[k])).filter(c => c && c.date);
-    cacheNow(); renderCheques();
-    if(window.M8 && M8.chqSchedule) M8.chqSchedule();
-  });
+onValue(ref(db, 'almadhi/cheques'), snap => {
+  const v = snap.val() || {};
+  DB.purchase.cheques = Object.keys(v).map(k => Object.assign({ id:k }, v[k])).filter(c => c && c.date);
+  cacheNow(); renderCheques();
+  if(window.M8 && M8.chqSchedule) M8.chqSchedule();
 });
 </script>
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js?v=7').catch(function(){}); }); }</script>
