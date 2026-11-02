@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://al-madhi-ledger-default-rtdb.firebaseio.com">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6">
-<link rel="manifest" href="manifest.json?v=10">
+<link rel="manifest" href="manifest.json?v=10"><script id="amx-mf">(function(){try{if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){var l=document.querySelector('link[rel="manifest"]');if(l)l.setAttribute("href","manifest-phone.json?v=1");}}catch(e){}})();</script>
 <title>am. nexus</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Cairo:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Cairo:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
@@ -4247,7 +4247,7 @@ body.dark-mode .zsb-flyout{ box-shadow:0 16px 40px rgba(0,0,0,.55); }
 </style>
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=6">
-<link rel="manifest" href="manifest.json?v=10">
+
 <style id="alloc-styles">
 .alloc-seg{display:inline-flex;background:var(--surface3);border-radius:10px;padding:3px;gap:2px}
 .alloc-seg-btn{border:none;background:transparent;color:var(--t2);font-size:12px;font-weight:700;padding:6px 13px;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap}
@@ -12876,6 +12876,17 @@ html:not(#_#_#_) body:not(#_#_#_) #party-edit-modal.m19-pem > div > div:last-chi
   html:not(#_#_#_) body:not(#_#_#_) #party-edit-modal.m19-pem [style*="grid-template-columns:1fr 1fr"]{ grid-template-columns:minmax(0, 1fr) !important; }
 }
 }
+
+/* M20 · Install app button (sidebar, PC) */
+html:not(#_) body:not(#_) #m20-install{ display:flex; align-items:center; gap:10px; width:100%; height:40px; margin:0 0 8px; padding:0 14px; border:0; border-radius:12px;
+  background:var(--k-acc); color:#fff; font:600 13.5px/1 var(--k-font); cursor:pointer; box-shadow:0 4px 12px rgba(237,83,45,.25); }
+html:not(#_) body:not(#_) #m20-install[hidden]{ display:none; }
+html:not(#_) body:not(#_) #m20-install svg{ width:18px; height:18px; flex:0 0 18px; }
+html:not(#_) body:not(#_) #m20-install:hover{ filter:brightness(1.05); }
+html:not(#_) body:not(#_) #m20-install:focus-visible{ outline:2px solid var(--k-ink); outline-offset:2px; }
+@media (max-width:900px){ html:not(#_) body:not(#_) #m20-install{ display:none; } }
+html:not(#_) body:not(#_).sb-collapsed #m20-install{ width:44px; height:44px; padding:0; justify-content:center; margin:0 auto 8px; }
+html:not(#_) body:not(#_).sb-collapsed #m20-install span{ display:none; }
 </style>
 </head>
 <body>
@@ -12890,7 +12901,7 @@ function restoreTheme(){try{mo&&mo.disconnect()}catch(e){}metas().forEach(m=>m.s
 function dropPre(){const s=document.getElementById('amx-pre');if(s)s.remove();html.classList.remove('amx-on')}
 function cleanup(){anims.forEach(a=>{try{a.cancel()}catch(e){}});anims=[]}
 function finish(){if(done)return;done=true;timers.forEach(clearTimeout);restoreTheme();dropPre();root.classList.add('amx-out');setTimeout(()=>{cleanup();root.remove()},700)}
-if(matchMedia('(prefers-reduced-motion:reduce)').matches||!root.animate){done=true;restoreTheme();dropPre();root.remove();return}
+if(!root.animate){done=true;restoreTheme();dropPre();root.remove();return}
 holdTheme();
 try{
 const $=i=>document.getElementById('amx-'+i),NS='http://www.w3.org/2000/svg',cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
@@ -33495,6 +33506,29 @@ AMCViewport.onSettle(function(){
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); }); else setTimeout(boot, 0);
   window.AMParty = { clean:clean, similar:similar, decide:decide, create:create, open:open };
+})();
+
+</script>
+<script id="m20-js">/* M20 · "Install app" button on PC (sidebar). Shows only when the browser says
+   the app can be installed; hides once it is installed. */
+(function(){
+  'use strict';
+  var ev = null;
+  var ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>';
+  function btn(){
+    var b = document.getElementById('m20-install'); if(b) return b;
+    var foot = document.querySelector('#sidebar .sb-foot'); if(!foot) return null;
+    b = document.createElement('button'); b.type = 'button'; b.id = 'm20-install'; b.hidden = true;
+    b.innerHTML = ICON + '<span>Install app</span>'; b.title = 'Install am. nexus on this computer';
+    b.addEventListener('click', function(){
+      if(!ev) return;
+      ev.prompt();
+      ev.userChoice.then(function(c){ if(c && c.outcome === 'accepted') b.hidden = true; ev = null; }).catch(function(){});
+    });
+    foot.insertBefore(b, foot.firstChild); return b;
+  }
+  window.addEventListener('beforeinstallprompt', function(e){ ev = e; var b = btn(); if(b) b.hidden = false; });
+  window.addEventListener('appinstalled', function(){ ev = null; var b = document.getElementById('m20-install'); if(b) b.hidden = true; });
 })();
 
 </script>
