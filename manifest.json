@@ -1,40 +1,40 @@
 {
-  "name": "​",
+  "name": "am. nexus",
   "short_name": "am. nexus",
   "description": "Purchase, sales, payments and cheques for Al Madhi Carpentry",
   "id": "/Spenders/",
-  "start_url": "index.html",
-  "scope": "index.html",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#EFEFEF",
+  "background_color": "#ED532D",
   "theme_color": "#EFEFEF",
   "icons": [
     {
-      "src": "splash-192.png?v=8",
+      "src": "icon-192.png?v=9",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "splash-512.png?v=8",
+      "src": "icon-512.png?v=9",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "splash-1024.png?v=8",
+      "src": "icon-1024.png?v=9",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-192-maskable.png?v=6",
+      "src": "icon-192-maskable.png?v=9",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "icon-512-maskable.png?v=6",
+      "src": "icon-512-maskable.png?v=9",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
