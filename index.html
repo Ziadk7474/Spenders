@@ -12887,6 +12887,12 @@ html:not(#_) body:not(#_) #m20-install:focus-visible{ outline:2px solid var(--k-
 @media (max-width:900px){ html:not(#_) body:not(#_) #m20-install{ display:none; } }
 html:not(#_) body:not(#_).sb-collapsed #m20-install{ width:44px; height:44px; padding:0; justify-content:center; margin:0 auto 8px; }
 html:not(#_) body:not(#_).sb-collapsed #m20-install span{ display:none; }
+html:not(#_) body:not(#_) #m20-acct{ display:flex; align-items:center; gap:8px; margin:0 0 6px; padding:0 6px 0 10px; height:32px; font-size:12px; color:var(--k-ink3); }
+html:not(#_) body:not(#_) #m20-acct span{ flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_) body:not(#_) #m20-acct button{ flex:0 0 auto; border:0; background:none; padding:4px 6px; border-radius:8px; color:var(--k-ink2); font:600 12px/1 var(--k-font); cursor:pointer; }
+html:not(#_) body:not(#_) #m20-acct button:hover{ background:var(--k-tile); }
+html:not(#_) body:not(#_).sb-collapsed #m20-acct{ display:none; }
+@media (max-width:900px){ html:not(#_) body:not(#_) #m20-acct{ display:none; } }
 </style>
 </head>
 <body>
@@ -16255,6 +16261,83 @@ document.addEventListener('keydown', function(e){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, push, update, remove, get, runTransaction, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+/* ── Sign-in (Firebase Authentication, Google account) ────────────────────
+   Real protection comes from the database rules: once they are switched on,
+   only the Google accounts listed there can read or write anything.
+   This screen signs the person in once per device; Firebase keeps them
+   signed in after that (no login on every open).
+   While the rules are still open, the screen has a "Not now" button, so the
+   app can never lock you out before the Firebase side is set up. */
+async function amGate(app, db, getFn, refFn){
+  const auth = getAuth(app); window._auth = auth;
+  try{ await getRedirectResult(auth); }catch(e){}
+  const first = () => new Promise(r => { const u = onAuthStateChanged(auth, x => { u(); r(x); }); });
+  let user = await first();
+  const out = () => signOut(auth).then(() => location.reload());
+  window.AMAuth = { user, signOut: out };
+  const denied = e => /permission/i.test(String(e && (e.code || e.message || e)));
+  const probe = () => Promise.race([ getFn(refFn(db, 'almadhi/settings/pinLen')).then(() => 'ok', e => denied(e) ? 'denied' : 'ok'),
+                                     new Promise(r => setTimeout(() => r('ok'), 8000)) ]);
+  if(user){
+    /* signed in: check in the background that this account is allowed (no wait on start) */
+    probe().then(v => { if(v === 'denied') screen('noaccess'); });
+    return;
+  }
+  const open = (await probe()) === 'ok';
+  user = await screen(open ? 'later' : 'must');
+  window.AMAuth.user = user;
+
+  function screen(kind){
+    return new Promise(resolve => {
+      const old = document.getElementById('am-signin'); if(old) old.remove();
+      if(!document.getElementById('am-signin-css')){ const st = document.createElement('style'); st.id = 'am-signin-css'; st.textContent = '#am-signin{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:#ED532D;opacity:0;transition:opacity .25s;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}#am-signin.on{opacity:1}#am-signin,#am-signin *{box-sizing:border-box}#am-signin .ams-card{width:min(360px,calc(100vw - 40px));display:flex;flex-direction:column;align-items:center;gap:14px;padding:32px 24px 24px;border-radius:28px;background:#fff;color:#121212;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.18)}#am-signin .ams-logo{font:800 44px/1 Inter,system-ui,sans-serif;letter-spacing:-.04em;color:#ED532D;display:flex;align-items:flex-end;gap:3px}#am-signin .ams-logo i{width:11px;height:11px;border-radius:50%;background:#121212;margin-bottom:6px}#am-signin h1{margin:6px 0 0;font:700 22px/1.2 Inter,system-ui,sans-serif}#am-signin p{margin:0;font-size:14px;line-height:1.5;color:#55534e}#am-signin .ams-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:50px;margin-top:8px;border:0;border-radius:999px;background:#121212;color:#fff;font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer}#am-signin .ams-btn svg{width:20px;height:20px;padding:3px;border-radius:50%;background:#fff;box-sizing:content-box}#am-signin .ams-btn:disabled{opacity:.6;cursor:default}#am-signin .ams-later{border:0;background:none;color:#55534e;font:500 14px/1 Inter,system-ui,sans-serif;padding:10px;cursor:pointer;text-decoration:underline}#am-signin .ams-err{min-height:1em;color:#c0362c;font-size:13px}#am-signin button:focus-visible{outline:2px solid #ED532D;outline-offset:3px}'; document.head.appendChild(st); }
+      const el = document.createElement('div'); el.id = 'am-signin'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+      const email = auth.currentUser && auth.currentUser.email;
+      el.innerHTML = '<div class="ams-card">' +
+        '<div class="ams-logo">am<i></i></div>' +
+        (kind === 'noaccess'
+          ? '<h1>No access</h1><p>' + (email ? '<b>' + email.replace(/[<>&"]/g, '') + '</b> is not allowed to open these books.' : 'This account is not allowed.') + ' Ask the owner to add it, or use another Google account.</p>' +
+            '<button type="button" class="ams-btn" data-a="switch">Use another account</button>'
+          : '<h1>Sign in</h1><p>Use your Google account to open am. nexus. You only do this once on each device.</p>' +
+            '<button type="button" class="ams-btn" data-a="google"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.6 3.9-5.4 3.9-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z"/></svg><span>Continue with Google</span></button>' +
+            (kind === 'later' ? '<button type="button" class="ams-later" data-a="later">Not now</button>' : '')) +
+        '<p class="ams-err" role="alert"></p></div>';
+      document.body.appendChild(el);
+      requestAnimationFrame(() => el.classList.add('on'));
+      const err = el.querySelector('.ams-err');
+      const done = u => { el.classList.remove('on'); setTimeout(() => el.remove(), 250); resolve(u); };
+      const why = e => {
+        const c = (e && e.code) || '';
+        if(c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return '';
+        if(c === 'auth/operation-not-allowed') return 'Google sign-in is not switched on in Firebase yet.';
+        if(c === 'auth/unauthorized-domain') return 'This web address is not on the allowed list in Firebase yet.';
+        if(c === 'auth/network-request-failed') return 'No internet. Connect and try again.';
+        return 'Could not sign in (' + (c || 'error') + '). Try again.';
+      };
+      el.addEventListener('click', async ev => {
+        const b = ev.target.closest('[data-a]'); if(!b) return;
+        const a = b.getAttribute('data-a');
+        if(a === 'later'){ done(null); return; }
+        if(a === 'switch'){ await signOut(auth); el.remove(); screen('must').then(() => location.reload()); return; }
+        if(a === 'google'){
+          err.textContent = ''; b.disabled = true;
+          const prov = new GoogleAuthProvider(); prov.setCustomParameters({ prompt:'select_account' });
+          try{
+            const res = await signInWithPopup(auth, prov);
+            const v = await probe();
+            if(v === 'denied'){ el.remove(); screen('noaccess'); return; }
+            done(res.user);
+          }catch(e){
+            if(e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment')){ try{ await signInWithRedirect(auth, prov); return; }catch(e2){ e = e2; } }
+            err.textContent = why(e); b.disabled = false;
+          }
+        }
+      });
+    });
+  }
+}
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyAnkBfzZQN_CzbB9QoZrhhOLb3mABJzxK8",
@@ -16271,6 +16354,7 @@ const db = getDatabase(app);
 window._db = db;
 window._fbRef = ref; window._fbSet = set; window._fbOnValue = onValue;
 window._fbPush = push; window._fbUpdate = update; window._fbRemove = remove; window._fbGet = get; window._fbTransaction = runTransaction;
+try{ await amGate(app, db, get, ref); }catch(e){ console.error("sign-in", e); }
 window._firebaseReady = true;
 window._fbGoOffline = goOffline;
 window._fbGoOnline  = goOnline;
@@ -33531,6 +33615,21 @@ AMCViewport.onSettle(function(){
   }
   window.addEventListener('beforeinstallprompt', function(e){ ev = e; var b = btn(); if(b) b.hidden = false; });
   window.addEventListener('appinstalled', function(){ ev = null; var b = document.getElementById('m20-install'); if(b) b.hidden = true; });
+})();
+
+/* signed-in account + Sign out (sidebar, PC) */
+(function(){
+  function show(){
+    var a = window.AMAuth, foot = document.querySelector('#sidebar .sb-foot');
+    if(!a || !a.user || !foot || document.getElementById('m20-acct')) return;
+    var d = document.createElement('div'); d.id = 'm20-acct';
+    var em = String(a.user.email || '').replace(/[<>&"]/g, '');
+    d.innerHTML = '<span title="' + em + '">' + em + '</span><button type="button">Sign out</button>';
+    d.querySelector('button').addEventListener('click', function(){ if(confirm('Sign out of am. nexus on this device?')) a.signOut(); });
+    foot.insertBefore(d, foot.firstChild);
+  }
+  window.addEventListener('firebaseReady', function(){ setTimeout(show, 0); });
+  if(window._firebaseReady) show();
 })();
 
 </script>
