@@ -9861,7 +9861,8 @@ html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-pop{ z-index:4 !important;
 html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave.m23-out-pop{ z-index:7 !important; animation:m23-out-r .46s cubic-bezier(.32,.72,0,1) both !important; box-shadow:-14px 0 40px -18px rgba(0,0,0,.28) !important; }
 @keyframes m23-fade-out{ from{ opacity:1; } to{ opacity:0; } }
 @keyframes m23-rise{ from{ translate:0 10px; } to{ translate:0 0; } }
-html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave.m23-out-tab{ z-index:7 !important; animation:m23-fade-out .3s cubic-bezier(.4,0,.2,1) both !important; }
+html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave.m23-out-tab{ z-index:7 !important; animation:m23-fade-out .32s cubic-bezier(.4,0,.2,1) both !important; }
+html:not(#_#_#_) body:not(#_#_#_) .page.m8-push{ animation:none !important; }
 html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-tab{ animation:m23-rise .42s cubic-bezier(.22,1,.36,1) both !important; }
 @keyframes m23-row{ from{ opacity:0; translate:0 8px; } to{ opacity:1; translate:0 0; } }
 html:not(#_#_#_) body:not(#_#_#_) .m23-row{ animation:m23-row .46s cubic-bezier(.22,1,.36,1) both; animation-delay:calc(var(--i, 0) * 24ms); }
@@ -30945,7 +30946,7 @@ AMCViewport.onSettle(function(){
      Only the page's own position and opacity move, so it stays smooth on a phone. */
   var TABS = ['dashboard', 'records', 'payments', 'parties'], last = null, backing = false, leaving = null;
   window.addEventListener('popstate', function(){ backing = true; setTimeout(function(){ backing = false; }, 450); }, true);
-  var DUR = { push:520, pop:460, tab:340 };
+  var DUR = { push:520, pop:460, tab:360 };
   function finishLeave(){
     if(!leaving) return;
     var l = leaving; leaving = null; clearTimeout(l.t);
@@ -30953,21 +30954,9 @@ AMCViewport.onSettle(function(){
     ['top', 'left', 'width', 'height', 'clip-path'].forEach(function(k){ l.el.style.removeProperty(k); });
     if(l.into) l.into.classList.remove('m23-in-push', 'm23-in-pop', 'm23-in-tab');
   }
-  /* our own record of where you came from, so "back" is known even when the app handles
-     the back button before we hear about it */
-  var trail = [];
-  function kindOf(from, to){
-    var ev = window.event, back = backing || (ev && ev.type === 'popstate') || trail[trail.length - 2] === to;
-    var kind;
-    if(TABS.indexOf(to) >= 0 && TABS.indexOf(from) >= 0) kind = 'tab';
-    else if(!phone.matches) kind = 'tab';
-    else kind = back ? 'pop' : 'push';
-    if(TABS.indexOf(to) >= 0 && kind !== 'pop') trail = [to];
-    else if(back && trail[trail.length - 2] === to) trail.pop();
-    else { if(!trail.length) trail.push(from); trail.push(to); }
-    if(trail.length > 20) trail = trail.slice(-20);
-    return kind;
-  }
+  /* one way for every page, everywhere (asked for): the same soft change as the tab bar —
+     the old page dissolves into the new one. Nothing slides left or right. */
+  function kindOf(){ return 'tab'; }
   /* before the switch: keep the old page exactly where it is, as a picture that can move */
   function holdOld(from){
     finishLeave();
@@ -30989,7 +30978,7 @@ AMCViewport.onSettle(function(){
         /* only what is on screen is painted while it moves */
         var cutTop = Math.max(0, -keep.top), cutBot = Math.max(0, keep.top + keep.height - innerHeight);
         el.style.clipPath = 'inset(' + cutTop + 'px 0 ' + cutBot + 'px 0)';
-        if(to){ to.classList.remove('m23-in-push', 'm23-in-pop', 'm23-in-tab', 'm10-fade', 'm23-push', 'm23-pop', 'm23-tab'); void to.offsetWidth; to.classList.add('m23-in-' + kind); }
+        if(to){ to.classList.remove('m23-in-push', 'm23-in-pop', 'm23-in-tab', 'm10-fade', 'm8-push', 'm23-push', 'm23-pop', 'm23-tab'); void to.offsetWidth; to.classList.add('m23-in-' + kind); }
         /* done when its own animation ends (a long safety timer in case it never does) */
         leaving = { el:el, into:to, t:setTimeout(finishLeave, DUR[kind] + 1200) };
         var me = leaving;
