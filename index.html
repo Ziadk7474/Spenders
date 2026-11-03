@@ -9783,7 +9783,115 @@ html:not(#_#_#_) body:not(#_#_#_) #sidebar .sb-foot{ border-top:1px solid var(--
 html:not(#_#_#_) body:not(#_#_#_) #m12-plist .m12-po > span{ flex:0 0 auto; max-width:70%; }
 html:not(#_#_#_) body:not(#_#_#_) #m12-plist .m12-po small{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
 @media (max-width:599px){html:not(#_) body:not(#_) .m22-due b{ font-size:15px; white-space:nowrap; }
-html:not(#_) body:not(#_) .m22-due > span{ padding:9px 11px; }}</style>
+html:not(#_) body:not(#_) .m22-due > span{ padding:9px 11px; }}
+html:not(#_) body:not(#_){ --m23-spring:cubic-bezier(.34,1.36,.64,1); --m23-out:cubic-bezier(.22,1,.36,1); --m23-ios:cubic-bezier(.32,.72,0,1); }
+@media screen and (max-width:599px){html:not(#_#_#_) body:not(#_#_#_) #m10-dock{ gap:10px !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-bar{
+    grid-template-columns:repeat(4, minmax(0, 1fr)) !important; width:min(300px, calc(100vw - 100px)) !important; height:64px !important; padding:4px !important; border-radius:32px !important;
+    background-color:rgba(255,255,255,.68) !important; border:0 !important;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.06), 0 12px 32px -12px rgba(20,22,35,.28), 0 2px 6px -2px rgba(20,22,35,.10) !important;
+    -webkit-backdrop-filter:blur(16px) saturate(1.8) !important; backdrop-filter:blur(16px) saturate(1.8) !important;
+    touch-action:none !important; overflow:visible !important; transform-origin:50% 50%; will-change:scale; }
+html:not(#_#_#_) body:not(#_#_#_).dark-mode #m10-dock .m10-bar{ background-color:rgba(30,30,34,.66) !important; box-shadow:0 0 0 .5px rgba(255,255,255,.06), 0 12px 32px -10px rgba(0,0,0,.75) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-lens{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-t{ width:auto !important; height:56px !important; border-radius:28px !important; display:flex !important; flex-direction:column; align-items:center; justify-content:center; gap:2px; z-index:3 !important;
+    color:var(--k-ink) !important; transition:color .22s ease !important; transition-property:color !important; transition-duration:.22s !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-t svg{ width:22px !important; height:22px !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-l{ display:block !important; font:600 10px/1 var(--k-font) !important; letter-spacing:.01em; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-t.on{ color:var(--k-acc) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-bar.m23-live .m10-t.on:not(.m23-under){ color:var(--k-ink) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-bar.m23-live .m10-t.m23-under{ color:var(--k-acc) !important; }
+html:not(#_#_#_) body:not(#_#_#_).m23-nolg #m10-dock .m10-t.m23-under svg{ scale:1.16; }
+html:not(#_#_#_) body:not(#_#_#_) #m23-sel{ position:absolute; z-index:1; left:0; top:4px; height:56px; border-radius:28px; pointer-events:none; will-change:transform, width, opacity;
+    background:rgba(20,20,30,.07); box-shadow:inset 0 0 0 .5px rgba(255,255,255,.5); }
+html:not(#_#_#_) body:not(#_#_#_).dark-mode #m23-sel{ background:rgba(255,255,255,.12); box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08); }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-plus{ background:color-mix(in srgb, var(--k-acc) 88%, transparent) !important; overflow:hidden;
+    transition:scale .5s var(--m23-spring) !important; transition-property:scale !important;
+    box-shadow:0 10px 26px -8px rgba(232,93,4,.5), 0 0 0 .5px rgba(0,0,0,.06) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-plus:active{ scale:.9; transform:none !important; }
+html:not(#_) body:not(#_) #m10-dock .m10-plus .m23-pspec{ position:absolute; inset:0; border-radius:inherit; pointer-events:none; background-size:100% 100%; background-repeat:no-repeat; }}
+html:not(#_) body:not(#_) #m23-lens{ position:fixed; left:0; top:0; z-index:8002; pointer-events:none; transform-origin:50% 50%; will-change:transform; }
+html:not(#_) body:not(#_) #m23-lens > i{ position:absolute; inset:0; display:block; pointer-events:none; }
+html:not(#_) body:not(#_) #m23-lens .m23-lsp{ background-size:100% 100%; background-repeat:no-repeat; }
+html:not(#_) body:not(#_) #m23-lens::after{ content:""; position:absolute; inset:var(--m, 22px); border-radius:var(--r, 37px); pointer-events:none; opacity:var(--o, 0);
+  box-shadow:inset 0 0 0 .6px rgba(20,22,35,.16), inset 0 -1px 1px -.5px rgba(20,22,35,.08); }
+html:not(#_) body:not(#_).dark-mode #m23-lens::after{ box-shadow:inset 0 0 0 .6px rgba(255,255,255,.14); }
+html:not(#_) body:not(#_) #m23-lens .m23-lsh{ box-shadow:0 8px 20px -8px rgba(15,18,35,.22), 0 1px 3px rgba(15,18,35,.06); }
+html:not(#_) body:not(#_).dark-mode #m23-lens .m23-lsh{ box-shadow:0 10px 24px -8px rgba(0,0,0,.55); }
+html:not(#_) body:not(#_).dark-mode #m23-lens .m23-lsp{ filter:opacity(.75); }
+html:not(#_) body:not(#_).m23-nolg #m23-lens .m23-lgl{ background:rgba(255,255,255,.18); }
+html:not(#_#_#_) body:not(#_#_#_) :is(.m22-sw, .ios-tgl-track){ overflow:visible !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.m22-sw i, .ios-tgl-knob){ transition:transform .5s var(--m23-spring), scale .5s var(--m23-spring), width .42s var(--m23-spring), height .42s var(--m23-spring), margin .42s var(--m23-spring), background-color .25s ease, box-shadow .25s ease !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m22-sw.m23-lens i, html:not(#_#_#_) body:not(#_#_#_) .ios-tgl-track.m23-lens .ios-tgl-knob{ width:40px !important; height:30px !important; margin:-1.5px 0 0 -6.5px; border-radius:15px !important; scale:1.12;
+  background-color:transparent !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_).m23-nolg .m22-sw.m23-lens i, html:not(#_#_#_) body:not(#_#_#_).m23-nolg .ios-tgl-track.m23-lens .ios-tgl-knob{ background-color:rgba(255,255,255,.3) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m22-row:active .m22-sw i{ width:27px; }
+html:not(#_#_#_) body:not(#_#_#_) .m22-row:active .m22-sw.on i{ transform:translateX(20px); }
+html:not(#_) body:not(#_) .m23-fl{ position:fixed; left:0; top:0; z-index:99990; pointer-events:none; visibility:hidden; transform-origin:50% 50%; will-change:transform; }
+html:not(#_) body:not(#_) .m23-fl > i{ position:absolute; inset:0; display:block; pointer-events:none; opacity:0; transition:opacity .24s ease; }
+html:not(#_) body:not(#_) .m23-fl.on > i{ opacity:1; transition-duration:.1s; }
+html:not(#_) body:not(#_) .m23-fl .m23-fsp{ background-size:100% 100%; background-repeat:no-repeat; }
+html:not(#_) body:not(#_) .m23-fl .m23-fsh{ box-shadow:0 5px 14px -5px rgba(15,18,35,.25), 0 1px 2px rgba(15,18,35,.06); }
+html:not(#_) body:not(#_).dark-mode .m23-fl .m23-fsh{ box-shadow:0 6px 16px -5px rgba(0,0,0,.6); }
+html:not(#_) body:not(#_).dark-mode .m23-fl .m23-fsp{ filter:opacity(.75); }
+html:not(#_) body:not(#_).m23-nolg .m23-fl .m23-fgl{ background:rgba(255,255,255,.2); }
+html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > .m22-k, html:not(#_#_#_) body:not(#_#_#_) .m8-switch.m23-lens > .m8-switch-thumb{ z-index:2 !important; scale:1.07 1.18;
+  background-color:transparent !important; background-image:none !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_).m23-nolg .m22-glide.m23-lens > .m22-k, html:not(#_#_#_) body:not(#_#_#_).m23-nolg .m8-switch.m23-lens > .m8-switch-thumb{ background-color:rgba(255,255,255,.3) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > :is(button, [role="tab"], [role="radio"]), html:not(#_#_#_) body:not(#_#_#_) .m8-switch.m23-lens button{ color:var(--k-ink) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-switch-thumb{ transition-property:transform, background-color, scale, box-shadow !important; transition-duration:.46s, .25s, .5s, .25s !important; transition-timing-function:var(--m23-ios), ease, var(--m23-spring), ease !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m23-p{ transition:scale .5s var(--m23-spring), background-color .25s ease, color .25s ease, box-shadow .25s ease, border-color .25s ease, opacity .25s ease !important;
+  transition-property:scale, background-color, color, box-shadow, border-color, opacity !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m23-p.m23-down{ scale:var(--m23-k, .96); transition:scale .12s ease-out, background-color .15s ease, color .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease !important;
+  transition-property:scale, background-color, color, box-shadow, border-color, opacity !important; }
+@media (hover:hover) and (pointer:fine){html:not(#_#_#_) body:not(#_#_#_) :is(.m5-card, .m16-ch, .m16-kp, .m22-card, .m13-kpi, .m16-total){ transition:translate .35s var(--m23-out), box-shadow .35s var(--m23-out) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.m5-card, .m16-ch, .m16-kp, .m13-kpi):hover{ translate:0 -2px; box-shadow:0 14px 30px -18px rgba(20,20,30,.28) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(button, .m8-btn, .m22-row, .m9-row-h, .m16-tr[role="button"], .zm-item, .zm-subitem):not(.m23-p){ transition:background-color .22s ease, color .22s ease, box-shadow .22s ease, border-color .22s ease !important; }}
+html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave{ display:block !important; position:fixed !important; margin:0 !important; z-index:5 !important; pointer-events:none !important;
+  content-visibility:visible !important; overflow:hidden !important; will-change:translate, opacity; }
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-push, html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-pop, html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-tab{ position:relative; will-change:translate, opacity; }
+html:not(#_#_#_) body:not(#_#_#_) #page-dashboard.m23-leave, html:not(#_#_#_) body:not(#_#_#_) #page-dashboard.active.m23-in-push{ background:var(--k-zone) !important; }
+@keyframes m23-in-r{ from{ translate:100% 0; } to{ translate:0 0; } }
+@keyframes m23-out-l{ from{ translate:0 0; opacity:1; } to{ translate:-26% 0; opacity:.82; } }
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-push{ z-index:6 !important; animation:m23-in-r .52s cubic-bezier(.32,.72,0,1) both !important; box-shadow:-14px 0 40px -18px rgba(0,0,0,.28) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave.m23-out-push{ animation:m23-out-l .52s cubic-bezier(.32,.72,0,1) both !important; }
+@keyframes m23-in-l{ from{ translate:-26% 0; opacity:.82; } to{ translate:0 0; opacity:1; } }
+@keyframes m23-out-r{ from{ translate:0 0; } to{ translate:100% 0; } }
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-pop{ z-index:4 !important; animation:m23-in-l .46s cubic-bezier(.32,.72,0,1) both !important; }
+html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave.m23-out-pop{ z-index:7 !important; animation:m23-out-r .46s cubic-bezier(.32,.72,0,1) both !important; box-shadow:-14px 0 40px -18px rgba(0,0,0,.28) !important; }
+@keyframes m23-fade-out{ from{ opacity:1; } to{ opacity:0; } }
+@keyframes m23-rise{ from{ translate:0 10px; } to{ translate:0 0; } }
+html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave.m23-out-tab{ z-index:7 !important; animation:m23-fade-out .3s cubic-bezier(.4,0,.2,1) both !important; }
+html:not(#_#_#_) body:not(#_#_#_) .page.active.m23-in-tab{ animation:m23-rise .42s cubic-bezier(.22,1,.36,1) both !important; }
+@keyframes m23-row{ from{ opacity:0; translate:0 8px; } to{ opacity:1; translate:0 0; } }
+html:not(#_#_#_) body:not(#_#_#_) .m23-row{ animation:m23-row .46s cubic-bezier(.22,1,.36,1) both; animation-delay:calc(var(--i, 0) * 24ms); }
+@keyframes m23-title{ from{ opacity:0; translate:6px 0; } to{ opacity:1; translate:0 0; } }
+@keyframes m23-sheet{ from{ translate:0 100%; } to{ translate:0 0; } }
+@keyframes m23-sheet-out{ from{ translate:0 0; } to{ translate:0 100%; } }
+@keyframes m23-pop-in{ from{ opacity:0; scale:.94; } to{ opacity:1; scale:1; } }
+@keyframes m23-pop-out{ from{ opacity:1; scale:1; } to{ opacity:0; scale:.96; } }
+@keyframes m23-fade{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes m23-unfade{ from{ opacity:1; } to{ opacity:0; } }
+@media (max-width:599px){html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"] > .modal, html:not(#_#_#_) body:not(#_#_#_) #m5-create.open .m5-sheet{ animation:m23-sheet .56s var(--m23-ios) both !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay.m23-closing > .modal{ animation:m23-sheet-out .3s cubic-bezier(.4,0,1,1) both !important; }}
+@media (min-width:600px){html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"] > .modal, html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open > .m8-pv-box{ animation:m23-pop-in .42s var(--m23-spring) both !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay.m23-closing > .modal, html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing > .m8-pv-box{ animation:m23-pop-out .24s ease both !important; }}
+html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"]{ animation:m23-fade .3s ease both; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay.m23-closing{ display:flex !important; pointer-events:none !important; animation:m23-unfade .3s ease both !important; }
+html:not(#_) body:not(#_) #app-scroll{ overscroll-behavior-y:contain; }
+html:not(#_#_#_) body:not(#_#_#_) :is(input, select, textarea){ transition:box-shadow .25s var(--m23-out), background-color .25s ease, border-color .25s ease !important; }
+html:not(#_#_#_) body:not(#_#_#_) .zm-sub{ transition:max-height .5s var(--m23-ios), opacity .3s ease !important; }
+html:not(#_#_#_) body:not(#_#_#_) .zm-chev{ transition:transform .45s var(--m23-spring) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m9-chev svg{ transition:transform .45s var(--m23-spring) !important; }
+@media (prefers-reduced-motion:reduce){html:not(#_#_#_) body:not(#_#_#_) .page.m23-leave, html:not(#_#_#_) body:not(#_#_#_) .page.m23-in-push, html:not(#_#_#_) body:not(#_#_#_) .page.m23-in-pop, html:not(#_#_#_) body:not(#_#_#_) .page.m23-in-tab, html:not(#_#_#_) body:not(#_#_#_) .m23-row{ animation-duration:.01s !important; animation-delay:0s !important; }}
+html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch, .m22-sw, .ios-tgl-track, .m10-sw){ touch-action:pan-y; -webkit-user-select:none; user-select:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m22-sw.m23-drag i, html:not(#_#_#_) body:not(#_#_#_) .ios-tgl-track.m23-drag .ios-tgl-knob{ transform:translateX(var(--m23-kx, 0px)) !important; transition-property:scale, background-color, box-shadow !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m10-sw.m23-drag::after{ transform:translateX(var(--m23-kx, 0px)) !important; transition:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m10-sw::after{ transition:transform .5s var(--m23-spring), scale .5s var(--m23-spring), background-color .3s ease, box-shadow .3s ease !important; transition-property:transform, scale, background-color, box-shadow !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m10-sw{ overflow:visible !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m10-sw.m23-lens::after{ scale:1.5 1.32; background-color:rgba(255,255,255,.16) !important;
+  box-shadow:inset 1px 1.5px 0 -.5px rgba(255,255,255,1), inset -1px -1.5px 0 -.5px rgba(255,255,255,.8), inset 0 0 0 .6px rgba(255,255,255,.7), 0 4px 12px -3px rgba(0,0,0,.22) !important;
+  -webkit-backdrop-filter:blur(.6px) saturate(1.8) brightness(1.08); backdrop-filter:blur(.6px) saturate(1.8) brightness(1.08); }</style>
 </head>
 <body>
 <div id="amx-intro" aria-hidden="true"><div id="amx-bgw"><div id="amx-bg"></div><div id="amx-glow"></div><div class="amx-wv" style="background:#FF7E4F"></div><div class="amx-wv" style="background:#D9431F"></div><div class="amx-wv" style="background:#ED532D"></div><div id="amx-ring"></div></div><div id="amx-disc"></div><div id="amx-lk"><div id="amx-amo"><div id="amx-ami"><svg id="amx-am" role="img" aria-label="am. nexus"><path fill="#fff" d="M301.9 766.9C262.8 763.7 232.5 744.3 220.2 714.8C215.3 703.1 213.7 692.9 214.3 677.6C214.8 662.9 216.3 656.2 221.6 645.0C235.4 615.7 264.6 598.7 315.7 590.1C322.5 589.0 338.9 586.9 352.2 585.5C380.6 582.5 386.4 581.6 393.7 578.8C406.8 573.9 412.1 562.8 406.5 552.0C404.2 547.5 396.6 541.4 390.6 539.1C374.4 533.0 351.0 534.1 335.2 541.5C326.4 545.7 318.2 553.5 315.6 560.3L313.8 565.0 L272.4 565.0L231.0 565.0 L231.0 562.7C231.0 555.3 238.7 535.7 245.8 525.3C270.5 488.9 325.4 468.3 385.0 473.0C441.2 477.4 479.0 500.4 493.0 538.8C499.0 555.4 499.0 554.8 499.0 662.1L499.0 760.0 L496.8 760.5C495.5 760.8 475.6 760.9 452.5 760.8L410.5 760.5 L410.0 742.0L409.5 723.5 L407.2 727.2C404.3 731.8 393.7 741.7 386.3 746.8C363.9 762.0 332.4 769.5 301.9 766.9ZM522.0 664.6C522.0 560.1 521.9 561.8 527.6 545.4C538.8 512.6 564.0 487.1 597.6 474.4C614.3 468.1 637.5 465.1 654.8 467.0C687.8 470.5 710.1 482.7 730.2 508.1C732.6 511.0 733.1 511.3 733.9 509.9C736.9 505.0 745.3 496.1 751.7 491.0C781.9 466.6 824.8 459.9 865.0 473.1C903.0 485.6 928.7 514.5 936.7 553.7C938.4 561.8 938.5 570.2 938.5 661.5L938.5 760.5 L895.5 760.5L852.5 760.5 L852.0 668.0C851.5 566.5 851.9 573.3 845.5 562.4C835.1 544.6 809.2 539.2 787.4 550.3C778.9 554.6 774.4 559.4 769.8 568.7L765.5 577.3 L765.0 668.9L764.5 760.5 L723.8 760.8L683.0 761.0 L683.0 673.8C683.0 625.1 682.5 583.2 682.0 579.0C680.7 568.6 675.3 558.0 668.5 552.5C662.1 547.4 653.8 544.6 644.5 544.6C626.0 544.7 611.4 554.9 604.8 572.5L602.5 578.5 L602.2 669.8L601.9 761.0 L562.0 761.0L522.0 761.0 L522.0 664.6ZM358.7 703.4C383.4 698.3 402.0 682.4 407.4 661.7C408.2 658.6 409.2 649.4 409.6 641.4C410.2 628.0 410.2 626.7 408.7 627.3C400.1 630.6 386.9 633.6 368.0 636.5C341.1 640.7 334.8 642.2 325.3 646.5C311.4 652.9 304.0 662.8 304.0 674.9C304.0 683.7 305.3 687.8 309.6 692.8C316.6 701.1 326.7 704.8 342.3 704.9C347.1 705.0 354.5 704.3 358.7 703.4Z"/></svg></div></div><div id="amx-dt"></div></div></div>
@@ -26931,11 +27039,10 @@ AMCViewport.onSettle(function(){
     var plus = $('m10-plus');
     plus.addEventListener('click', function(){
       if(Date.now() - (window.__m10HoldAt || 0) < 600) return;
-      M8.haptic('tap');
       if(M8.openCreate) M8.openCreate();
       watchSheet();
     });
-    if(M8.pressHold) M8.pressHold(plus, function(){ window.__m10HoldAt = Date.now(); M8.haptic('heavy'); navMain(mode(), 'entry'); });
+    if(M8.pressHold) M8.pressHold(plus, function(){ window.__m10HoldAt = Date.now(); navMain(mode(), 'entry'); });
     /* swipe the pill sideways to flip Purchase ⇄ Sales */
     var sx = 0, sy = 0, tracking = false;
     bar.addEventListener('touchstart', function(e){ var t = e.touches[0]; sx = t.clientX; sy = t.clientY; tracking = true; swiped = false; }, { passive:true });
@@ -26958,7 +27065,7 @@ AMCViewport.onSettle(function(){
   }
   function goTab(t){
     var pg = M8.page();
-    M8.haptic('select');
+    /* no buzz on the bottom bar (asked for) */
     setLens(TABS.indexOf(t), false);
     if(t === 'dashboard'){
       if(pg === 'dashboard'){ var sc = $('app-scroll'); if(sc) sc.scrollTo({ top:0, behavior:'smooth' }); return; }
@@ -30205,7 +30312,7 @@ AMCViewport.onSettle(function(){
     if(instant){ void k.offsetWidth; noAnim(k, false); }
   }
   var EASE = 'cubic-bezier(.32,.72,0,1)';
-  var TR = 'transform .46s ' + EASE + ', width .46s ' + EASE + ', height .46s ' + EASE + ', background-color .3s ease, opacity .2s ease';
+  var TR = 'transform .46s ' + EASE + ', width .46s ' + EASE + ', height .46s ' + EASE + ', background-color .3s ease, opacity .2s ease, scale .5s cubic-bezier(.34,1.36,.64,1), box-shadow .3s ease';
   /* set inline (with !important) so no older "transition:none" rule can switch the slide off */
   function noAnim(k, off){ k.style.setProperty('transition', off ? 'none' : TR, 'important'); }
   function look(a){
@@ -30236,7 +30343,12 @@ AMCViewport.onSettle(function(){
       void k.offsetWidth; noAnim(k, false);
       requestAnimationFrame(function(){ place(c, false); });
     } else place(c, true);
-    new MutationObserver(function(){ requestAnimationFrame(function(){ place(c, false); }); }).observe(c, { attributes:true, subtree:true, attributeFilter:['class', 'aria-selected', 'aria-checked', 'aria-pressed'] });
+    /* only a change on the buttons counts — the switch's own class changes (made by place itself) would loop forever */
+    var due = 0;
+    new MutationObserver(function(list){
+      if(!list.some(function(m){ return m.target !== c; }) || due) return;
+      due = requestAnimationFrame(function(){ due = 0; place(c, false); });
+    }).observe(c, { attributes:true, subtree:true, attributeFilter:['class', 'aria-selected', 'aria-checked', 'aria-pressed'] });
     /* only a real size change moves the pill without animation (not the first call) */
     var sz = c.offsetWidth + 'x' + c.offsetHeight;
     if('ResizeObserver' in window) new ResizeObserver(function(){ var n = c.offsetWidth + 'x' + c.offsetHeight; if(n === sz) return; sz = n; place(c, true); }).observe(c);
@@ -30355,6 +30467,588 @@ AMCViewport.onSettle(function(){
     scan();
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 30); }); else setTimeout(boot, 30);
+})();
+
+</script>
+<script id="m23-js">/* ══ M23 · GLASS ENGINE ═══════════════════════════════════════════════════════════════════
+   Real Liquid Glass optics, worked out per pixel and drawn once per size:
+   · the rim is a rounded bevel: rays through it bend hard, so the rim pulls in what is just
+     outside the glass (squeezed and flipped, like a drop of water); the middle magnifies;
+   · red, green and blue bend by slightly different amounts, so the rim splits into a rainbow;
+   · the light on the rim comes from the shape's real normals: bright where it faces the light,
+     a softer second highlight on the far side, a faint inner bevel glow.
+   The result is an SVG filter on the element's backdrop (Chrome / Edge / Samsung Internet).
+   Safari and Firefox get clear frosted glass with the same light. */
+(function(){
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg', defs = null, cache = {}, n = 0;
+  var ok = (function(){
+    var ua = navigator.userAgent;
+    if(/Firefox|FxiOS|iPhone|iPad|iPod/.test(ua)) return false;
+    if(/Safari/.test(ua) && !/Chrome|Chromium|CriOS|Edg|SamsungBrowser/.test(ua)) return false;
+    try{ return CSS.supports('backdrop-filter', 'url(#a)') || CSS.supports('-webkit-backdrop-filter', 'url(#a)'); }catch(_){ return false; }
+  })();
+  function el(t, at){ var e = document.createElementNS(NS, t); for(var k in at) e.setAttribute(k, at[k]); return e; }
+  function host(){
+    if(defs) return defs;
+    var svg = el('svg', { width:'0', height:'0', 'aria-hidden':'true' });
+    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+    defs = el('defs', {}); svg.appendChild(defs); (document.body || document.documentElement).appendChild(svg);
+    return defs;
+  }
+  function sdf(px, py, hx, hy, r){
+    var qx = Math.abs(px) - hx + r, qy = Math.abs(py) - hy + r;
+    return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
+  }
+  function nrm(px, py, hx, hy, r){
+    var qx = Math.abs(px) - hx + r, qy = Math.abs(py) - hy + r, sx = px < 0 ? -1 : 1, sy = py < 0 ? -1 : 1;
+    if(qx > 0 && qy > 0){ var l = Math.hypot(qx, qy) || 1; return [sx * qx / l, sy * qy / l]; }
+    return qx > qy ? [sx, 0] : [0, sy];
+  }
+  /* o: M margin (px around the glass the rim may pull from) · out: rim pulls from outside (needs M)
+        mag: magnification in the middle · A: how far the rim reaches (px) · B: bevel width (px)
+        k: bevel curve · chroma: rainbow split · res: map resolution · light: rim light strength */
+  function build(w, h, r, o){
+    var M = o.M || 0, res = o.res || 1, TW = w + 2 * M, TH = h + 2 * M;
+    var cw = Math.round(TW * res), ch = Math.round(TH * res);
+    var hx = w / 2, hy = h / 2, rr = Math.min(r, hx, hy), m = 1 - 1 / (o.mag || 1);
+    var off = new Float32Array(cw * ch * 2), mag = new Float32Array(cw * ch * 2), mx = 0.01, mm = 0.01;
+    var sc = document.createElement('canvas'); sc.width = cw; sc.height = ch;
+    var sg = sc.getContext('2d'), sd = sg.createImageData(cw, ch), sp = sd.data;
+    var Lx = -0.5, Ly = -0.866, L = o.light == null ? 1 : o.light, B = o.B, A = o.A, K = o.k || 2.4, dir = o.out ? 1 : -1;
+    for(var j = 0; j < ch; j++) for(var i = 0; i < cw; i++){
+      var px = (i + 0.5) / res - TW / 2, py = (j + 0.5) / res - TH / 2;
+      var d = sdf(px, py, hx, hy, rr); if(d > 0.75) continue;
+      var depth = Math.max(0, -d), nn = nrm(px, py, hx, hy, rr), q = j * cw + i;
+      /* the middle magnifies (one layer, no rainbow) … */
+      var gx = -px * m, gy = -py * m; mag[q * 2] = gx; mag[q * 2 + 1] = gy;
+      if(Math.abs(gx) > mm) mm = Math.abs(gx); if(Math.abs(gy) > mm) mm = Math.abs(gy);
+      /* … the rim bends (second layer, split into colours) */
+      var ox = 0, oy = 0;
+      if(depth < B){ var t = 1 - depth / B, f = A * Math.pow(t, K); ox = dir * nn[0] * f; oy = dir * nn[1] * f; }
+      off[q * 2] = ox; off[q * 2 + 1] = oy;
+      if(Math.abs(ox) > mx) mx = Math.abs(ox); if(Math.abs(oy) > mx) mx = Math.abs(oy);
+      /* light */
+      var dt = nn[0] * Lx + nn[1] * Ly, aa = d > 0 ? 1 - d / 0.75 : 1;
+      var rim = depth < 1.4 ? 1 - depth / 1.4 : 0;
+      var lit = rim * (0.22 + 0.78 * Math.pow(Math.max(dt, 0), 1.4) + 0.5 * Math.pow(Math.max(-dt, 0), 1.6));
+      var bev = depth < B * 0.9 ? 0.09 * Math.pow(1 - depth / (B * 0.9), 2) * (0.4 + 0.6 * Math.abs(dt)) : 0;
+      var a = Math.min(1, (lit + bev) * L) * aa;
+      sp[q * 4] = 255; sp[q * 4 + 1] = 255; sp[q * 4 + 2] = 255; sp[q * 4 + 3] = Math.round(a * 255);
+    }
+    sg.putImageData(sd, 0, 0);
+    function enc(a, mx){
+      var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+      var g = c.getContext('2d'), id = g.createImageData(cw, ch), dd = id.data, S = mx * 2 + 2;
+      for(var z = 0, y4 = 0; z < cw * ch; z++, y4 += 4){
+        dd[y4] = Math.round(255 * (0.5 + a[z * 2] / S)); dd[y4 + 1] = 128;
+        dd[y4 + 2] = Math.round(255 * (0.5 + a[z * 2 + 1] / S)); dd[y4 + 3] = 255;
+      }
+      g.putImageData(id, 0, 0); return { url:c.toDataURL(), S:S };
+    }
+    var rim = enc(off, mx), mg = m > 0 ? enc(mag, mm) : null;
+    return { map:rim.url, scale:rim.S, magMap:mg && mg.url, magScale:mg && mg.S, spec:'url(' + sc.toDataURL() + ')', TW:TW, TH:TH };
+  }
+  function glass(w, h, r, o){
+    w = Math.max(6, Math.round(w)); h = Math.max(6, Math.round(h)); r = Math.round(r);
+    o = Object.assign({ M:0, out:false, mag:1, A:8, B:12, k:2.4, chroma:0.08, res:1, light:1, blur:0, sat:1.5, bright:1.03 }, o || {});
+    var key = [w, h, r, o.M, o.out, o.mag, o.A, o.B, o.k, o.chroma, o.res, o.light, o.blur, o.sat, o.bright, o.soft].join('_');
+    if(cache[key]) return cache[key];
+    var g = build(w, h, r, o), f = null, id = 'm23g' + (++n);
+    if(ok){
+      f = el('filter', { id:id, x:'0', y:'0', width:'100%', height:'100%', 'color-interpolation-filters':'sRGB' });
+      f.appendChild(el('feImage', { href:g.map, x:'0', y:'0', width:String(g.TW), height:String(g.TH), preserveAspectRatio:'none', result:'map' }));
+      var src = 'SourceGraphic';
+      if(g.magMap){
+        f.appendChild(el('feImage', { href:g.magMap, x:'0', y:'0', width:String(g.TW), height:String(g.TH), preserveAspectRatio:'none', result:'mm' }));
+        f.appendChild(el('feDisplacementMap', { 'in':'SourceGraphic', in2:'mm', scale:g.magScale.toFixed(2), xChannelSelector:'R', yChannelSelector:'B', result:'mg' }));
+        src = 'mg';
+      }
+      var keep = ['1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0', '0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0', '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0'];
+      var sc = [1 + o.chroma, 1, 1 - o.chroma];
+      for(var i = 0; i < 3; i++){
+        f.appendChild(el('feDisplacementMap', { 'in':src, in2:'map', scale:(g.scale * sc[i]).toFixed(2), xChannelSelector:'R', yChannelSelector:'B', result:'d' + i }));
+        f.appendChild(el('feColorMatrix', { 'in':'d' + i, type:'matrix', values:keep[i], result:'c' + i }));
+      }
+      f.appendChild(el('feBlend', { 'in':'c0', in2:'c1', mode:'screen', result:'c01' }));
+      f.appendChild(el('feBlend', { 'in':'c01', in2:'c2', mode:'screen', result:'rgb' }));
+      /* displacement samples without smoothing; a hair of blur makes the bent image clean */
+      f.appendChild(el('feGaussianBlur', { 'in':'rgb', stdDeviation:String(o.soft == null ? 0.35 : o.soft) }));
+      host().appendChild(f);
+    }
+    var bf = ok ? 'url(#' + id + ')' + (o.blur ? ' blur(' + o.blur + 'px)' : '') + ' saturate(' + o.sat + ') brightness(' + o.bright + ')'
+                : 'blur(' + (o.blur || 2) + 'px) saturate(' + o.sat + ') brightness(' + o.bright + ')';
+    return (cache[key] = { filter:bf, spec:g.spec, TW:g.TW, TH:g.TH, M:o.M });
+  }
+  function setBF(node, v){ node.style.setProperty('backdrop-filter', v, 'important'); node.style.setProperty('-webkit-backdrop-filter', v, 'important'); }
+  window.M23LG = { ok:ok, glass:glass, setBF:setBF,
+    mark:function(){ document.body.classList.add(ok ? 'm23-lg' : 'm23-nolg'); } };
+})();
+
+/* ══ M23 · MOTION (preview) ══════════════════════════════════════════════════════════════
+   1. Liquid Glass tab bar on phones: the selector is real glass that follows your finger —
+      press, slide across the tabs, let go, and it springs onto the nearest one (like the
+      App Store). Moving fast stretches it a little; it settles with a real spring.
+   2. Every button, row and card squeezes softly when pressed and springs back.
+   3. Pages slide in like an iPhone: forward from the right, Back from the left,
+      tabs with a soft fade. The first rows of a list arrive one after another.
+   Presentation only: no data is read or written here. */
+(function(){
+  'use strict';
+  var M8 = window.M8; if(!M8) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  var phone = matchMedia('(max-width: 599px)');
+
+  var LG = window.M23LG;
+  if(document.body) LG.mark(); else document.addEventListener('DOMContentLoaded', LG.mark);
+  function ss(a, b, v){ v = Math.max(0, Math.min(1, (v - a) / (b - a))); return v * v * (3 - 2 * v); }
+
+  /* one clock for many springs: they all step together, then the frame is painted once */
+  function Sys(paint){ this.list = []; this.raf = 0; this.paint = paint; this.hold = false; }
+  Sys.prototype.add = function(k, c, eps){ var s = { k:k, c:c, x:0, v:0, to:0, e:eps }; this.list.push(s); return s; };
+  Sys.prototype.kick = function(){
+    var me = this; if(me.raf) return;
+    me.t = performance.now();
+    me.raf = requestAnimationFrame(function step(now){
+      var dt = Math.min(0.032, (now - me.t) / 1000), busy = false; me.t = now;
+      me.list.forEach(function(s){
+        if(s.x === s.to && s.v === 0) return;
+        for(var i = 0; i < 4; i++){ var a = -s.k * (s.x - s.to) - s.c * s.v; s.v += a * dt / 4; s.x += s.v * dt / 4; }
+        if(Math.abs(s.v) < s.e * 12 && Math.abs(s.x - s.to) < s.e){ s.x = s.to; s.v = 0; } else busy = true;
+      });
+      me.paint();
+      me.raf = (busy || me.hold) ? requestAnimationFrame(step) : 0;
+    });
+  };
+
+  /* ══ 1 · LIQUID GLASS TAB BAR (studied frame by frame from the App Store) ═══════════════
+     Rest: the chosen tab sits on a soft grey pill.
+     Touch: the whole bar swells a little and the pill rises into a drop of clear glass, a bit
+       taller than the bar. Icons under it are magnified and turn orange; its rim pulls in what
+       is just outside it.
+     Slide: the drop follows the finger. Fast, it grows taller and rounder; when it slows or
+       stops it squashes wide and flat, wobbles, and settles — like jelly.
+     Let go: it glides onto the tab under the finger and melts back into the pill. */
+  var bar = null, sel = null, lens = null, lg = null, lsp = null, lsh = null, G = null, TW0 = 0;
+  var sys = null, X, Wd, P, E, drag = null, dragged = false, sinkT = 0;
+  var HOLD_W = 22, MOVE_W = 14, HOLD_H = 2, MOVE_H = 20, H0 = 74;
+  function tabs(){ return bar ? [].slice.call(bar.querySelectorAll('.m10-t')) : []; }
+  function onTab(){ var t = tabs(); for(var i = 0; i < t.length; i++) if(t[i].classList.contains('on')) return t[i]; return null; }
+  function mid(t){ return t.offsetLeft + t.offsetWidth / 2; }
+  function nearest(px){ var best = null, bd = 1e9; tabs().forEach(function(t){ var d = Math.abs(mid(t) - px); if(d < bd){ bd = d; best = t; } }); return best; }
+  function buildLens(){
+    var t = tabs()[0]; if(!t) return;
+    var tw = t.offsetWidth; if(G && TW0 === tw) return; TW0 = tw;
+    G = LG.glass(tw + HOLD_W, H0, H0 / 2, { M:22, out:true, mag:1.18, A:16, B:15, k:2.4, chroma:0.14, soft:0.3, sat:1.25, bright:1.02, light:1 });
+    G.w0 = tw + HOLD_W; G.h0 = H0;
+    lens.style.width = G.TW + 'px'; lens.style.height = G.TH + 'px';
+    LG.setBF(lg, G.filter); lg.style.clipPath = 'inset(' + G.M + 'px round ' + (H0 / 2) + 'px)';
+    lsp.style.backgroundImage = G.spec;
+    lsh.style.inset = G.M + 'px'; lsh.style.borderRadius = (H0 / 2) + 'px';
+    lens.style.setProperty('--m', G.M + 'px'); lens.style.setProperty('--r', (H0 / 2) + 'px');
+  }
+  function barGlass(){
+    if(!bar || !bar.offsetWidth) return;
+    var dark = document.body.classList.contains('dark-mode');
+    var g = LG.glass(bar.offsetWidth, bar.offsetHeight, bar.offsetHeight / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:20, sat:1.8, bright:dark ? 1 : 1.05, light:dark ? 0.5 : 0.9, soft:0 });
+    LG.setBF(bar, g.filter);
+    bar.style.setProperty('background-image', g.spec, 'important');
+    bar.style.setProperty('background-size', '100% 100%', 'important');
+    bar.style.setProperty('background-repeat', 'no-repeat', 'important');
+  }
+  function paint(){
+    if(!bar || !G) return;
+    var tw = Wd.x, p = Math.max(0, P.x), e = E.x, bh = bar.offsetHeight, inner = bh - 8;
+    if(drag) E.to = Math.min(1, Math.abs(X.v) / 700);            /* faster → taller and rounder */
+    var wl = tw + HOLD_W + (MOVE_W - HOLD_W) * e, hl = bh + HOLD_H + (MOVE_H - HOLD_H) * e;
+    var w = tw + (wl - tw) * p, h = inner + (hl - inner) * p;
+    /* the whole bar swells a little while it is held */
+    bar.style.scale = (1 + 0.035 * p).toFixed(4);
+    /* the resting pill melts away as the glass rises, and back as it comes down */
+    sel.style.width = tw + 'px';
+    sel.style.transform = 'translate3d(' + (X.x - tw / 2).toFixed(2) + 'px,0,0)';
+    sel.style.opacity = (1 - ss(0.04, 0.45, p)).toFixed(3);
+    if(p < 0.004){ if(lens.style.visibility !== 'hidden') lens.style.visibility = 'hidden'; }
+    else {
+      var r = bar.getBoundingClientRect(), s = r.width / bar.offsetWidth;
+      var cx = r.left + (bar.clientLeft + X.x) * s, cy = r.top + r.height / 2;
+      var sx = w * s / G.w0, sy = h * s / G.h0, o = ss(0, 0.22, p).toFixed(3);
+      lens.style.visibility = 'visible';
+      lens.style.transform = 'translate3d(' + (cx - G.TW / 2).toFixed(2) + 'px,' + (cy - G.TH / 2).toFixed(2) + 'px,0) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
+      lg.style.opacity = o; lsp.style.opacity = o; lsh.style.opacity = o; lens.style.setProperty('--o', o);
+    }
+    var live = p > 0.25;
+    bar.classList.toggle('m23-live', live);
+    tabs().forEach(function(t){ t.classList.toggle('m23-under', live && Math.abs(mid(t) - X.x) < w * 0.32); });
+  }
+  function lift(to){ clearTimeout(sinkT); P.k = 400; P.c = 25; P.to = to == null ? 1 : to; sys.kick(); }
+  function sink(wait){ clearTimeout(sinkT); sinkT = setTimeout(function(){ if(drag) return; P.k = 230; P.c = 29; P.to = 0; E.to = 0; sys.kick(); }, wait || 0); }
+  function goTab(t, instant){
+    if(!t) return;
+    X.to = mid(t); Wd.to = t.offsetWidth;
+    if(instant || reduce.matches){ X.x = X.to; X.v = 0; Wd.x = Wd.to; Wd.v = 0; }
+    sys.kick();
+  }
+  function setupBar(){
+    bar = $('m10-bar'); if(!bar || bar.__m23) return;
+    bar.__m23 = 1;
+    sel = document.createElement('span'); sel.id = 'm23-sel'; sel.setAttribute('aria-hidden', 'true');
+    bar.insertBefore(sel, bar.firstChild);
+    lens = $('m23-lens') || document.createElement('div'); lens.id = 'm23-lens'; lens.setAttribute('aria-hidden', 'true'); lens.style.visibility = 'hidden';
+    lens.innerHTML = '<i class="m23-lsh"></i><i class="m23-lgl"></i><i class="m23-lsp"></i>';
+    document.body.appendChild(lens);
+    lsh = lens.children[0]; lg = lens.children[1]; lsp = lens.children[2];
+    sys = new Sys(paint);
+    X = sys.add(420, 40, 0.1); Wd = sys.add(420, 40, 0.1);
+    P = sys.add(400, 25, 0.002);                 /* press: 0 = pill, 1 = glass */
+    E = sys.add(190, 13, 0.003);                 /* motion: under-damped, so it wobbles */
+    var dock = $('m10-dock');
+    /* the old sideways swipe (switch book) gives way to sliding the glass, like iOS */
+    ['touchstart', 'touchmove', 'touchend'].forEach(function(ev){
+      dock.addEventListener(ev, function(e){ if(e.target.closest && e.target.closest('#m10-bar')) e.stopPropagation(); }, { capture:true, passive:true });
+    });
+    function fingerX(e){ var r = bar.getBoundingClientRect(), s = r.width / bar.offsetWidth; return (e.clientX - r.left) / s - bar.clientLeft; }
+    function clampX(x){ var h = Math.max(Wd.to / 2 + 4, (Wd.to + HOLD_W) / 2 - 6), lo = h, hi = bar.clientWidth - h; return x < lo ? lo - Math.min(10, (lo - x) * 0.25) : x > hi ? hi + Math.min(10, (x - hi) * 0.25) : x; }
+    bar.addEventListener('pointerdown', function(e){
+      if(!phone.matches || e.button > 0) return;
+      buildLens();
+      var fx = fingerX(e), t = nearest(fx);
+      drag = { x0:e.clientX, moved:false, id:e.pointerId, tab:t, fx:fx };
+      dragged = false;
+      if(t) Wd.to = t.offsetWidth;
+      X.to = clampX(fx); E.to = 0; sys.hold = true; lift();
+      try{ bar.setPointerCapture(e.pointerId); }catch(_){}
+    });
+    bar.addEventListener('pointermove', function(e){
+      if(!drag || e.pointerId !== drag.id) return;
+      if(!drag.moved && Math.abs(e.clientX - drag.x0) < 5) return;
+      drag.moved = true; dragged = true;
+      drag.fx = fingerX(e); X.to = clampX(drag.fx);
+      var t = nearest(drag.fx); if(t && t !== drag.tab){ drag.tab = t; Wd.to = t.offsetWidth; }
+      sys.kick();
+    });
+    function end(e){
+      if(!drag) return;
+      var was = drag; drag = null; sys.hold = false;
+      var t = was.moved ? nearest(was.fx) : was.tab;   /* the tab under the finger */
+      goTab(t, false); E.to = 0;
+      sink(50);
+      /* we open the tab ourselves (the bar holds the pointer, so the browser's own click
+         may land on the bar instead of the tab); the browser's click is then ignored */
+      if(t && (was.moved ? !t.classList.contains('on') : e && e.type === 'pointerup')){ dragged = false; t.click(); }
+      dragged = true; setTimeout(function(){ dragged = false; }, 80);
+    }
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+    /* a tap that came from a slide is not a second tap */
+    bar.addEventListener('click', function(e){ if(dragged){ e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    /* follow the app: when the chosen tab changes from elsewhere, the glass travels there */
+    new MutationObserver(function(){
+      if(drag) return; var t = onTab();
+      if(!t){ sel.style.opacity = '0'; return; }
+      if(Math.abs(mid(t) - X.to) > 2){ buildLens(); if(P.to === 0 && !reduce.matches){ lift(0.8); sink(260); } goTab(t, false); }
+    }).observe(bar, { attributes:true, subtree:true, attributeFilter:['class'] });
+    new MutationObserver(barGlass).observe(document.body, { attributes:true, attributeFilter:['class'] });
+    requestAnimationFrame(function(){ buildLens(); barGlass(); goTab(onTab(), true); paint(); });
+    window.addEventListener('resize', function(){ TW0 = 0; buildLens(); barGlass(); goTab(onTab(), true); });
+  }
+
+  /* ══ 1b · SWITCHES TURN INTO REAL GLASS WHILE YOU TOUCH THEM ═════════════════════════
+     On / off switches: the white knob swells into a clear lens; the colour of the track shows
+     through it, bent at the rim. Segmented switches (Purchase / Sales, Month / Year …): the
+     pill rises into glass and magnifies the words under it. Same optics as the tab bar. */
+  var GLASSY = '.m22-sw, .ios-tgl-track, .m10-sw, .m22-glide, .m8-switch';
+  function glassOf(t){
+    var g = t.closest(GLASSY); if(g) return g;
+    var row = t.closest('.m22-row, .ios-tgl, label'); return row ? row.querySelector('.m22-sw, .ios-tgl-track, .m10-sw') : null;
+  }
+  function knobFor(g){
+    if(g.classList.contains('m22-sw')) return g.querySelector(':scope > i');
+    if(g.classList.contains('ios-tgl-track')) return g.querySelector('.ios-tgl-knob');
+    return g.querySelector(':scope > .m22-k, :scope > .m8-switch-thumb');
+  }
+  /* the glass floats above the page (where Chrome lets it see everything behind it) and
+     follows the knob or pill every frame while it is held, then fades as the knob turns solid */
+  function Float(){
+    var f = document.createElement('div'); f.className = 'm23-fl'; f.setAttribute('aria-hidden', 'true');
+    f.innerHTML = '<i class="m23-fsh"></i><i class="m23-fgl"></i><i class="m23-fsp"></i>';
+    document.body.appendChild(f);
+    this.el = f; this.sh = f.children[0]; this.gl = f.children[1]; this.sp = f.children[2]; this.k = null; this.raf = 0; this.t = 0;
+  }
+  Float.prototype.show = function(k, w, h, r, o){
+    var me = this, g = LG.glass(w, h, r, o);
+    me.k = k; me.w = w; me.h = h; clearTimeout(me.t);
+    if(me.key !== g.filter){
+      me.key = g.filter;
+      me.el.style.width = g.TW + 'px'; me.el.style.height = g.TH + 'px';
+      LG.setBF(me.gl, g.filter); me.gl.style.clipPath = 'inset(' + g.M + 'px round ' + r + 'px)';
+      me.sp.style.backgroundImage = g.spec;
+      me.sh.style.inset = g.M + 'px'; me.sh.style.borderRadius = r + 'px';
+    }
+    me.TW = g.TW; me.TH = g.TH;
+    me.track(); me.el.style.visibility = 'visible';
+    requestAnimationFrame(function(){ me.el.classList.add('on'); });
+    if(!me.raf) (function loop(){ me.track(); me.raf = requestAnimationFrame(loop); })();
+  };
+  Float.prototype.track = function(){
+    var k = this.k; if(!k || !k.isConnected){ this.stop(); return; }
+    var r = k.getBoundingClientRect(); if(!r.width){ return; }
+    var sx = r.width / this.w, sy = r.height / this.h;
+    this.el.style.transform = 'translate3d(' + (r.left + r.width / 2 - this.TW / 2).toFixed(2) + 'px,' + (r.top + r.height / 2 - this.TH / 2).toFixed(2) + 'px,0) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
+  };
+  Float.prototype.hide = function(){ var me = this; me.el.classList.remove('on'); clearTimeout(me.t); me.t = setTimeout(function(){ me.stop(); }, 300); };
+  Float.prototype.stop = function(){ cancelAnimationFrame(this.raf); this.raf = 0; this.k = null; this.el.classList.remove('on'); this.el.style.visibility = 'hidden'; };
+  var floats = [], fi = 0;
+  function floatFor(g){ if(!floats.length){ floats = [new Float(), new Float()]; } if(g.__fl) return g.__fl; var f = floats[fi++ % floats.length]; if(f.g && f.g !== g) f.g.__fl = null; f.g = g; g.__fl = f; return f; }
+  function lensOn(g){
+    clearTimeout(g.__m23t); g.classList.add('m23-lens');
+    var k = knobFor(g); if(!k) return;
+    var f = floatFor(g);
+    if(g.classList.contains('m22-sw') || g.classList.contains('ios-tgl-track')){
+      f.show(k, 40, 30, 15, { M:12, out:true, mag:1.12, A:9, B:9, k:2.4, chroma:0.14, soft:0.3, sat:1.5, bright:1.04 });
+    } else {
+      var w = k.offsetWidth, h = k.offsetHeight; if(!w || !h) return;
+      var r = Math.min(h / 2, parseFloat(getComputedStyle(k).borderTopLeftRadius) || h / 2);
+      f.show(k, w, h, r, { M:14, out:true, mag:1.14, A:11, B:11, k:2.4, chroma:0.14, soft:0.3, sat:1.4, bright:1.03 });
+    }
+  }
+  function lensOff(g, wait){
+    clearTimeout(g.__m23t);
+    g.__m23t = setTimeout(function(){ g.classList.remove('m23-lens'); if(g.__fl && g.__fl.g === g) g.__fl.hide(); }, wait);
+  }
+  var held = null;
+  document.addEventListener('pointerdown', function(e){
+    if(e.button > 0 || reduce.matches) return;
+    var g = e.target.closest && glassOf(e.target); if(!g) return;
+    held = g; lensOn(g);
+  }, true);
+  ['pointerup', 'pointercancel'].forEach(function(ev){ document.addEventListener(ev, function(){ if(held){ lensOff(held, 480); held = null; } }, true); });
+
+  /* the + button is tinted glass: the page bends at its rim and light runs round its edge */
+  function glassPlus(){
+    var b = document.querySelector('#m10-dock .m10-plus'); if(!b || !b.offsetWidth || b.__m23) return;
+    b.__m23 = 1;
+    var w = b.offsetWidth, g = LG.glass(w, w, w / 2, { M:0, out:false, mag:1, A:7, B:11, k:2.2, chroma:0.08, blur:4, sat:1.6, bright:1.05, light:1, soft:0 });
+    LG.setBF(b, g.filter);
+    var sp = document.createElement('i'); sp.className = 'm23-pspec'; sp.setAttribute('aria-hidden', 'true'); sp.style.backgroundImage = g.spec; b.appendChild(sp);
+  }
+
+  /* ══ 1c · EVERY SWITCH CAN BE DRAGGED ═════════════════════════════════════════════════
+     Like iOS: hold the pill (or the knob) and slide it with your finger — it follows,
+     resists past the ends, and when you let go it lands on the option under it. */
+  var SEGS = '.m22-glide, .m8-switch', ONOFF = '.m22-sw, .ios-tgl-track, .m10-sw';
+  var D = null, swallowTill = 0, passing = false;
+  function segBtns(g){ return [].filter.call(g.children, function(k){ return k.tagName === 'BUTTON' || k.getAttribute('role') === 'tab' || k.getAttribute('role') === 'radio'; }); }
+  function knobOf(g){ return g.querySelector(':scope > .m22-k, :scope > .m8-switch-thumb'); }
+  function txOf(el){ var t = getComputedStyle(el).transform; if(!t || t === 'none') return { x:0, y:0 }; var m = new DOMMatrixReadOnly(t); return { x:m.m41, y:m.m42 }; }
+  function swOn(g){
+    if(g.classList.contains('m22-sw')) return g.classList.contains('on');
+    if(g.classList.contains('m10-sw')) return g.getAttribute('aria-checked') === 'true';
+    var inp = g.parentNode && g.parentNode.querySelector('input'); return !!(inp && inp.checked);
+  }
+  function rubber(v, lo, hi){ return v < lo ? lo - Math.min(14, (lo - v) * 0.25) : v > hi ? hi + Math.min(14, (v - hi) * 0.25) : v; }
+  function isOn(b){ return b.matches('.on, .active, [aria-selected="true"], [aria-checked="true"], [aria-pressed="true"]'); }
+  function press(el){ passing = true; try{ el.click(); } finally { passing = false; } }
+  document.addEventListener('pointerdown', function(e){
+    if(e.button > 0 || !e.target.closest) return;
+    D = null;
+    var seg = e.target.closest(SEGS);
+    if(seg){
+      var k = knobOf(seg), b = segBtns(seg); if(!k || b.length < 2 || !k.offsetWidth) return;
+      var t = txOf(k);
+      D = { kind:'seg', g:seg, k:k, b:b, x0:e.clientX, y0:e.clientY, tx:t.x, ty:t.y, id:e.pointerId, moved:false };
+      return;
+    }
+    var sw = e.target.closest(ONOFF);
+    if(sw) D = { kind:'sw', g:sw, x0:e.clientX, y0:e.clientY, on:swOn(sw), id:e.pointerId, moved:false, p:0 };
+  }, true);
+  document.addEventListener('pointermove', function(e){
+    if(!D || e.pointerId !== D.id) return;
+    var dx = e.clientX - D.x0;
+    if(!D.moved){
+      if(Math.abs(dx) < 6) return;
+      if(Math.abs(e.clientY - D.y0) > Math.abs(dx)){ D = null; return; }   /* that was a scroll */
+      D.moved = true; D.g.classList.add('m23-drag');
+      if(D.kind === 'seg'){
+        D.tr = [D.k.style.getPropertyValue('transition'), D.k.style.getPropertyPriority('transition')];
+        D.k.style.setProperty('transition', 'scale .5s cubic-bezier(.34,1.36,.64,1), background-color .3s ease, box-shadow .3s ease, width .3s cubic-bezier(.32,.72,0,1)', 'important');
+        var f = D.b[0], l = D.b[D.b.length - 1];
+        D.lo = f.offsetLeft - D.k.offsetLeft; D.hi = l.offsetLeft + l.offsetWidth - D.k.offsetWidth - D.k.offsetLeft;
+      }
+    }
+    if(D.kind === 'seg'){
+      var x = rubber(D.tx + dx, D.lo, D.hi);
+      D.k.style.setProperty('transform', 'translate3d(' + x.toFixed(2) + 'px,' + D.ty + 'px,0)', 'important');
+      var mid = D.k.offsetLeft + x + D.k.offsetWidth / 2, best = null, bd = 1e9;
+      D.b.forEach(function(q){ var d = Math.abs(q.offsetLeft + q.offsetWidth / 2 - mid); if(d < bd){ bd = d; best = q; } });
+      if(best !== D.near){ D.near = best; if(D.k.classList.contains('m22-k')) D.k.style.width = best.offsetWidth + 'px'; }
+    } else {
+      D.p = rubber((D.on ? 20 : 0) + dx, 0, 20);
+      D.g.style.setProperty('--m23-kx', D.p.toFixed(2) + 'px');
+    }
+  }, true);
+  function dragEnd(e){
+    if(!D || (e && e.pointerId !== D.id)) return;
+    var d = D; D = null;
+    if(!d.moved) return;
+    swallowTill = performance.now() + 450;
+    d.g.classList.remove('m23-drag');
+    if(d.kind === 'seg'){
+      var t = d.near || d.b.filter(isOn)[0];
+      if(d.tr[0]) d.k.style.setProperty('transition', d.tr[0], d.tr[1]); else d.k.style.removeProperty('transition');
+      if(d.k.classList.contains('m22-k')){
+        if(t && !isOn(t)) press(t);
+        else if(t){ d.k.style.width = t.offsetWidth + 'px'; d.k.style.transform = 'translate3d(' + t.offsetLeft + 'px,' + t.offsetTop + 'px,0)'; }
+      } else {
+        d.k.style.removeProperty('transform');
+        if(t && !isOn(t)) press(t);
+      }
+    } else {
+      var want = d.p > 10;
+      d.g.style.removeProperty('--m23-kx');
+      if(want !== d.on){ var inp = d.g.classList.contains('ios-tgl-track') && d.g.parentNode.querySelector('input'); press(inp || d.g); }
+    }
+  }
+  document.addEventListener('pointerup', dragEnd, true);
+  document.addEventListener('pointercancel', dragEnd, true);
+  /* the click the browser sends after a drag is not a second choice */
+  document.addEventListener('click', function(e){
+    if(passing || performance.now() > swallowTill || !e.target.closest) return;
+    if(e.target.closest(SEGS + ', ' + ONOFF + ', .m22-row, .ios-tgl')){ e.stopImmediatePropagation(); e.preventDefault(); swallowTill = 0; }
+  }, true);
+
+  /* ══ 2 · PRESS FEEDBACK ══════════════════════════════════════════════════════════════ */
+  var PRESS = 'button, [role="button"], a.btn, .m8-btn, .m22-row, .m9-row-h, .m16-tr[role="button"], .zm-item, .zm-subitem, .m5-card[data-act], [data-act], .m13-row, tr[onclick], #all-records-table tbody tr, #payments-table tbody tr, #party-summary-table tbody tr, .chq-row, .m8-le';
+  var down = null;
+  function release(){ if(!down) return; var d = down; down = null; d.classList.remove('m23-down'); }
+  document.addEventListener('pointerdown', function(e){
+    if(e.button > 0) return;
+    var t = e.target.closest && e.target.closest(PRESS); if(!t || t.disabled) return;
+    if(t.closest('#m10-bar') || glassOf(t)) return;   /* glass controls have their own lens */
+    t.classList.add('m23-p');
+    /* big things squeeze less than small ones */
+    var r = t.getBoundingClientRect(), a = r.width * r.height;
+    t.style.setProperty('--m23-k', a > 60000 ? '.985' : a > 12000 ? '.975' : '.94');
+    release(); down = t; t.classList.add('m23-down');
+  }, true);
+  ['pointerup', 'pointercancel', 'pointerleave', 'dragstart'].forEach(function(ev){ document.addEventListener(ev, function(){ setTimeout(release, 40); }, true); });
+  document.addEventListener('scroll', release, true);
+
+  /* ══ 3 · PAGES MOVE LIKE AN iPHONE ═══════════════════════════════════════════════════
+     The old page no longer vanishes. It stays on screen and moves away while the new one
+     comes in, on the same smooth curve iOS uses:
+       open a page  → the new page slides in from the right over the old one, which drifts
+                      left and dims a little;
+       go back      → the page slides away to the right and reveals the one underneath;
+       switch tabs  → the old page fades out over the new one (a clean cross-fade).
+     Only the page's own position and opacity move, so it stays smooth on a phone. */
+  var TABS = ['dashboard', 'records', 'payments', 'parties'], last = null, backing = false, leaving = null;
+  window.addEventListener('popstate', function(){ backing = true; setTimeout(function(){ backing = false; }, 450); }, true);
+  var DUR = { push:520, pop:460, tab:340 };
+  function finishLeave(){
+    if(!leaving) return;
+    var l = leaving; leaving = null; clearTimeout(l.t);
+    l.el.classList.remove('m23-leave', 'm23-out-push', 'm23-out-pop', 'm23-out-tab');
+    ['top', 'left', 'width', 'height', 'clip-path'].forEach(function(k){ l.el.style.removeProperty(k); });
+    if(l.into) l.into.classList.remove('m23-in-push', 'm23-in-pop', 'm23-in-tab');
+  }
+  /* our own record of where you came from, so "back" is known even when the app handles
+     the back button before we hear about it */
+  var trail = [];
+  function kindOf(from, to){
+    var ev = window.event, back = backing || (ev && ev.type === 'popstate') || trail[trail.length - 2] === to;
+    var kind;
+    if(TABS.indexOf(to) >= 0 && TABS.indexOf(from) >= 0) kind = 'tab';
+    else if(!phone.matches) kind = 'tab';
+    else kind = back ? 'pop' : 'push';
+    if(TABS.indexOf(to) >= 0 && kind !== 'pop') trail = [to];
+    else if(back && trail[trail.length - 2] === to) trail.pop();
+    else { if(!trail.length) trail.push(from); trail.push(to); }
+    if(trail.length > 20) trail = trail.slice(-20);
+    return kind;
+  }
+  /* before the switch: keep the old page exactly where it is, as a picture that can move */
+  function holdOld(from){
+    finishLeave();
+    var el = $('page-' + from); if(!el || !el.classList.contains('active')) return null;
+    var r = el.getBoundingClientRect(); if(!r.width) return null;
+    var top = r.top, h = Math.max(r.height, innerHeight - r.top);
+    return { el:el, top:top, left:r.left, width:r.width, height:h };
+  }
+  function wrapShowPage(){
+    var orig = window.showPage; if(typeof orig !== 'function' || orig.__m23) return;
+    var w = function(id){
+      var from = M8.page ? M8.page() : last, keep = null, kind = null;
+      if(!reduce.matches && id && from && id !== from && $('page-' + id)){ kind = kindOf(from, id); keep = holdOld(from); }
+      var r = orig.apply(this, arguments);
+      if(keep){
+        var el = keep.el, to = $('page-' + id);
+        el.classList.add('m23-leave', 'm23-out-' + kind);
+        el.style.top = keep.top + 'px'; el.style.left = keep.left + 'px'; el.style.width = keep.width + 'px'; el.style.height = keep.height + 'px';
+        /* only what is on screen is painted while it moves */
+        var cutTop = Math.max(0, -keep.top), cutBot = Math.max(0, keep.top + keep.height - innerHeight);
+        el.style.clipPath = 'inset(' + cutTop + 'px 0 ' + cutBot + 'px 0)';
+        if(to){ to.classList.remove('m23-in-push', 'm23-in-pop', 'm23-in-tab', 'm10-fade', 'm23-push', 'm23-pop', 'm23-tab'); void to.offsetWidth; to.classList.add('m23-in-' + kind); }
+        /* done when its own animation ends (a long safety timer in case it never does) */
+        leaving = { el:el, into:to, t:setTimeout(finishLeave, DUR[kind] + 1200) };
+        var me = leaving;
+        el.addEventListener('animationend', function done(ev){ if(ev.target !== el) return; el.removeEventListener('animationend', done); if(leaving === me) finishLeave(); });
+      }
+      last = id;
+      return r;
+    };
+    w.__m23 = true; w.__orig = orig; window.showPage = w;
+  }
+  function arrive(id){
+    var p = $('page-' + id); if(!p || reduce.matches) return;
+    if(!p.classList.contains('m23-in-tab')) return;
+    /* on a tab change the first rows settle in, one after another, once the page has drawn */
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      var rows = p.querySelectorAll('.m9-row, .m13-row, .m22-card, .m16-group, #all-records-table tbody tr, #payments-table tbody tr, #party-summary-table tbody tr, .m8-le, .m5-card');
+      var n = 0, vh = innerHeight;
+      for(var i = 0; i < rows.length && n < 12; i++){
+        var r = rows[i].getBoundingClientRect(); if(r.top > vh || r.bottom < 0 || !r.height) continue;
+        var el = rows[i]; el.style.setProperty('--i', n++); el.classList.remove('m23-row'); void el.offsetWidth; el.classList.add('m23-row');
+        (function(x){ setTimeout(function(){ x.classList.remove('m23-row'); }, 900); })(el);
+      }
+    }); }); });
+  }
+
+  /* ══ 4 · WINDOWS AND SHEETS CLOSE SMOOTHLY (they used to vanish) ═════════════════════
+     When a sheet or window is told to close, it stays a moment and slides / fades away. */
+  var CLOSE_MS = 300;
+  function closing(ov, show){
+    if(reduce.matches || ov.__m23c) return;
+    ov.__m23c = setTimeout(function(){ ov.classList.remove('m23-closing'); ov.__m23c = 0; }, CLOSE_MS);
+    ov.classList.add('m23-closing');
+  }
+  function watchClose(){
+    new MutationObserver(function(list){
+      list.forEach(function(m){
+        var t = m.target, cn = typeof t.className === 'string' ? t.className : '';
+        if(cn.indexOf('m8-ov') < 0 && cn.indexOf('modal-overlay') < 0) return;
+        var was = m.oldValue || '';
+        if(t.classList.contains('m8-ov') && m.attributeName === 'class'){
+          if(/\bopen\b/.test(was) && !t.classList.contains('open')) closing(t);
+          else if(t.classList.contains('open') && t.__m23c){ clearTimeout(t.__m23c); t.__m23c = 0; t.classList.remove('m23-closing'); }
+        } else if(t.classList.contains('modal-overlay') && m.attributeName === 'style'){
+          var nowShown = /display:\s*flex/.test(t.getAttribute('style') || '');
+          if(/display:\s*flex/.test(was) && !nowShown) closing(t);
+          else if(nowShown && t.__m23c){ clearTimeout(t.__m23c); t.__m23c = 0; t.classList.remove('m23-closing'); }
+        }
+      });
+    }).observe(document.body, { attributes:true, subtree:true, attributeOldValue:true, attributeFilter:['class', 'style'] });
+  }
+
+  /* ══ BOOT ═══════════════════════════════════════════════════════════════════════════ */
+  function boot(){
+    setupBar(); glassPlus(); wrapShowPage(); watchClose();
+    M8.after('showPage', function(id){ setupBar(); glassPlus(); arrive(id); });
+    new MutationObserver(function(){ if(!$('m10-bar') || !$('m10-bar').__m23) setupBar(); }).observe(document.body, { childList:true });
+    last = M8.page ? M8.page() : null;
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 60); }); else setTimeout(boot, 60);
 })();
 
 </script>
