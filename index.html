@@ -9785,14 +9785,14 @@ html:not(#_#_#_) body:not(#_#_#_) #m12-plist .m12-po small{ min-width:0; overflo
 @media (max-width:599px){html:not(#_) body:not(#_) .m22-due b{ font-size:15px; white-space:nowrap; }
 html:not(#_) body:not(#_) .m22-due > span{ padding:9px 11px; }}
 html:not(#_) body:not(#_){ --m23-spring:cubic-bezier(.34,1.36,.64,1); --m23-out:cubic-bezier(.22,1,.36,1); --m23-ios:cubic-bezier(.32,.72,0,1); }
-@media screen and (max-width:599px){html:not(#_#_#_) body:not(#_#_#_) #m10-dock{ gap:10px !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; }
+@media screen and (max-width:900px){html:not(#_#_#_) body:not(#_#_#_) #m10-dock{ gap:10px !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; }
 html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-bar{
     grid-template-columns:repeat(4, minmax(0, 1fr)) !important; width:min(300px, calc(100vw - 100px)) !important; height:64px !important; padding:4px !important; border-radius:32px !important;
-    background-color:rgba(255,255,255,.68) !important; border:0 !important;
+    background-color:rgba(255,255,255,.44) !important; border:0 !important;
     box-shadow:0 0 0 .5px rgba(0,0,0,.06), 0 12px 32px -12px rgba(20,22,35,.28), 0 2px 6px -2px rgba(20,22,35,.10) !important;
     -webkit-backdrop-filter:blur(16px) saturate(1.8) !important; backdrop-filter:blur(16px) saturate(1.8) !important;
     touch-action:none !important; overflow:visible !important; transform-origin:50% 50%; will-change:scale; }
-html:not(#_#_#_) body:not(#_#_#_).dark-mode #m10-dock .m10-bar{ background-color:rgba(30,30,34,.66) !important; box-shadow:0 0 0 .5px rgba(255,255,255,.06), 0 12px 32px -10px rgba(0,0,0,.75) !important; }
+html:not(#_#_#_) body:not(#_#_#_).dark-mode #m10-dock .m10-bar{ background-color:rgba(24,24,27,.5) !important; box-shadow:0 0 0 .5px rgba(255,255,255,.06), 0 12px 32px -10px rgba(0,0,0,.75) !important; }
 html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-lens{ display:none !important; }
 html:not(#_#_#_) body:not(#_#_#_) #m10-dock .m10-t{ width:auto !important; height:56px !important; border-radius:28px !important; display:flex !important; flex-direction:column; align-items:center; justify-content:center; gap:2px; z-index:3 !important;
     color:var(--k-ink) !important; transition:color .22s ease !important; transition-property:color !important; transition-duration:.22s !important; }
@@ -9874,7 +9874,7 @@ html:not(#_#_#_) body:not(#_#_#_) .m23-row{ animation:m23-row .46s cubic-bezier(
 @keyframes m23-fade{ from{ opacity:0; } to{ opacity:1; } }
 @keyframes m23-unfade{ from{ opacity:1; } to{ opacity:0; } }
 @media (max-width:599px){html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"] > .modal, html:not(#_#_#_) body:not(#_#_#_) #m5-create.open .m5-sheet{ animation:m23-sheet .56s var(--m23-ios) both !important; }
-html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay.m23-closing > .modal{ animation:m23-sheet-out .3s cubic-bezier(.4,0,1,1) both !important; }}
+html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay.m23-closing > .modal{ animation:m23-sheet-out .34s cubic-bezier(.32,.72,0,1) both !important; }}
 @media (min-width:600px){html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"] > .modal, html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open > .m8-pv-box{ animation:m23-pop-in .42s var(--m23-spring) both !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing > .m8-sheet, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay.m23-closing > .modal, html:not(#_#_#_) body:not(#_#_#_) .m8-ov.m23-closing > .m8-pv-box{ animation:m23-pop-out .24s ease both !important; }}
 html:not(#_#_#_) body:not(#_#_#_) .m8-ov.open, html:not(#_#_#_) body:not(#_#_#_) .modal-overlay[style*="flex"]{ animation:m23-fade .3s ease both; }
@@ -9892,7 +9892,65 @@ html:not(#_#_#_) body:not(#_#_#_) .m10-sw::after{ transition:transform .5s var(-
 html:not(#_#_#_) body:not(#_#_#_) .m10-sw{ overflow:visible !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m10-sw.m23-lens::after{ scale:1.5 1.32; background-color:rgba(255,255,255,.16) !important;
   box-shadow:inset 1px 1.5px 0 -.5px rgba(255,255,255,1), inset -1px -1.5px 0 -.5px rgba(255,255,255,.8), inset 0 0 0 .6px rgba(255,255,255,.7), 0 4px 12px -3px rgba(0,0,0,.22) !important;
-  -webkit-backdrop-filter:blur(.6px) saturate(1.8) brightness(1.08); backdrop-filter:blur(.6px) saturate(1.8) brightness(1.08); }</style>
+  -webkit-backdrop-filter:blur(.6px) saturate(1.8) brightness(1.08); backdrop-filter:blur(.6px) saturate(1.8) brightness(1.08); }
+@media (max-width:599px){html:not(#_) body:not(#_) .m23-grab{ position:relative; z-index:2; flex:0 0 auto; display:flex; align-items:center; justify-content:center; height:22px; margin:0 0 -6px; touch-action:none; cursor:grab; }
+html:not(#_) body:not(#_) .m23-grab::after{ content:""; width:36px; height:5px; border-radius:3px; background:rgba(60,60,67,.3); }
+html:not(#_) body:not(#_).dark-mode .m23-grab::after{ background:rgba(235,235,245,.3); }
+html:not(#_) body:not(#_) .m5-grab{ width:36px; height:5px; border-radius:3px; background:rgba(60,60,67,.3); touch-action:none; position:relative; }
+html:not(#_) body:not(#_) .m5-grab::before{ content:""; position:absolute; inset:-14px -60px; }
+html:not(#_) body:not(#_).dark-mode .m5-grab{ background:rgba(235,235,245,.3); }
+html:not(#_#_#_) body:not(#_#_#_) .modal-overlay > .modal:has(> .m23-grab)::before{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m8-ov > .m8-sheet > .m23-grab + .m8-sheet-h{ padding-top:8px !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.modal-header, .m8-sheet-h){ touch-action:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m23-sheet-drag{ will-change:transform; }}
+@media (min-width:600px){html:not(#_) body:not(#_) .m23-grab{ display:none !important; }}
+@media (max-width:599px){html:not(#_#_#_) body:not(#_#_#_) #m5-create .m5-sheet{ transform:translate3d(0,100%,0); transition:transform .34s cubic-bezier(.32,.72,0,1) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-create.open .m5-sheet{ transform:none; transition:transform .52s cubic-bezier(.32,.72,0,1) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-create{ transition:opacity .3s ease, visibility 0s .34s !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m5-create.open{ transition:opacity .3s ease !important; }}
+html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch.show){ background:rgba(118,118,128,.12) !important; background-image:none !important; border:0 !important; box-shadow:none !important; border-radius:999px !important; }
+html:not(#_#_#_) body:not(#_#_#_).dark-mode :is(.m22-glide, .m8-switch.show){ background:rgba(118,118,128,.24) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m22-glide > .m22-k, html:not(#_#_#_) body:not(#_#_#_) .m8-switch > .m8-switch-thumb{ background-color:#fff !important; background-image:none !important; border-radius:999px !important;
+  box-shadow:0 3px 8px rgba(0,0,0,.12), 0 3px 1px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04) !important; }
+html:not(#_#_#_) body:not(#_#_#_).dark-mode .m22-glide > .m22-k, html:not(#_#_#_) body:not(#_#_#_).dark-mode .m8-switch > .m8-switch-thumb{ background-color:#636366 !important; box-shadow:0 3px 8px rgba(0,0,0,.3) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch) > :is(button, [role="tab"], [role="radio"]){ color:var(--k-ink) !important; font-weight:500 !important; border-radius:999px !important; background:transparent !important; box-shadow:none !important; touch-action:pan-y; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch) > :is(button, [role="tab"], [role="radio"]):is(.on, .active, [aria-selected="true"], [aria-checked="true"], [aria-pressed="true"]){ font-weight:600 !important; }
+html:not(#_#_#_) body:not(#_#_#_) #m8-switch[data-m="sales"] > button.on, html:not(#_#_#_) body:not(#_#_#_) .m5-seg > button.on[data-view="sales"]{ color:var(--k-acc) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .alloc-seg{ display:flex !important; width:100% !important; padding:3px !important; gap:0 !important; }
+html:not(#_#_#_) body:not(#_#_#_) .alloc-seg > .alloc-seg-btn{ flex:1 1 0 !important; min-height:34px !important; font-size:13px !important; padding:6px 10px !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch).m23-live > :is(button, [role="tab"], [role="radio"]){ color:var(--k-ink) !important; }
+html:not(#_) body:not(#_) #m23-slens{ position:fixed; left:0; top:0; z-index:99991; pointer-events:none; transform-origin:50% 50%; will-change:transform; }
+html:not(#_) body:not(#_) #m23-slens > i{ position:absolute; inset:0; display:block; pointer-events:none; }
+html:not(#_) body:not(#_) #m23-slens .m23-lsp{ background-size:100% 100%; background-repeat:no-repeat; }
+html:not(#_) body:not(#_) #m23-slens .m23-lsh{ box-shadow:0 6px 16px -6px rgba(15,18,35,.22), 0 1px 3px rgba(15,18,35,.06); }
+html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lsh{ box-shadow:0 8px 20px -6px rgba(0,0,0,.55); }
+html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lsp{ filter:opacity(.75); }
+html:not(#_) body:not(#_) #m23-slens::after{ content:""; position:absolute; inset:var(--m, 18px); border-radius:var(--r, 20px); pointer-events:none; opacity:var(--o, 0);
+  box-shadow:inset 0 0 0 .6px rgba(20,22,35,.16), inset 0 -1px 1px -.5px rgba(20,22,35,.08); }
+html:not(#_) body:not(#_).dark-mode #m23-slens::after{ box-shadow:inset 0 0 0 .6px rgba(255,255,255,.14); }
+html:not(#_) body:not(#_).m23-nolg #m23-slens .m23-lgl{ background:rgba(255,255,255,.2); }
+@media (min-width:700px){html:not(#_#_#_) body:not(#_#_#_) :is(#all-records-table, #pay-table, #party-summary-table, #cheque-table) tbody{ grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#all-records-table, #pay-table, #party-summary-table, #cheque-table) tbody > tr{ min-width:0 !important; max-width:100% !important; }}
+html:not(#_#_#_) body:not(#_#_#_) .m17-chips{ display:flex !important; flex-wrap:wrap; gap:6px; }
+html:not(#_#_#_) body:not(#_#_#_) .m17-chip{ flex:1 1 auto !important; min-width:max-content !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m17-chip b{ overflow:visible !important; text-overflow:clip !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m16-dn{ container-type:inline-size; }
+@container (max-width:330px){html:not(#_#_#_) body:not(#_#_#_) .m16-dn-l button{ grid-template-columns:10px minmax(0, 1fr) !important; grid-auto-rows:auto; height:auto !important; padding:5px 8px !important; row-gap:1px; }
+html:not(#_#_#_) body:not(#_#_#_) .m16-dn-l button b{ grid-column:2; font-size:12px; }
+html:not(#_#_#_) body:not(#_#_#_) .m16-dn-l button span{ font-size:12px; }}
+html:not(#_#_#_) body:not(#_#_#_) .m5-h3{ overflow:visible !important; text-overflow:clip !important; white-space:normal !important; }
+@media (max-width:380px){html:not(#_#_#_) body:not(#_#_#_) :is(.btn, .m8-btn){ padding-left:12px !important; padding-right:12px !important; letter-spacing:-.01em; }}
+@media (max-width:900px){html:not(#_#_#_) body:not(#_#_#_) :is(#app-scroll, .modal-body, .m8-sheet-b, .m8-ov, .modal-overlay > .modal){ scrollbar-width:none; }
+html:not(#_#_#_) body:not(#_#_#_) :is(#app-scroll, .modal-body, .m8-sheet-b, .modal-overlay > .modal)::-webkit-scrollbar{ width:0 !important; height:0 !important; display:none; }}
+@media (max-width:380px){html:not(#_#_#_) body:not(#_#_#_) .m5-lgrid .m5-li b{ font-size:12px !important; letter-spacing:-.015em; }
+html:not(#_#_#_) body:not(#_#_#_) .m5-lgrid .m5-li{ padding-right:6px !important; }}
+html:not(#_#_#_) body:not(#_#_#_) .zm-subitem .zm-lbl{ font-size:14px !important; letter-spacing:-.02em !important; overflow:visible !important; text-overflow:clip !important; }
+html:not(#_#_#_) body:not(#_#_#_) .zm-subitem{ padding-left:18px !important; }
+@container (max-width:330px){html:not(#_#_#_) body:not(#_#_#_) .m16-dn-c{ max-height:118px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m16-dn{ gap:10px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m16-dn-l button span{ font-size:11.5px !important; }}
+@media (max-width:400px){html:not(#_#_#_) body:not(#_#_#_) .modal select:not([multiple]):not([size]), html:not(#_#_#_) body:not(#_#_#_) .m8-sheet select:not([multiple]):not([size]){ font-size:14px !important; padding-left:11px !important; padding-right:26px !important; background-position:right 8px center !important; background-size:14px 14px !important; }}
+html:not(#_#_#_) body:not(#_#_#_) :is(.modal-header, .m8-sheet-h, .m23-grab, .m5-grab, #m5-create .m5-sheet, .m22-glide, .m8-switch, #m10-bar){ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }</style>
 </head>
 <body>
 <div id="amx-intro" aria-hidden="true"><div id="amx-bgw"><div id="amx-bg"></div><div id="amx-glow"></div><div class="amx-wv" style="background:#FF7E4F"></div><div class="amx-wv" style="background:#D9431F"></div><div class="amx-wv" style="background:#ED532D"></div><div id="amx-ring"></div></div><div id="amx-disc"></div><div id="amx-lk"><div id="amx-amo"><div id="amx-ami"><svg id="amx-am" role="img" aria-label="am. nexus"><path fill="#fff" d="M301.9 766.9C262.8 763.7 232.5 744.3 220.2 714.8C215.3 703.1 213.7 692.9 214.3 677.6C214.8 662.9 216.3 656.2 221.6 645.0C235.4 615.7 264.6 598.7 315.7 590.1C322.5 589.0 338.9 586.9 352.2 585.5C380.6 582.5 386.4 581.6 393.7 578.8C406.8 573.9 412.1 562.8 406.5 552.0C404.2 547.5 396.6 541.4 390.6 539.1C374.4 533.0 351.0 534.1 335.2 541.5C326.4 545.7 318.2 553.5 315.6 560.3L313.8 565.0 L272.4 565.0L231.0 565.0 L231.0 562.7C231.0 555.3 238.7 535.7 245.8 525.3C270.5 488.9 325.4 468.3 385.0 473.0C441.2 477.4 479.0 500.4 493.0 538.8C499.0 555.4 499.0 554.8 499.0 662.1L499.0 760.0 L496.8 760.5C495.5 760.8 475.6 760.9 452.5 760.8L410.5 760.5 L410.0 742.0L409.5 723.5 L407.2 727.2C404.3 731.8 393.7 741.7 386.3 746.8C363.9 762.0 332.4 769.5 301.9 766.9ZM522.0 664.6C522.0 560.1 521.9 561.8 527.6 545.4C538.8 512.6 564.0 487.1 597.6 474.4C614.3 468.1 637.5 465.1 654.8 467.0C687.8 470.5 710.1 482.7 730.2 508.1C732.6 511.0 733.1 511.3 733.9 509.9C736.9 505.0 745.3 496.1 751.7 491.0C781.9 466.6 824.8 459.9 865.0 473.1C903.0 485.6 928.7 514.5 936.7 553.7C938.4 561.8 938.5 570.2 938.5 661.5L938.5 760.5 L895.5 760.5L852.5 760.5 L852.0 668.0C851.5 566.5 851.9 573.3 845.5 562.4C835.1 544.6 809.2 539.2 787.4 550.3C778.9 554.6 774.4 559.4 769.8 568.7L765.5 577.3 L765.0 668.9L764.5 760.5 L723.8 760.8L683.0 761.0 L683.0 673.8C683.0 625.1 682.5 583.2 682.0 579.0C680.7 568.6 675.3 558.0 668.5 552.5C662.1 547.4 653.8 544.6 644.5 544.6C626.0 544.7 611.4 554.9 604.8 572.5L602.5 578.5 L602.2 669.8L601.9 761.0 L562.0 761.0L522.0 761.0 L522.0 664.6ZM358.7 703.4C383.4 698.3 402.0 682.4 407.4 661.7C408.2 658.6 409.2 649.4 409.6 641.4C410.2 628.0 410.2 626.7 408.7 627.3C400.1 630.6 386.9 633.6 368.0 636.5C341.1 640.7 334.8 642.2 325.3 646.5C311.4 652.9 304.0 662.8 304.0 674.9C304.0 683.7 305.3 687.8 309.6 692.8C316.6 701.1 326.7 704.8 342.3 704.9C347.1 705.0 354.5 704.3 358.7 703.4Z"/></svg></div></div><div id="amx-dt"></div></div></div>
@@ -30288,7 +30346,7 @@ AMCViewport.onSettle(function(){
      One pill per switch glides to the chosen button (transform only, so it
      stays smooth). When a page redraws the switch, the pill starts from where
      it was and slides on — no jump. */
-  var SEG = '.m5-seg, .m8-seg, .m13-lang, #m13-tabs, .m16-seg, .m9-seg, .m10-seg, .m12-seg, .m22-seg';
+  var SEG = '.m5-seg, .m8-seg, .m13-lang, #m13-tabs, .m16-seg, .m9-seg, .m10-seg, .m12-seg, .m22-seg, .alloc-seg';
   var ONSEL = '.on, .active, [aria-selected="true"], [aria-checked="true"], [aria-pressed="true"]';
   var mem = {};
   function keyOf(c){
@@ -30600,6 +30658,7 @@ AMCViewport.onSettle(function(){
   var $ = function(id){ return document.getElementById(id); };
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
   var phone = matchMedia('(max-width: 599px)');
+  var dockQ = matchMedia('(max-width: 900px)');   /* the bottom bar shows on phones and tablets */
 
   var LG = window.M23LG;
   if(document.body) LG.mark(); else document.addEventListener('DOMContentLoaded', LG.mark);
@@ -30618,8 +30677,9 @@ AMCViewport.onSettle(function(){
         for(var i = 0; i < 4; i++){ var a = -s.k * (s.x - s.to) - s.c * s.v; s.v += a * dt / 4; s.x += s.v * dt / 4; }
         if(Math.abs(s.v) < s.e * 12 && Math.abs(s.x - s.to) < s.e){ s.x = s.to; s.v = 0; } else busy = true;
       });
-      me.paint();
+      /* decide first, then paint: on the last frame paint() can see that motion has ended */
       me.raf = (busy || me.hold) ? requestAnimationFrame(step) : 0;
+      me.paint();
     });
   };
 
@@ -30652,7 +30712,8 @@ AMCViewport.onSettle(function(){
   function barGlass(){
     if(!bar || !bar.offsetWidth) return;
     var dark = document.body.classList.contains('dark-mode');
-    var g = LG.glass(bar.offsetWidth, bar.offsetHeight, bar.offsetHeight / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:20, sat:1.8, bright:dark ? 1 : 1.05, light:dark ? 0.5 : 0.9, soft:0 });
+    /* iOS 26 tab bar glass: clear, light, lets the colours behind it through; brighter in light mode, deeper in dark */
+    var g = LG.glass(bar.offsetWidth, bar.offsetHeight, bar.offsetHeight / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:12, sat:2.2, bright:dark ? 0.92 : 1.12, light:dark ? 0.55 : 0.95, soft:0 });
     LG.setBF(bar, g.filter);
     bar.style.setProperty('background-image', g.spec, 'important');
     bar.style.setProperty('background-size', '100% 100%', 'important');
@@ -30712,7 +30773,7 @@ AMCViewport.onSettle(function(){
     function fingerX(e){ var r = bar.getBoundingClientRect(), s = r.width / bar.offsetWidth; return (e.clientX - r.left) / s - bar.clientLeft; }
     function clampX(x){ var h = Math.max(Wd.to / 2 + 4, (Wd.to + HOLD_W) / 2 - 6), lo = h, hi = bar.clientWidth - h; return x < lo ? lo - Math.min(10, (lo - x) * 0.25) : x > hi ? hi + Math.min(10, (x - hi) * 0.25) : x; }
     bar.addEventListener('pointerdown', function(e){
-      if(!phone.matches || e.button > 0) return;
+      if(!dockQ.matches || e.button > 0) return;
       buildLens();
       var fx = fingerX(e), t = nearest(fx);
       drag = { x0:e.clientX, moved:false, id:e.pointerId, tab:t, fx:fx };
@@ -30759,7 +30820,7 @@ AMCViewport.onSettle(function(){
      On / off switches: the white knob swells into a clear lens; the colour of the track shows
      through it, bent at the rim. Segmented switches (Purchase / Sales, Month / Year …): the
      pill rises into glass and magnifies the words under it. Same optics as the tab bar. */
-  var GLASSY = '.m22-sw, .ios-tgl-track, .m10-sw, .m22-glide, .m8-switch';
+  var GLASSY = '.m22-sw, .ios-tgl-track, .m10-sw';
   function glassOf(t){
     var g = t.closest(GLASSY); if(g) return g;
     var row = t.closest('.m22-row, .ios-tgl, label'); return row ? row.querySelector('.m22-sw, .ios-tgl-track, .m10-sw') : null;
@@ -30826,6 +30887,141 @@ AMCViewport.onSettle(function(){
   }, true);
   ['pointerup', 'pointercancel'].forEach(function(ev){ document.addEventListener(ev, function(){ if(held){ lensOff(held, 480); held = null; } }, true); });
 
+  /* ══ 1d · EVERY SEGMENTED SWITCH IS THE SAME LIQUID GLASS SLIDER AS THE TAB BAR ═══════
+     Purchase / Sales (top and Home), Auto / Manual, Month / Year, report tabs …
+     Touch: the switch swells a little and its pill rises into a clear glass drop.
+     Slide: the drop follows your finger — taller and narrower when fast, wide and flat when it
+       slows, with a small jelly wobble — and magnifies the word under it.
+     Let go: it lands on the option under your finger and melts back into the pill. */
+  var GS = { c:null }, gsLens = null, gsG = null, gsKey = '', gsSys = null, gX, gW, gP, gE, gsDrag = null, gsSinkT = 0, gsPass = false, gsSwallow = 0;
+  function gsBtns(c){ return [].filter.call(c.children, function(k){ return k.tagName === 'BUTTON' || k.getAttribute('role') === 'tab' || k.getAttribute('role') === 'radio'; }); }
+  function gsPill(c){ return c.querySelector(':scope > .m22-k, :scope > .m8-switch-thumb'); }
+  function gsOn(b){ return b.matches('.on, .active, [aria-selected="true"], [aria-checked="true"], [aria-pressed="true"]'); }
+  function gsMid(b){ return b.offsetLeft + b.offsetWidth / 2; }
+  function gsNear(px){ var best = null, bd = 1e9; (GS.b || []).forEach(function(b){ var d = Math.abs(gsMid(b) - px); if(d < bd){ bd = d; best = b; } }); return best; }
+  function gsEnsure(){
+    if(gsLens) return;
+    gsLens = document.createElement('div'); gsLens.id = 'm23-slens'; gsLens.setAttribute('aria-hidden', 'true'); gsLens.style.visibility = 'hidden';
+    gsLens.innerHTML = '<i class="m23-lsh"></i><i class="m23-lgl"></i><i class="m23-lsp"></i>';
+    document.body.appendChild(gsLens);
+    gsSys = new Sys(gsPaint);
+    gX = gsSys.add(420, 40, 0.1); gW = gsSys.add(420, 40, 0.1); gP = gsSys.add(400, 25, 0.002); gE = gsSys.add(190, 13, 0.003);
+  }
+  function gsBuild(bw, bh){
+    var W0 = Math.round(bw + 14), H0 = Math.round(bh + 14), key = W0 + 'x' + H0;
+    if(key === gsKey) return; gsKey = key;
+    var A = Math.max(6, Math.min(14, H0 * 0.3)), B = Math.max(7, Math.min(14, H0 * 0.32));
+    gsG = LG.glass(W0, H0, H0 / 2, { M:18, out:true, mag:1.16, A:A, B:B, k:2.4, chroma:0.14, soft:0.3, sat:1.3, bright:1.02, light:1 });
+    gsG.w0 = W0; gsG.h0 = H0;
+    var c = gsLens.children;
+    gsLens.style.width = gsG.TW + 'px'; gsLens.style.height = gsG.TH + 'px';
+    LG.setBF(c[1], gsG.filter); c[1].style.clipPath = 'inset(' + gsG.M + 'px round ' + (H0 / 2) + 'px)';
+    c[2].style.backgroundImage = gsG.spec;
+    c[0].style.inset = gsG.M + 'px'; c[0].style.borderRadius = (H0 / 2) + 'px';
+    gsLens.style.setProperty('--m', gsG.M + 'px'); gsLens.style.setProperty('--r', (H0 / 2) + 'px');
+  }
+  function gsPaint(){
+    var c = GS.c; if(!c || !gsG) return;
+    var p = Math.max(0, gP.x), e = gE.x, bw = gW.x, bh = GS.bh;
+    if(gsDrag) gE.to = Math.min(1, Math.abs(gX.v) / 600);
+    var wl = bw + 14 - 8 * e, hl = bh + 14 + 8 * e;
+    var w = bw + (wl - bw) * p, h = bh + (hl - bh) * p;
+    if(c.isConnected){ c.style.scale = (1 + 0.03 * p).toFixed(4); GS.r = c.getBoundingClientRect(); GS.s = GS.r.width / (c.offsetWidth || 1); }
+    var r = GS.r, s = GS.s || 1;
+    if(GS.k && GS.k.isConnected) GS.k.style.setProperty('opacity', (1 - ss(0.04, 0.45, p)).toFixed(3), 'important');
+    var cs = gsLens.children;
+    if(p < 0.004 || !r){ gsLens.style.visibility = 'hidden'; }
+    else {
+      var cx = r.left + (c.clientLeft + gX.x) * s, cy = r.top + (c.clientTop + GS.cy) * s, o = ss(0, 0.22, p).toFixed(3);
+      gsLens.style.visibility = 'visible';
+      gsLens.style.transform = 'translate3d(' + (cx - gsG.TW / 2).toFixed(2) + 'px,' + (cy - gsG.TH / 2).toFixed(2) + 'px,0) scale(' + (w * s / gsG.w0).toFixed(4) + ',' + (h * s / gsG.h0).toFixed(4) + ')';
+      cs[0].style.opacity = o; cs[1].style.opacity = o; cs[2].style.opacity = o; gsLens.style.setProperty('--o', o);
+    }
+    if(c.isConnected) c.classList.toggle('m23-live', p > 0.25);
+    if(GS.end && !gsSys.raf){
+      var f = GS.end; GS.end = null; f();
+    }
+  }
+  function gsFinish(){
+    var c = GS.c;
+    if(c){ c.style.removeProperty('scale'); c.classList.remove('m23-live'); }
+    if(GS.k) GS.k.style.removeProperty('opacity');
+    gsLens.style.visibility = 'hidden';
+    GS.c = null;
+  }
+  /* the resting pill jumps (unseen, under the glass) to the chosen option, so it never slides under the drop */
+  function gsJumpPill(t){
+    var k = GS.k; if(!k || !k.isConnected) return;
+    if(k.classList.contains('m22-k')){
+      k.style.setProperty('transition', 'none', 'important');
+      k.style.width = t.offsetWidth + 'px'; k.style.height = t.offsetHeight + 'px';
+      k.style.transform = 'translate3d(' + t.offsetLeft + 'px,' + t.offsetTop + 'px,0)';
+    } else {
+      k.style.setProperty('transition', 'none', 'important');
+      setTimeout(function(){ k.style.removeProperty('transition'); }, 700);
+    }
+  }
+  document.addEventListener('pointerdown', function(e){
+    if(e.button > 0 || reduce.matches || !e.target.closest) return;
+    var c = e.target.closest('.m22-glide, .m8-switch'); if(!c) return;
+    var b = gsBtns(c), k = gsPill(c); if(b.length < 2 || !k || !k.offsetWidth) return;
+    gsEnsure();
+    if(GS.c && GS.c !== c) gsFinish();
+    clearTimeout(gsSinkT);
+    var cr = c.getBoundingClientRect(), s = cr.width / (c.offsetWidth || 1);
+    var fx = (e.clientX - cr.left) / s - c.clientLeft;
+    GS.b = b; GS.k = k;
+    var t = gsNear(fx), a = b.filter(gsOn)[0] || t;
+    GS.bh = t.offsetHeight; GS.cy = t.offsetTop + t.offsetHeight / 2;
+    gsBuild(t.offsetWidth, t.offsetHeight);
+    if(GS.c !== c || gP.x < 0.01){ gX.x = gsMid(a); gX.v = 0; gW.x = a.offsetWidth; gW.v = 0; }
+    GS.c = c; GS.r = cr; GS.s = s;
+    var lo = b[0].offsetLeft + b[0].offsetWidth / 2, hi = b[b.length - 1].offsetLeft + b[b.length - 1].offsetWidth / 2;
+    GS.lo = lo; GS.hi = hi;
+    gsDrag = { id:e.pointerId, x0:e.clientX, y0:e.clientY, moved:false, fx:fx, t:t };
+    gX.to = Math.max(lo, Math.min(hi, fx)); gW.to = t.offsetWidth; gE.to = 0;
+    gP.k = 400; gP.c = 25; gP.to = 1; gsSys.hold = true; gsSys.kick();
+  }, true);
+  document.addEventListener('pointermove', function(e){
+    var d = gsDrag; if(!d || e.pointerId !== d.id || !GS.c) return;
+    var dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+    if(!d.moved){
+      if(Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+      if(Math.abs(dy) > Math.abs(dx)){ gsCancel(); return; }       /* that is a scroll */
+      d.moved = true;
+    }
+    var s = GS.s || 1, fx = (e.clientX - GS.r.left) / s - GS.c.clientLeft;
+    d.fx = fx;
+    gX.to = fx < GS.lo ? GS.lo - Math.min(10, (GS.lo - fx) * 0.25) : fx > GS.hi ? GS.hi + Math.min(10, (fx - GS.hi) * 0.25) : fx;
+    var t = gsNear(fx);
+    if(t && t !== d.t){ d.t = t; gW.to = t.offsetWidth; if(M8.haptic) try{ M8.haptic('select'); }catch(_){} }
+    gsSys.kick();
+  }, true);
+  function gsSink(wait){
+    clearTimeout(gsSinkT);
+    gsSinkT = setTimeout(function(){ gP.k = 230; gP.c = 29; gP.to = 0; gE.to = 0; GS.end = gsFinish; gsSys.kick(); }, wait || 0);
+  }
+  function gsCancel(){ gsDrag = null; gsSys.hold = false; var a = (GS.b || []).filter(gsOn)[0]; if(a){ gX.to = gsMid(a); gW.to = a.offsetWidth; } gsSink(0); }
+  function gsUp(e){
+    var d = gsDrag; if(!d || (e && e.pointerId !== d.id)) return;
+    gsDrag = null; gsSys.hold = false;
+    if(e && e.type === 'pointercancel'){ gsCancel(); return; }
+    var t = d.moved ? gsNear(d.fx) : d.t;
+    if(t){
+      gX.to = gsMid(t); gW.to = t.offsetWidth; gE.to = 0;
+      if(!gsOn(t)){ gsJumpPill(t); gsPass = true; try{ t.click(); } finally { gsPass = false; } }
+      gsSwallow = performance.now() + 450;
+    }
+    gsSink(60);
+  }
+  document.addEventListener('pointerup', gsUp, true);
+  document.addEventListener('pointercancel', gsUp, true);
+  /* we choose the option ourselves on release, so the browser's own click is not a second choice */
+  document.addEventListener('click', function(e){
+    if(gsPass || performance.now() > gsSwallow || !e.target.closest) return;
+    if(e.target.closest('.m22-glide, .m8-switch')){ e.stopImmediatePropagation(); e.preventDefault(); gsSwallow = 0; }
+  }, true);
+
   /* the + button is tinted glass: the page bends at its rim and light runs round its edge */
   function glassPlus(){
     var b = document.querySelector('#m10-dock .m10-plus'); if(!b || !b.offsetWidth || b.__m23) return;
@@ -30839,6 +31035,7 @@ AMCViewport.onSettle(function(){
      Like iOS: hold the pill (or the knob) and slide it with your finger — it follows,
      resists past the ends, and when you let go it lands on the option under it. */
   var SEGS = '.m22-glide, .m8-switch', ONOFF = '.m22-sw, .ios-tgl-track, .m10-sw';
+  var OLDSEG = false;   /* segmented switches now use the glass slider (1d) */
   var D = null, swallowTill = 0, passing = false;
   function segBtns(g){ return [].filter.call(g.children, function(k){ return k.tagName === 'BUTTON' || k.getAttribute('role') === 'tab' || k.getAttribute('role') === 'radio'; }); }
   function knobOf(g){ return g.querySelector(':scope > .m22-k, :scope > .m8-switch-thumb'); }
@@ -30854,7 +31051,7 @@ AMCViewport.onSettle(function(){
   document.addEventListener('pointerdown', function(e){
     if(e.button > 0 || !e.target.closest) return;
     D = null;
-    var seg = e.target.closest(SEGS);
+    var seg = OLDSEG && e.target.closest(SEGS);
     if(seg){
       var k = knobOf(seg), b = segBtns(seg); if(!k || b.length < 2 || !k.offsetWidth) return;
       var t = txOf(k);
@@ -31006,14 +31203,16 @@ AMCViewport.onSettle(function(){
 
   /* ══ 4 · WINDOWS AND SHEETS CLOSE SMOOTHLY (they used to vanish) ═════════════════════
      When a sheet or window is told to close, it stays a moment and slides / fades away. */
-  var CLOSE_MS = 300;
+  var CLOSE_MS = 360;
   function closing(ov, show){
+    if(ov.__m23skip){ ov.__m23skip = false; return; }
     if(reduce.matches || ov.__m23c) return;
     ov.__m23c = setTimeout(function(){ ov.classList.remove('m23-closing'); ov.__m23c = 0; }, CLOSE_MS);
     ov.classList.add('m23-closing');
   }
   function watchClose(){
     new MutationObserver(function(list){
+      if(list.some(function(m){ var c = m.target.className; return typeof c === 'string' && (c.indexOf('m8-ov') >= 0 || c.indexOf('modal-overlay') >= 0); })) addGrabs();
       list.forEach(function(m){
         var t = m.target, cn = typeof t.className === 'string' ? t.className : '';
         if(cn.indexOf('m8-ov') < 0 && cn.indexOf('modal-overlay') < 0) return;
@@ -31021,18 +31220,175 @@ AMCViewport.onSettle(function(){
         if(t.classList.contains('m8-ov') && m.attributeName === 'class'){
           if(/\bopen\b/.test(was) && !t.classList.contains('open')) closing(t);
           else if(t.classList.contains('open') && t.__m23c){ clearTimeout(t.__m23c); t.__m23c = 0; t.classList.remove('m23-closing'); }
+          if(t.classList.contains('open') && !/\bopen\b/.test(was)){ var pn = t.querySelector('.m8-sheet'); if(pn && !(SD && SD.panel === pn)) clearPanel(pn, t); }
         } else if(t.classList.contains('modal-overlay') && m.attributeName === 'style'){
           var nowShown = /display:\s*flex/.test(t.getAttribute('style') || '');
           if(/display:\s*flex/.test(was) && !nowShown) closing(t);
           else if(nowShown && t.__m23c){ clearTimeout(t.__m23c); t.__m23c = 0; t.classList.remove('m23-closing'); }
+          if(nowShown && !/display:\s*flex/.test(was)){ var pm = t.querySelector('.modal'); if(pm && !(SD && SD.panel === pm)) clearPanel(pm, t); }
         }
       });
     }).observe(document.body, { attributes:true, subtree:true, attributeOldValue:true, attributeFilter:['class', 'style'] });
   }
 
+  /* ══ 5 · SHEETS BEHAVE LIKE THE + SHEET IN CLAUDE'S APP (and iOS) ════════════════════
+     Three ways to close, one way to open fully:
+       · drag down — from the handle, the title, or anywhere on the sheet while its content is
+         at the top. The sheet follows your finger gradually and the dark backdrop clears as it
+         goes. Let go past ~40% or flick it and it keeps your finger's speed and slides away;
+         otherwise it springs back. (From full height, a shorter pull settles it back to its
+         normal height.)
+       · swipe up — the sheet grows with your finger and opens to full height;
+       · the ✕ button — it slides away smoothly;
+       · a tap on the empty space outside — it closes. */
+  var SHEETS = [
+    { panel:'.modal-overlay > .modal', ov:'.modal-overlay', body:'.modal-body' },
+    { panel:'.m8-ov > .m8-sheet', ov:'.m8-ov', body:'.m8-sheet-b' },
+    { panel:'#m5-create .m5-sheet', ov:'#m5-create', body:null }
+  ];
+  var OVERLAYS = '.modal-overlay, .m8-ov, #m5-create';
+  function addGrabs(){
+    if(!phone.matches) return;
+    [].forEach.call(document.querySelectorAll('.modal-overlay > .modal, .m8-ov > .m8-sheet'), function(p){
+      if(p.querySelector(':scope > .m23-grab')) return;
+      var g = document.createElement('div'); g.className = 'm23-grab'; g.setAttribute('aria-hidden', 'true');
+      p.insertBefore(g, p.firstChild);
+    });
+  }
+  function isOpen(ov){
+    if(ov.classList.contains('m23-closing')) return false;
+    if(ov.classList.contains('m8-ov') || ov.id === 'm5-create') return ov.classList.contains('open');
+    return getComputedStyle(ov).display !== 'none';
+  }
+  function closeSheet(ov){
+    if(ov.id === 'm5-create' && window.m5CloseCreate){ window.m5CloseCreate(); return; }
+    var x = ov.querySelector('.modal-close, [data-x], [aria-label="Close"]');
+    if(x){ x.click(); return; }
+    ov.dispatchEvent(new MouseEvent('click', { bubbles:true }));
+  }
+  function clearPanel(panel, ov){
+    ['transform', 'animation', 'transition', 'height', 'max-height'].forEach(function(k){ panel.style.removeProperty(k); });
+    if(ov) ov.style.removeProperty('background-color');
+    panel.classList.remove('m23-sheet-drag'); panel.__m23big = false;
+  }
+  var SD = null, sheetSwallow = 0, sdSys = new Sys(paintSheet), sdY = sdSys.add(320, 32, 0.4), sdH = sdSys.add(320, 34, 0.4);
+  function paintSheet(){
+    if(!SD || !SD.live) return;
+    var y = sdY.x, h = sdH.x, p = Math.max(0, Math.min(1, y / Math.max(1, h)));
+    SD.panel.style.setProperty('transform', 'translate3d(0,' + y.toFixed(2) + 'px,0)', 'important');
+    if(Math.abs(h - SD.h0) > 0.5 || SD.panel.__m23big){
+      SD.panel.style.setProperty('max-height', 'none', 'important');
+      SD.panel.style.setProperty('height', h.toFixed(2) + 'px', 'important');
+    }
+    if(SD.scrim) SD.ov.style.setProperty('background-color', SD.scrim + (SD.alpha * (1 - p)).toFixed(3) + ')', 'important');
+    if(SD.done && !sdSys.raf){ var d = SD; SD = null; d.done(d); }
+  }
+  function sheetOf(t){
+    if(!phone.matches || !t.closest) return null;
+    for(var i = 0; i < SHEETS.length; i++){
+      var S = SHEETS[i], panel = t.closest(S.panel); if(!panel) continue;
+      if(t.closest('input, select, textarea, [contenteditable="true"]')) return null;
+      var body = S.body ? panel.querySelector(S.body) : null;
+      var inBody = body && body.contains(t);
+      return { panel:panel, ov:panel.closest(S.ov), body:inBody ? body : null };
+    }
+    return null;
+  }
+  document.addEventListener('pointerdown', function(e){
+    if(e.button > 0 || (SD && SD.live)) return;
+    var s = sheetOf(e.target); if(!s || !s.ov) { SD = null; return; }
+    s.y0 = e.clientY; s.x0 = e.clientX; s.id = e.pointerId; s.live = false; s.pts = [[performance.now(), e.clientY]];
+    SD = s;
+  }, true);
+  function goLive(s){
+    s.live = true;
+    var r = s.panel.getBoundingClientRect();
+    s.h0 = r.height; s.large = Math.round(innerHeight - 10);
+    if(!s.panel.__m23big) s.panel.__m23base = r.height;
+    var bg = getComputedStyle(s.ov).backgroundColor, m = bg.match(/rgba?\(([^)]+)\)/);
+    if(m){ var q = m[1].split(','); s.alpha = q.length > 3 ? +q[3] : 1; s.scrim = 'rgba(' + q.slice(0, 3).join(',') + ','; }
+    s.panel.style.setProperty('animation', 'none', 'important');
+    s.panel.style.setProperty('transition', 'none', 'important');
+    s.panel.classList.add('m23-sheet-drag');
+    sdY.x = sdY.to = 0; sdY.v = 0; sdH.x = sdH.to = s.h0; sdH.v = 0;
+  }
+  document.addEventListener('pointermove', function(e){
+    var s = SD; if(!s || s.done || e.pointerId !== s.id) return;
+    var dy = e.clientY - s.y0, dx = e.clientX - s.x0;
+    if(!s.live){
+      if(Math.abs(dy) < 6 && Math.abs(dx) < 6) return;
+      if(Math.abs(dx) > Math.abs(dy)){ SD = null; return; }                       /* sideways: not ours */
+      /* inside the sheet's content, only a pull down from the very top moves the sheet */
+      if(s.body && (dy < 0 || s.body.scrollTop > 0)){ SD = null; return; }
+      goLive(s);
+    }
+    var y = 0, h = s.h0;
+    if(dy >= 0){ y = dy; }
+    else if(!s.panel.__m23big){
+      var room = s.large - s.h0, up = -dy;
+      h = s.h0 + (up <= room ? up : room + Math.sqrt(up - room) * 2.2);       /* grows with the finger */
+    } else { y = -Math.min(16, Math.sqrt(-dy) * 2.2); }                         /* already full: a little give */
+    sdY.x = sdY.to = y; sdY.v = 0; sdH.x = sdH.to = h; sdH.v = 0;
+    s.pts.push([performance.now(), e.clientY]); if(s.pts.length > 6) s.pts.shift();
+    paintSheet();
+    if(e.cancelable) e.preventDefault();
+  }, { capture:true, passive:false });
+  /* once the sheet is moving, the page underneath must not scroll */
+  document.addEventListener('touchmove', function(e){ if(SD && SD.live && e.cancelable) e.preventDefault(); }, { capture:true, passive:false });
+  function sheetUp(e){
+    var s = SD; if(!s || s.done || (e && e.pointerId !== s.id)) return;
+    if(!s.live){ SD = null; return; }
+    var a = s.pts[0], z = s.pts[s.pts.length - 1], dt = Math.max(16, z[0] - a[0]), v = (z[1] - a[1]) / dt * 1000;
+    var y = sdY.x, grew = sdH.x - s.h0, big = s.panel.__m23big;
+    sheetSwallow = performance.now() + 400;
+    sdY.v = v;
+    var settle = function(d){ ['transform', 'animation', 'transition'].forEach(function(k){ d.panel.style.removeProperty(k); }); d.ov.style.removeProperty('background-color'); d.panel.classList.remove('m23-sheet-drag'); };
+    if(y > 0 && ((v > 900 && y > 12) || y > s.h0 * 0.4)){
+      /* close: it keeps your finger's speed and slides away */
+      sdY.k = 240; sdY.c = 30; sdY.to = sdH.x + 40;
+      s.done = function(d){ d.ov.__m23skip = true; closeSheet(d.ov); setTimeout(function(){ clearPanel(d.panel, d.ov); }, 360); };
+      if(M8.haptic) M8.haptic('select');
+    } else if(big && y > 70){
+      /* from full height, a shorter pull settles it back to its normal height */
+      sdY.k = 380; sdY.c = 38; sdY.to = 0;
+      sdH.k = 380; sdH.c = 38; sdH.to = s.panel.__m23base || s.h0; sdH.x = sdH.x + y; sdY.x = 0; sdY.v = 0;
+      s.panel.__m23big = false;
+      s.done = function(d){ settle(d); d.panel.style.removeProperty('height'); d.panel.style.removeProperty('max-height'); };
+    } else if(grew > 0){
+      sdH.v = -v;
+      if(grew > 50 || v < -500){ sdH.k = 360; sdH.c = 34; sdH.to = s.large; s.panel.__m23big = true; if(M8.haptic) M8.haptic('select'); s.done = settle; }
+      else { sdH.k = 420; sdH.c = 38; sdH.to = s.h0; s.done = function(d){ settle(d); d.panel.style.removeProperty('height'); d.panel.style.removeProperty('max-height'); }; }
+      sdY.to = 0;
+    } else {
+      sdY.k = 420; sdY.c = 34; sdY.to = 0;
+      s.done = big ? settle : function(d){ settle(d); d.panel.style.removeProperty('height'); d.panel.style.removeProperty('max-height'); };
+    }
+    sdSys.kick();
+  }
+  document.addEventListener('pointerup', sheetUp, true);
+  document.addEventListener('pointercancel', sheetUp, true);
+  document.addEventListener('click', function(e){
+    /* the click that ends a drag is not a tap on the backdrop or a button */
+    if(performance.now() < sheetSwallow){ e.stopImmediatePropagation(); e.preventDefault(); sheetSwallow = 0; return; }
+    /* a tap on the empty space outside a sheet closes it */
+    var ov = e.target; if(!phone.matches || !ov.matches || !ov.matches(OVERLAYS)) return;
+    setTimeout(function(){ if(isOpen(ov)) closeSheet(ov); }, 0);
+  }, true);
+
+  /* ══ 6 · A LIGHT TICK ON EVERY BUTTON (not on the bottom bar) ═════════════════════════
+     Uses the app's own haptics, so the strength (and on / off) in Settings still apply. */
+  var TICK = 'button, [role="button"], [role="switch"], [role="tab"], [role="radio"], a[href], .m8-btn, .m22-row, .m9-row-h, .zm-item, .zm-subitem, [data-act], .chq-row, .m8-le, label.ios-tgl, tr[onclick], select, input[type="checkbox"], input[type="radio"]';
+  document.addEventListener('click', function(e){
+    if(!M8.haptic || !e.target.closest) return;
+    var t = e.target.closest(TICK); if(!t || t.closest('#m10-dock')) return;
+    try{ M8.haptic('select'); }catch(_){}
+  }, true);
+
   /* ══ BOOT ═══════════════════════════════════════════════════════════════════════════ */
   function boot(){
-    setupBar(); glassPlus(); wrapShowPage(); watchClose();
+    setupBar(); glassPlus(); wrapShowPage(); watchClose(); addGrabs();
+    new MutationObserver(function(){ addGrabs(); }).observe(document.body, { childList:true });
+    document.addEventListener('pointerdown', addGrabs, true);
     M8.after('showPage', function(id){ setupBar(); glassPlus(); arrive(id); });
     new MutationObserver(function(){ if(!$('m10-bar') || !$('m10-bar').__m23) setupBar(); }).observe(document.body, { childList:true });
     last = M8.page ? M8.page() : null;
