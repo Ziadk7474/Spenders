@@ -28,20 +28,15 @@ self.addEventListener('push', function(e){
 self.addEventListener('notificationclick', function(e){
   var n = e.notification, data = n.data || {};
   n.close();
-  if(e.action === 'clear' && data.chq && data.db){
-    e.waitUntil(
-      fetch(data.db + '/almadhi/cheques/' + encodeURIComponent(data.chq) + '.json', { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ cleared:true }) })
-        .then(function(r){ return self.registration.showNotification(r.ok ? 'Marked as cleared' : 'Could not mark it — open the app', { body: n.body, tag: n.tag, icon: APP_URL + 'icon-192.png', silent: true }); })
-        .catch(function(){ return self.registration.showNotification('No internet — open the app to mark it', { tag: n.tag, icon: APP_URL + 'icon-192.png', silent: true }); })
-    );
-    return;
-  }
+  /* security: "Mark as cleared" no longer writes to the database from here (that needed the database to
+     accept writes from anyone). It opens the app, which asks you and saves it with your signed-in account. */
+  var clear = e.action === 'clear' && data.chq;
   e.waitUntil(self.clients.matchAll({ type:'window', includeUncontrolled:true }).then(function(list){
     for(var i = 0; i < list.length; i++){
       var c = list[i];
-      if(c.url.indexOf(APP_URL) === 0 && 'focus' in c){ c.postMessage({ m8:'open-cheques', chq:data.chq }); return c.focus(); }
+      if(c.url.indexOf(APP_URL) === 0 && 'focus' in c){ c.postMessage({ m8:'open-cheques', chq:data.chq, clear:!!clear }); return c.focus(); }
     }
-    return self.clients.openWindow(data.url || (APP_URL + 'index.html'));
+    return self.clients.openWindow(clear ? APP_URL + 'index.html?clearchq=' + encodeURIComponent(data.chq) + '#cheques' : (data.url || (APP_URL + 'index.html')));
   }));
 });
 

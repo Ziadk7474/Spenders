@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script id="m12-early">window.addEventListener("popstate",function(e){if(window.__m12pop){e.stopImmediatePropagation();window.__m12pop(e);}});</script>
+<head>
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
+<script id="am-frame">/* security: never run inside another site's frame (stops click-jacking) */if(window.top!==window.self){try{window.top.location.replace(window.self.location.href)}catch(e){document.documentElement.style.display="none"}}</script>
+<script id="am-clean">/* SAFE TEXT (security) — see the note in the Firebase module. Defined first, before any data is loaded. */
+(function(){
+  var MAP = { '<':'\u2039', '>':'\u203A', '"':'\u2033', '`':"'" };
+  function amClean(v){
+    if(typeof v === 'string') return /[<>"`]/.test(v) ? v.replace(/[<>"`]/g, function(c){ return MAP[c]; }) : v;
+    if(Array.isArray(v)) return v.map(amClean);
+    if(v && typeof v === 'object'){ var o = {}; for(var k in v){ if(Object.prototype.hasOwnProperty.call(v, k)) o[k] = amClean(v[k]); } return o; }
+    return v;
+  }
+  window.amClean = amClean;
+})();
+</script><script id="m12-early">window.addEventListener("popstate",function(e){if(window.__m12pop){e.stopImmediatePropagation();window.__m12pop(e);}});</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,9 +36,9 @@
 .uinv-doc > .uinv-label{ position:absolute !important; top:28px !important; left:50px !important; right:auto !important; font-size:13px !important; font-weight:800 !important; opacity:1 !important; color:#e8613a !important; line-height:1 !important; margin:0 !important; }
 .inv-doc .inv-hdr, .uinv-doc .uinv-hdr{ gap:24px; }
 .inv-doc .co-info .tag, .uinv-doc .co-info .tag{ letter-spacing:.06em !important; }</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script defer src="lib/jspdf-4.2.1.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3"></script>
+<script defer src="lib/xlsx-0.20.3.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT"></script>
+<script defer src="lib/jspdf.plugin.autotable-5.0.9.min.js" integrity="sha384-A77YsHWitrPuAj8E0AuB033EXzymUxIajnWKPzrrzqFoYYSCEpFennDUjMG2R1L3"></script>
 <style>:root{
   
 
@@ -13302,7 +13316,38 @@ document.addEventListener('keydown', function(e){
 <!-- ═══════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, push, update, remove, get, runTransaction, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set as _fbSet0, onValue as _fbOnValue0, push as _fbPush0, update as _fbUpdate0, remove, get as _fbGet0, runTransaction, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+/* ── SAFE TEXT (security) ────────────────────────────────────────────────
+   Names, notes, items, methods … are plain text, but the screens and prints put
+   them into HTML. A value holding HTML code (from a typed name, a restored backup,
+   an Excel import or anyone who can write to the database) would have run as code
+   inside the signed-in app. Every value now passes through amClean on the way in
+   (each read) and on the way out (each save): the four characters that can start
+   code — < > " ` — become harmless look-alikes (‹ › ″ '). Numbers, dates and
+   structure are untouched. Quotations (rich text by design) and settings are left
+   as they are. */
+const amClean = window.amClean || (v => v);   /* defined early in <head> (am-clean.js) so the offline copy is cleaned too */
+function amPathOf(r){ try{ return decodeURIComponent(String(r && r.toString ? r.toString() : '')); }catch(e){ return String(r || ''); } }
+function amPathOk(p){ return !/\/almadhi\/(quotations|settings)(\/|$)/.test(p) && !/^almadhi\/(quotations|settings)(\/|$)/.test(p); }
+function amSnap(s){
+  if(!s || !amPathOk(amPathOf(s.ref))) return s;
+  return new Proxy(s, { get(t, k){
+    if(k === 'val' || k === 'exportVal') return function(){ return amClean(t[k]()); };   /* a fresh copy each time, like Firebase */
+    if(k === 'forEach') return function(cb){ return t.forEach(ch => cb(amSnap(ch))); };
+    if(k === 'child') return function(p){ return amSnap(t.child(p)); };
+    const v = t[k]; return typeof v === 'function' ? v.bind(t) : v;
+  } });
+}
+const onValue = (r, cb, ...a) => _fbOnValue0(r, snap => cb(amSnap(snap)), ...a);
+const get = r => _fbGet0(r).then(amSnap);
+const set = (r, v) => _fbSet0(r, amPathOk(amPathOf(r)) ? amClean(v) : v);
+const push = (r, v) => v === undefined ? _fbPush0(r) : _fbPush0(r, amPathOk(amPathOf(r)) ? amClean(v) : v);
+const update = (r, v) => {
+  const base = amPathOf(r), o = {};
+  for(const k in v){ if(Object.prototype.hasOwnProperty.call(v, k)) o[k] = amPathOk(base + '/' + k) ? amClean(v[k]) : v[k]; }
+  return _fbUpdate0(r, o);
+};
+
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 /* ── Sign-in (Firebase Authentication, Google account) ────────────────────
    Real protection comes from the database rules: once they are switched on,
@@ -19625,7 +19670,7 @@ function hydrateFromCache(){
   if(AD().records.length) return;
   try {
     var raw = localStorage.getItem('almadhi_cache_'+DB.mode); if(!raw) return;
-    var c = JSON.parse(raw);
+    var c = JSON.parse(raw); if(window.amClean) c = window.amClean(c);   /* safe text (security) */
     if(Array.isArray(c.records)  && !AD().records.length)  AD().records  = c.records;
     if(Array.isArray(c.payments) && !AD().payments.length) AD().payments = c.payments;
     if(Array.isArray(c.cheques)  && !CHQ().length && !window._chqBooted)  DB.purchase.cheques = c.cheques;
@@ -24241,7 +24286,16 @@ AMCViewport.onSettle(function(){
     /* the in-app popup is only a fallback for phones where notifications are not allowed */
     if(perm() !== 'granted' || !secure()) banner(title, body, q);
   }
-  if(navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){ if(e.data && e.data.m8 === 'open-cheques') openCheques(); });
+  /* "Mark as cleared" from a reminder: the app asks first, then saves with your signed-in account
+     (the reminder itself no longer writes to the database). The read-only viewer never marks. */
+  function askClear(id){
+    if(window.M8_VIEWER || !id || typeof toggleChequeCleared !== 'function') return;
+    var c = (typeof CHQ === 'function' ? CHQ() : []).find(function(x){ return String(x.id) === String(id); });
+    if(!c || c.cleared) return;
+    if(confirm('Mark cheque ' + (c.chequeNo ? '#' + c.chequeNo + ' ' : '') + 'from ' + (c.party || '') + ' as cleared?')) toggleChequeCleared(c.id);
+  }
+  if(navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){ if(e.data && e.data.m8 === 'open-cheques'){ openCheques(); if(e.data.clear) setTimeout(function(){ askClear(e.data.chq); }, 600); } });
+  try{ var qc = new URLSearchParams(location.search).get('clearchq'); if(qc){ history.replaceState(null, '', location.pathname + location.hash); var tries = 0, t = setInterval(function(){ if((typeof CHQ === 'function' && CHQ().length) || ++tries > 40){ clearInterval(t); askClear(qc); } }, 500); } }catch(e){}
   /* in-app banner — always shown, also when phone notifications are off */
   function banner(title, body, q){
     var b = $('m8-rb');

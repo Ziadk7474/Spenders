@@ -1,9 +1,11 @@
-// am. nexus service worker — v10
+// am. nexus service worker — v11
 // Pages, the manifest and the icons always come from the internet first, so a new
 // upload (or a new logo) shows at once. The saved copy is only used when offline.
 // Firebase traffic is never touched.
-const CACHE = 'almadhi-v10';
-const CORE = ['./', 'index.html', 'manifest.json?v=10', 'icon-192.png?v=9', 'icon-512.png?v=9', 'apple-touch-icon.png?v=6'];
+const CACHE = 'almadhi-v11';
+const CORE = ['./', 'index.html', 'manifest.json?v=10', 'icon-192.png?v=9', 'icon-512.png?v=9', 'apple-touch-icon.png?v=6',
+  // PDF / Excel tools now live on our own site (checked copies), saved so exports work offline too
+  'lib/jspdf-4.2.1.umd.min.js', 'lib/jspdf.plugin.autotable-5.0.9.min.js', 'lib/xlsx-0.20.3.full.min.js'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();

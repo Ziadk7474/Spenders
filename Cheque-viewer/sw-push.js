@@ -20,7 +20,7 @@ self.addEventListener('push', function(e){
     vibrate: [400, 150, 400, 150, 800],
     timestamp: Date.now(),
     data: { chq: d.chq || null, db: d.db || null, url: APP_URL + '#cheques' },
-    actions: d.chq ? [ { action:'clear', title:'Mark as cleared' }, { action:'open', title:'Open' } ] : [ { action:'open', title:'Open' } ]
+    actions: [ { action:'open', title:'Open' } ]
   };
   e.waitUntil(self.registration.showNotification(d.title || 'Cheque reminder', opts));
 });
@@ -28,14 +28,8 @@ self.addEventListener('push', function(e){
 self.addEventListener('notificationclick', function(e){
   var n = e.notification, data = n.data || {};
   n.close();
-  if(e.action === 'clear' && data.chq && data.db){
-    e.waitUntil(
-      fetch(data.db + '/almadhi/cheques/' + encodeURIComponent(data.chq) + '.json', { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ cleared:true }) })
-        .then(function(r){ return self.registration.showNotification(r.ok ? 'Marked as cleared' : 'Could not mark it — open the app', { body: n.body, tag: n.tag, icon: APP_URL + 'icon-192.png', silent: true }); })
-        .catch(function(){ return self.registration.showNotification('No internet — open the app to mark it', { tag: n.tag, icon: APP_URL + 'icon-192.png', silent: true }); })
-    );
-    return;
-  }
+  /* security: this viewer never changes cheques — "Mark as cleared" is not offered here, and the
+     database no longer has to accept writes from anyone */
   e.waitUntil(self.clients.matchAll({ type:'window', includeUncontrolled:true }).then(function(list){
     for(var i = 0; i < list.length; i++){
       var c = list[i];
