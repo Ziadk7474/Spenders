@@ -951,6 +951,7 @@ function renderCheques(){ var l = document.getElementById('v-load'); if(l) l.rem
 function cacheNow(){ try{ localStorage.setItem('hisably.cache', JSON.stringify(CHQ())); }catch(e){} }
 /* tick = cleared. Only the "cleared" field of that one cheque is written. */
 function toggleChequeCleared(id){
+  if(window.M8_VIEWER) return;   /* viewer is read-only: never writes cheques */
   var c = CHQ().find(function(x){ return String(x.id) === String(id); }); if(!c) return;
   c.cleared = !c.cleared; cacheNow(); renderCheques();
   if(window._fbUpdate && window._db){
@@ -1754,7 +1755,7 @@ function printChequeListPdf(){
     }
     b.dataset.q = q ? q.id : '';
     b.innerHTML = '<span class="m8-rb-ic">'+icon('bell')+'</span><div class="m8-rb-t"><b>'+esc(title)+'</b><small>'+esc(body)+'</small></div>'+
-      '<div class="m8-rb-a">'+(q?'<button type="button" class="m8-btn sm ghost" data-rb="snooze">1 h later</button><button type="button" class="m8-btn sm ghost" data-rb="clear">'+icon('check')+'Cleared</button>':'')+'<button type="button" class="m8-btn sm dark" data-rb="open">Open</button><button type="button" class="m8-ib sm" data-rb="x" aria-label="Dismiss">'+icon('x')+'</button></div>';
+      '<div class="m8-rb-a">'+(q?'<button type="button" class="m8-btn sm ghost" data-rb="snooze">1 h later</button>'+(window.M8_VIEWER?'':'<button type="button" class="m8-btn sm ghost" data-rb="clear">'+icon('check')+'Cleared</button>'):'')+'<button type="button" class="m8-btn sm dark" data-rb="open">Open</button><button type="button" class="m8-ib sm" data-rb="x" aria-label="Dismiss">'+icon('x')+'</button></div>';
     b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
     clearTimeout(b._t); b._t = setTimeout(hideBanner, 20000);
   }
