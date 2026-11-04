@@ -23672,6 +23672,8 @@ AMCViewport.onSettle(function(){
     else navMain(mode(), t);
   }
   function placePill(instant){
+    /* this old dock is replaced by the glass tab bar (m10) at every size — never measure it (it forced a full layout on every page change) */
+    if($('m10-dock')) return;
     var bar = $('m8-dock-bar'), pill = $('m8-dock-pill'); if(!bar || !pill) return;
     var pg = M8.page(), b = bar.querySelector('.m8-dock-t[data-tab="'+pg+'"]');
     bar.querySelectorAll('.m8-dock-t').forEach(function(x){ var on = x === b; x.classList.toggle('on', on); if(on) x.setAttribute('aria-current','page'); else x.removeAttribute('aria-current'); });
@@ -26040,7 +26042,10 @@ AMCViewport.onSettle(function(){
     baseline(sc); later();
   }, true);
   /* a page or form opening fresh starts a new history */
-  M8.after('showPage', function(){ var sc = scope(); if(sc){ stacks.delete(sc); } setTimeout(function(){ baseline(scope()); paintBtn(); }, 60); });
+  /* done when the phone is idle, after the new page is on screen (it measured every popup and forced a layout
+     in the middle of the page change) */
+  var idle = window.requestIdleCallback ? function(f){ requestIdleCallback(f, { timeout:700 }); } : function(f){ setTimeout(f, 120); };
+  M8.after('showPage', function(){ idle(function(){ var sc = scope(); if(sc){ stacks.delete(sc); baseline(sc); } paintBtn(); }); });
   ['openEditPayment', 'openPaymentModal', 'openChequeModal', 'openPartyEditModal', 'openEditInvoiceModal'].forEach(function(n){
     if(typeof window[n] === 'function') M8.after(n, function(){ setTimeout(function(){ var sc = scope(); if(sc){ stacks.delete(sc); baseline(sc); } }, 80); });
   });
@@ -27141,7 +27146,9 @@ AMCViewport.onSettle(function(){
     var bar = $('m10-bar'), lens = $('m10-lens'); if(!bar || !lens) return;
     var on = i >= 0;
     if(instant) lens.classList.add('instant');
-    if(on){
+    /* with the Liquid Glass bar (m23) the old disc is hidden — measuring it forced a full layout on every page change */
+    var glass = document.body.classList.contains('m23-lg') || document.body.classList.contains('m23-nolg');
+    if(on && !glass){
       /* the disc is placed on the icon's own measured centre, so it is always dead-centre */
       var btn = bar.querySelector('.m10-t[data-tab="' + TABS[i] + '"]');
       if(btn && bar.offsetWidth){
@@ -27171,7 +27178,7 @@ AMCViewport.onSettle(function(){
   var lastPage = null;
   function fade(id){
     var p = $('page-' + id);
-    if(!p || reduce.matches || id === lastPage || id === 'party'){ lastPage = id; return; }
+    if(!p || reduce.matches || id === lastPage || id === 'party' || document.body.classList.contains('m23-lg') || document.body.classList.contains('m23-nolg')){ lastPage = id; return; }   /* pages swap in one frame with m23 */
     lastPage = id;
     p.classList.remove('m10-fade'); void p.offsetWidth; p.classList.add('m10-fade');
     clearTimeout(p._m10t); p._m10t = setTimeout(function(){ p.classList.remove('m10-fade'); }, 220);
@@ -30715,7 +30722,9 @@ AMCViewport.onSettle(function(){
     var dark = document.body.classList.contains('dark-mode');
     /* iOS 26 tab bar glass: clear, light, lets the colours behind it through; brighter in light mode, deeper in dark */
     var g = LG.glass(bar.offsetWidth, bar.offsetHeight, bar.offsetHeight / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:12, sat:2.2, bright:dark ? 1 : 1.12, light:dark ? 0.6 : 0.95, soft:0 });
-    LG.setBF(bar, g.filter);
+    /* at rest the bar is frosted glass the graphics chip draws for free while the page scrolls under it;
+       the full bending glass is kept for the drop you touch (it is only on screen while you touch) */
+    LG.setBF(bar, 'blur(12px) saturate(2.2) brightness(' + (dark ? 1 : 1.12) + ')');
     bar.style.setProperty('background-image', g.spec, 'important');
     bar.style.setProperty('background-size', '100% 100%', 'important');
     bar.style.setProperty('background-repeat', 'no-repeat', 'important');
@@ -31027,10 +31036,10 @@ AMCViewport.onSettle(function(){
 
   /* the + button is tinted glass: the page bends at its rim and light runs round its edge */
   function glassPlus(){
-    var b = document.querySelector('#m10-dock .m10-plus'); if(!b || !b.offsetWidth || b.__m23) return;
+    var b = document.querySelector('#m10-dock .m10-plus'); if(!b || b.__m23 || !b.offsetWidth) return;
     b.__m23 = 1;
     var w = b.offsetWidth, g = LG.glass(w, w, w / 2, { M:0, out:false, mag:1, A:7, B:11, k:2.2, chroma:0.08, blur:4, sat:1.6, bright:1.05, light:1, soft:0 });
-    LG.setBF(b, g.filter);
+    LG.setBF(b, 'blur(4px) saturate(1.6) brightness(1.05)');
     var sp = document.createElement('i'); sp.className = 'm23-pspec'; sp.setAttribute('aria-hidden', 'true'); sp.style.backgroundImage = g.spec; b.appendChild(sp);
   }
 
@@ -31144,7 +31153,7 @@ AMCViewport.onSettle(function(){
        go back      → the page slides away to the right and reveals the one underneath;
        switch tabs  → the old page fades out over the new one (a clean cross-fade).
      Only the page's own position and opacity move, so it stays smooth on a phone. */
-  var TABS = ['dashboard', 'records', 'payments', 'parties'], last = null, backing = false, leaving = null;
+  var TABS = ['dashboard', 'records', 'payments', 'parties'], last = null, backing = false, leaving = null, tabScroll = {};
   window.addEventListener('popstate', function(){ backing = true; setTimeout(function(){ backing = false; }, 450); }, true);
   var DUR = { push:520, pop:460, tab:360 };
   function finishLeave(){
@@ -31169,6 +31178,8 @@ AMCViewport.onSettle(function(){
     var orig = window.showPage; if(typeof orig !== 'function' || orig.__m23) return;
     var w = function(id){
       var from = M8.page ? M8.page() : last, keep = null, kind = null;
+      var sc = $('app-scroll');
+      if(sc && from && TABS.indexOf(from) >= 0) tabScroll[from] = sc.scrollTop;
       if(!reduce.matches && id && from && id !== from && $('page-' + id)){ kind = kindOf(from, id); keep = kind ? holdOld(from) : null; }
       var r = orig.apply(this, arguments);
       if(keep){
@@ -31185,6 +31196,16 @@ AMCViewport.onSettle(function(){
         el.addEventListener('animationend', function done(ev){ if(ev.target !== el) return; el.removeEventListener('animationend', done); if(leaving === me) finishLeave(); });
       }
       if(!keep){ var nw = $('page-' + id); if(nw) nw.classList.remove('m10-fade', 'm8-push', 'm23-in-push', 'm23-in-pop', 'm23-in-tab'); }
+      /* back on a tab: it opens where you left it, like the App Store */
+      if(sc && id !== from && TABS.indexOf(id) >= 0 && TABS.indexOf(from) >= 0 && tabScroll[id] > 0 && !window.__m23top){
+        var y = tabScroll[id]; sc.scrollTop = y;
+        /* long lists fill in a few steps: top it up until it reaches the spot (unless you scroll first) */
+        var set = sc.scrollTop, tries = [0, 60, 160, 320];
+        tries.forEach(function(ms){ setTimeout(function(){
+          if(!(M8.page && M8.page() === id) || Math.abs(sc.scrollTop - set) > 3) return;
+          if(sc.scrollTop < y - 2){ sc.scrollTop = y; set = sc.scrollTop; }
+        }, ms); });
+      }
       last = id;
       return r;
     };
@@ -31212,15 +31233,24 @@ AMCViewport.onSettle(function(){
     if(ov.__m23skip){ ov.__m23skip = false; return; }
     if(reduce.matches || ov.__m23c) return;
     ov.__m23c = setTimeout(function(){ ov.classList.remove('m23-closing'); ov.__m23c = 0; }, CLOSE_MS);
+    var pn = ov.querySelector(':scope > .m8-sheet, :scope > .modal');
+    if(pn && !(SD && SD.panel === pn)){ pn.style.removeProperty('animation'); pn.style.removeProperty('transform'); }
     ov.classList.add('m23-closing');
   }
   function watchClose(){
     new MutationObserver(function(list){
       if(list.some(function(m){ var c = m.target.className; return typeof c === 'string' && (c.indexOf('m8-ov') >= 0 || c.indexOf('modal-overlay') >= 0); })) addGrabs();
       list.forEach(function(m){
-        var t = m.target, cn = typeof t.className === 'string' ? t.className : '';
+        var t = m.target, cn = typeof t.className === 'string' ? t.className : '', was = m.oldValue || '';
+        if(t.id === 'm5-create' && m.attributeName === 'class'){
+          var pc = t.querySelector('.m5-sheet');
+          if(pc && !(SD && SD.panel === pc)){
+            if(t.classList.contains('open') && !/\bopen\b/.test(was)) clearPanel(pc, t);
+            else if(!t.classList.contains('open') && /\bopen\b/.test(was)) setTimeout(function(){ if(!t.classList.contains('open')) clearPanel(pc, t); }, 380);
+          }
+          return;
+        }
         if(cn.indexOf('m8-ov') < 0 && cn.indexOf('modal-overlay') < 0) return;
-        var was = m.oldValue || '';
         if(t.classList.contains('m8-ov') && m.attributeName === 'class'){
           if(/\bopen\b/.test(was) && !t.classList.contains('open')) closing(t);
           else if(t.classList.contains('open') && t.__m23c){ clearTimeout(t.__m23c); t.__m23c = 0; t.classList.remove('m23-closing'); }
@@ -31285,6 +31315,8 @@ AMCViewport.onSettle(function(){
       SD.panel.style.setProperty('height', h.toFixed(2) + 'px', 'important');
     }
     if(SD.scrim) SD.ov.style.setProperty('background-color', SD.scrim + (SD.alpha * (1 - p)).toFixed(3) + ')', 'important');
+    /* closing: done the moment the sheet has left the screen (not when the spring finally rests) */
+    if(SD.closing && SD.done && y >= h - 1){ var dc = SD; SD = null; sdY.to = sdY.x; sdY.v = 0; dc.done(dc); return; }
     if(SD.done && !sdSys.raf){ var d = SD; SD = null; d.done(d); }
   }
   function sheetOf(t){
@@ -31346,10 +31378,12 @@ AMCViewport.onSettle(function(){
     var y = sdY.x, grew = sdH.x - s.h0, big = s.panel.__m23big;
     sheetSwallow = performance.now() + 400;
     sdY.v = v;
-    var settle = function(d){ ['transform', 'animation', 'transition'].forEach(function(k){ d.panel.style.removeProperty(k); }); d.ov.style.removeProperty('background-color'); d.panel.classList.remove('m23-sheet-drag'); };
+    /* the sheet stays where it is: only the drag styles go. Its opening animation stays off (bringing it
+       back would replay the slide-up — the sheet looked as if it closed and opened again) until it closes. */
+    var settle = function(d){ d.panel.style.setProperty('transform', 'none', 'important'); d.panel.style.removeProperty('transition'); d.ov.style.removeProperty('background-color'); d.panel.classList.remove('m23-sheet-drag'); };
     if(y > 0 && ((v > 900 && y > 12) || y > s.h0 * 0.4)){
       /* close: it keeps your finger's speed and slides away */
-      sdY.k = 240; sdY.c = 30; sdY.to = sdH.x + 40;
+      sdY.k = 240; sdY.c = 30; sdY.to = sdH.x + 40; s.closing = true;
       s.done = function(d){ d.ov.__m23skip = true; closeSheet(d.ov); setTimeout(function(){ clearPanel(d.panel, d.ov); }, 360); };
       if(M8.haptic) M8.haptic('select');
     } else if(big && y > 70){
@@ -31389,7 +31423,18 @@ AMCViewport.onSettle(function(){
   }, true);
 
   /* ══ BOOT ═══════════════════════════════════════════════════════════════════════════ */
+  /* the side menu is hidden on phones and tablets until it is opened; re-measuring its
+     sections on every page change cost ~12 ms of forced layout. It is measured when it opens. */
+  function lightSidebar(){
+    var zs = window.zsbSyncHeights; if(typeof zs !== 'function' || zs.__m23) return;
+    var w = function(){
+      if(dockQ.matches && !document.body.classList.contains('mobile-sidebar-open')) return;
+      return zs.apply(this, arguments);
+    };
+    w.__m23 = true; window.zsbSyncHeights = w;
+  }
   function boot(){
+    lightSidebar();
     setupBar(); glassPlus(); wrapShowPage(); watchClose(); addGrabs();
     new MutationObserver(function(){ addGrabs(); }).observe(document.body, { childList:true });
     document.addEventListener('pointerdown', addGrabs, true);
