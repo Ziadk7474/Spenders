@@ -10005,7 +10005,106 @@ html.m24-hide #m5-home .m5-bal .m5-big,
 html.m24-hide #m5-home .m5-bal .m5-kpis > div:nth-child(-n/**/+2) b,
 html.m24-hide #m5-home .m5-stack .m5-mid{
   filter:blur(11px); opacity:.85; user-select:none; -webkit-user-select:none;
-}</style>
+}
+#m24-screen{ display:contents; }
+@media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen{
+    display:block; position:fixed; inset:0; z-index:5;
+    transform-origin:0 50%;
+    transition:transform .62s cubic-bezier(.32,.72,0,1), border-radius .62s cubic-bezier(.32,.72,0,1), box-shadow .62s ease;
+    border-radius:0; overflow:hidden;
+    background:var(--k-bg, #F3F3F1);
+    --m24-x:min(68vw, 340px); --m24-dx:0px;
+  }
+html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m24-screen{ background:#0E0E10; }
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen{
+    transform:translate3d(calc(var(--m24-x) + var(--m24-dx)), 0, 0) scale(.86);
+    border-radius:34px;
+    box-shadow:-24px 0 60px -10px rgba(80, 20, 0, .35);
+  }
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen.m24-drag{ transition:none; }
+#m24-screen::after{ content:""; position:absolute; inset:0; z-index:2147483000; display:none; }
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen::after{ display:block; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar{
+    transform:none !important; translate:none !important;
+    left:0 !important; top:0 !important; right:auto !important; bottom:auto !important;
+    width:100vw !important; height:100dvh !important; max-width:none !important;
+    z-index:4 !important;
+    border-radius:0 !important; border:0 !important; box-shadow:none !important;
+    background:radial-gradient(120% 70% at 0% 0%, #F47A4E 0%, #ED532D 55%, #DE4623 100%) !important;
+    padding:calc(env(safe-area-inset-top, 0px) + 18px) 0 calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+    visibility:hidden; transition:visibility 0s linear .62s !important;
+    opacity:1 !important;
+  }
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #sidebar{ visibility:visible; transition:none !important; }
+html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #sidebar{
+    background:radial-gradient(120% 70% at 0% 0%, #E2643A 0%, #C9441F 60%, #B23A1A 100%) !important;
+  }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(.sb-nav, .sb-foot){
+    width:calc(var(--m24-x, 64vw) - 18px) !important; max-width:calc(var(--m24-x, 64vw) - 18px) !important;
+    background:transparent !important; border:0 !important;
+  }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar{ --m24-x:min(68vw, 340px); }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #scrim{ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .sb-nav{ padding:8px 10px 8px 14px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead, .zm-subitem, .sb-foot button, .sb-foot span),
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead, .zm-subitem, .sb-foot) :is(svg, span, .zm-ic, .m8-subic, .zm-chev){
+    color:#fff !important; stroke:currentColor;
+  }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead, .zm-subitem){ background:transparent !important; box-shadow:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .zm-subitem{ color:rgba(255,255,255,.86) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(hr, .zm-sep, .sb-foot){ border-color:rgba(255,255,255,.22) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(hr, .zm-sep){ background:rgba(255,255,255,.22) !important; }
+html:not(#_#_#_#_) body.m14-pillon:not(#_#_#_#_) #sidebar .zmenu > .m14-pill{
+    background:#fff !important; box-shadow:0 10px 24px -12px rgba(90,25,0,.45) !important;
+  }
+html:not(#_#_#_#_) body.m14-pillon:not(#_#_#_#_) #sidebar .zmenu .m14-on,
+  html:not(#_#_#_#_) body.m14-pillon:not(#_#_#_#_) #sidebar .zmenu .m14-on :is(svg, .zm-ic, .m8-subic, span, .zm-chev){
+    color:#E2491F !important; stroke:currentColor !important;
+  }
+html:not(#_#_#_#_) body.dark-mode.m14-pillon:not(#_#_#_#_) #sidebar .zmenu > .m14-pill{ background:#fff !important; }
+html:not(#_#_#_#_) body.dark-mode.m14-pillon:not(#_#_#_#_) #sidebar .zmenu .m14-on,
+  html:not(#_#_#_#_) body.dark-mode.m14-pillon:not(#_#_#_#_) #sidebar .zmenu .m14-on :is(svg, .zm-ic, .m8-subic, span, .zm-chev){ color:#C9441F !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .zmenu > .m14-pill{ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem):is(.active, .m14-on){
+    background:#fff !important; border-radius:999px !important;
+    box-shadow:0 10px 24px -12px rgba(90,25,0,.5) !important;
+    transition:background-color .25s ease, color .25s ease !important;
+  }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem):is(.active, .m14-on),
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem):is(.active, .m14-on) :is(svg, span, .zm-ic, .m8-subic, .zm-chev){
+    color:#E2491F !important; stroke:currentColor !important; font-weight:600 !important;
+  }
+html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem):is(.active, .m14-on),
+  html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem):is(.active, .m14-on) :is(svg, span, .zm-ic, .m8-subic, .zm-chev){ color:#C9441F !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead){ min-height:50px !important; font-size:16.5px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead, .zm-subitem) span{ overflow:visible !important; text-overflow:clip !important; white-space:nowrap !important; }}
+@media (min-width:600px) and (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead){ min-height:56px !important; font-size:18px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .zm-subitem{ font-size:16px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar .sb-nav{ padding:24px 14px 8px 22px !important; }}
+@media (min-width:901px){html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar{
+    background:transparent !important; box-shadow:none !important; border-color:transparent !important;
+  }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead){
+    width:44px !important; height:44px !important; min-height:0 !important; padding:0 !important;
+    margin:6px auto !important; border-radius:999px !important;
+    display:grid !important; place-items:center !important;
+    background:transparent;
+    transition:background-color .2s ease, color .25s ease !important;
+  }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead):hover{ background:rgba(0,0,0,.055) !important; }
+html:not(#_#_#_#_) body.sb-collapsed.dark-mode:not(#_#_#_#_) #sidebar :is(.zm-item, .zm-ghead):hover{ background:rgba(255,255,255,.08) !important; }
+html:not(#_#_#_#_) body.sb-collapsed.m14-pillon:not(#_#_#_#_) #sidebar .zmenu > .m14-pill{
+    background:#141416 !important; box-shadow:0 8px 18px -8px rgba(0,0,0,.45) !important; border-radius:999px !important;
+  }
+html:not(#_#_#_#_) body.sb-collapsed.dark-mode.m14-pillon:not(#_#_#_#_) #sidebar .zmenu > .m14-pill{ background:#F4F4F5 !important; }
+html:not(#_#_#_#_) body.sb-collapsed.dark-mode.m14-pillon:not(#_#_#_#_) #sidebar .zmenu .m14-on :is(svg, .zm-ic, span){ color:#141416 !important; stroke:#141416 !important; }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar :is(hr, .zm-sep){ width:22px !important; margin:10px auto !important; }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar .sb-foot{ border-top:0 !important; display:flex; justify-content:center; }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar .sb-foot button{
+    width:44px !important; height:44px !important; padding:0 !important; border-radius:999px !important;
+    display:grid !important; place-items:center !important; background:rgba(0,0,0,.045) !important;
+  }
+html:not(#_#_#_#_) body.sb-collapsed.dark-mode:not(#_#_#_#_) #sidebar .sb-foot button{ background:rgba(255,255,255,.07) !important; }}</style>
 </head>
 <body>
 <div id="amx-intro" aria-hidden="true"><div id="amx-bgw"><div id="amx-bg"></div><div id="amx-glow"></div><div class="amx-wv" style="background:#FF7E4F"></div><div class="amx-wv" style="background:#D9431F"></div><div class="amx-wv" style="background:#ED532D"></div><div id="amx-ring"></div></div><div id="amx-disc"></div><div id="amx-lk"><div id="amx-amo"><div id="amx-ami"><svg id="amx-am" role="img" aria-label="am. nexus"><path fill="#fff" d="M301.9 766.9C262.8 763.7 232.5 744.3 220.2 714.8C215.3 703.1 213.7 692.9 214.3 677.6C214.8 662.9 216.3 656.2 221.6 645.0C235.4 615.7 264.6 598.7 315.7 590.1C322.5 589.0 338.9 586.9 352.2 585.5C380.6 582.5 386.4 581.6 393.7 578.8C406.8 573.9 412.1 562.8 406.5 552.0C404.2 547.5 396.6 541.4 390.6 539.1C374.4 533.0 351.0 534.1 335.2 541.5C326.4 545.7 318.2 553.5 315.6 560.3L313.8 565.0 L272.4 565.0L231.0 565.0 L231.0 562.7C231.0 555.3 238.7 535.7 245.8 525.3C270.5 488.9 325.4 468.3 385.0 473.0C441.2 477.4 479.0 500.4 493.0 538.8C499.0 555.4 499.0 554.8 499.0 662.1L499.0 760.0 L496.8 760.5C495.5 760.8 475.6 760.9 452.5 760.8L410.5 760.5 L410.0 742.0L409.5 723.5 L407.2 727.2C404.3 731.8 393.7 741.7 386.3 746.8C363.9 762.0 332.4 769.5 301.9 766.9ZM522.0 664.6C522.0 560.1 521.9 561.8 527.6 545.4C538.8 512.6 564.0 487.1 597.6 474.4C614.3 468.1 637.5 465.1 654.8 467.0C687.8 470.5 710.1 482.7 730.2 508.1C732.6 511.0 733.1 511.3 733.9 509.9C736.9 505.0 745.3 496.1 751.7 491.0C781.9 466.6 824.8 459.9 865.0 473.1C903.0 485.6 928.7 514.5 936.7 553.7C938.4 561.8 938.5 570.2 938.5 661.5L938.5 760.5 L895.5 760.5L852.5 760.5 L852.0 668.0C851.5 566.5 851.9 573.3 845.5 562.4C835.1 544.6 809.2 539.2 787.4 550.3C778.9 554.6 774.4 559.4 769.8 568.7L765.5 577.3 L765.0 668.9L764.5 760.5 L723.8 760.8L683.0 761.0 L683.0 673.8C683.0 625.1 682.5 583.2 682.0 579.0C680.7 568.6 675.3 558.0 668.5 552.5C662.1 547.4 653.8 544.6 644.5 544.6C626.0 544.7 611.4 554.9 604.8 572.5L602.5 578.5 L602.2 669.8L601.9 761.0 L562.0 761.0L522.0 761.0 L522.0 664.6ZM358.7 703.4C383.4 698.3 402.0 682.4 407.4 661.7C408.2 658.6 409.2 649.4 409.6 641.4C410.2 628.0 410.2 626.7 408.7 627.3C400.1 630.6 386.9 633.6 368.0 636.5C341.1 640.7 334.8 642.2 325.3 646.5C311.4 652.9 304.0 662.8 304.0 674.9C304.0 683.7 305.3 687.8 309.6 692.8C316.6 701.1 326.7 704.8 342.3 704.9C347.1 705.0 354.5 704.3 358.7 703.4Z"/></svg></div></div><div id="amx-dt"></div></div></div>
@@ -22423,7 +22522,17 @@ AMCViewport.onSettle(function(){
     else if (!has && parked) { parked = false; }
   }
   var _syncRaf = 0;
-  new MutationObserver(function () {
+  new MutationObserver(function(list){
+    /* only changes that can open or close a window matter — not the moving glass, pills and animations
+       (checking on every one of those made every animation frame measure all windows → lag) */
+    var hit = false;
+    for(var i = 0; i < list.length && !hit; i++){
+      var t = list[i].target;
+      if(!t || !t.closest || t.closest('#m10-dock, #m23-lens, .m23-fl, .m14-pill, #m23-slens, .m24-skip')) continue;
+      if(!(t === document.body || (t.matches && t.matches('.modal-overlay, [id$="-modal"], #party-edit-modal, .m8-ov, #m5-create, .m8-menu-scrim, #m10-mp-scrim, #m10-mp, .m8-menu, #drawer, .row-menu-panel, .drange-menu, .dropdown, #m12-hist, #m8-pv, #m9q-lib, #m9q-pop, #m8-chq-menu, #m8-cq-menu, #gsearch-modal')))) continue;
+      hit = true;
+    }
+    if(!hit) return;
     if (_syncRaf) return;                       // many changes in one frame -> one check
     _syncRaf = requestAnimationFrame(function () { _syncRaf = 0; sync(); });
   }).observe(document.body, {
@@ -27168,9 +27277,15 @@ AMCViewport.onSettle(function(){
     var tb = $('topbar'); if(!tb) return;
     if(small.matches) document.documentElement.style.setProperty('--m10-hdr', tb.offsetHeight + 'px');
   }
+  var scRaf = 0, scOn = null;
   function onScroll(){
-    var sc = $('app-scroll'); if(!sc) return;
-    document.body.classList.toggle('m10-scrolled', sc.scrollTop > 6);
+    if(scRaf) return;
+    scRaf = requestAnimationFrame(function(){
+      scRaf = 0;
+      var sc = $('app-scroll'); if(!sc) return;
+      var on = sc.scrollTop > 6;
+      if(on !== scOn){ scOn = on; document.body.classList.toggle('m10-scrolled', on); }
+    });
   }
 
   /* ── 5 · NAV PILL ─────────────────────────────────────────────────────
@@ -28561,7 +28676,17 @@ AMCViewport.onSettle(function(){
   };
   /* a window that opens with a tap gets its own entry, so Back closes it */
   var raf = 0;
-  new MutationObserver(function(){
+  new MutationObserver(function(list){
+    /* only changes that can open or close a window matter — not the moving glass, pills and animations
+       (checking on every one of those made every animation frame measure all windows → lag) */
+    var hit = false;
+    for(var i = 0; i < list.length && !hit; i++){
+      var t = list[i].target;
+      if(!t || !t.closest || t.closest('#m10-dock, #m23-lens, .m23-fl, .m14-pill, #m23-slens, .m24-skip')) continue;
+      if(!(t === document.body || (t.matches && t.matches('.modal-overlay, [id$="-modal"], #party-edit-modal, .m8-ov, #m5-create, .m8-menu-scrim, #m10-mp-scrim, #m10-mp, .m8-menu, #drawer, .row-menu-panel, .drange-menu, .dropdown, #m12-hist, #m8-pv, #m9q-lib, #m9q-pop, #m8-chq-menu, #m8-cq-menu, #gsearch-modal')))) continue;
+      hit = true;
+    }
+    if(!hit) return;
     if(raf) return;
     raf = requestAnimationFrame(function(){
       raf = 0;
@@ -29325,12 +29450,15 @@ AMCViewport.onSettle(function(){
   /* a big number that would not fit gets a little smaller, never cut off */
   function fitNumbers(){
     var els = document.querySelectorAll('#m5-home .m5-big, #m5-home .m5-tile .m5-mid, #m5-home .m5-wtot, .m13-kpi > b, #pay-kpis .pay-cell-val');
-    for(var i = 0; i < els.length; i++){
-      var e = els[i]; e.style.fontSize = '';
-      if(!e.clientWidth) continue;
-      var n = 0, fs = parseFloat(getComputedStyle(e).fontSize);
-      while(e.scrollWidth > e.clientWidth + 1 && n < 14 && fs > 14){ fs -= 1.5; e.style.fontSize = fs + 'px'; n++; }
+    /* all writes first, then all reads, then one write per number that does not fit
+       (the old loop measured after every change → the page was laid out many times → lag) */
+    var i, e, m = [];
+    for(i = 0; i < els.length; i++) els[i].style.fontSize = '';
+    for(i = 0; i < els.length; i++){
+      e = els[i]; var cw = e.clientWidth; if(!cw) continue;
+      var sw = e.scrollWidth; if(sw > cw + 1) m.push([e, cw / sw, parseFloat(getComputedStyle(e).fontSize)]);
     }
+    for(i = 0; i < m.length; i++) m[i][0].style.fontSize = Math.max(14, Math.floor(m[i][2] * m[i][1] * 0.97 * 2) / 2) + 'px';
   }
   var fq = 0;
   function queueFit(){ if(fq) return; fq = requestAnimationFrame(function(){ fq = 0; fitLayout(); }); }
@@ -30515,7 +30643,9 @@ AMCViewport.onSettle(function(){
     if('ResizeObserver' in window) new ResizeObserver(function(){ var n = c.offsetWidth + 'x' + c.offsetHeight; if(n === sz) return; sz = n; place(c, true); }).observe(c);
   }
   /* runs straight after the page changes (before it is painted), so a redrawn switch never flashes */
-  function scan(){ [].forEach.call(document.querySelectorAll(SEG), function(c){ if(!c.__g22 && c.offsetParent) setup(c); }); }
+  /* checkVisibility only looks at styles (no layout), so a page change is not held up measuring */
+  function shown(c){ return c.checkVisibility ? c.checkVisibility() : !!c.offsetParent; }
+  function scan(){ [].forEach.call(document.querySelectorAll(SEG), function(c){ if(!c.__g22 && shown(c)) setup(c); }); }
 
   /* ══ 3 · NEW CUSTOMER / VENDOR from the Customers / Vendors page ══════ */
   function partyButton(){
@@ -30621,7 +30751,28 @@ AMCViewport.onSettle(function(){
     ['openPaymentModal', 'openEditPayment', 'allocOnPartyChange'].forEach(function(n){ if(typeof window[n] === 'function') M8.after(n, function(){ setTimeout(function(){ dueBox('pm'); dueBox('ep'); }, 30); }); });
     var t2 = $('m5-t2'); if(t2) new MutationObserver(fixHeader).observe(t2, { childList:true, characterData:true, subtree:true });
     document.addEventListener('click', function(){ setTimeout(scan, 0); }, true);
-    new MutationObserver(function(){ scan(); alignSoon(); }).observe(document.body, { childList:true, subtree:true });
+    /* only look at what was just added, and once per frame (before it is painted, so no switch flashes).
+       Scanning the whole page on every change was the biggest cause of lag on phones. */
+    var pend = [], q = 0, full = 0;
+    new MutationObserver(function(list){
+      for(var i = 0; i < list.length; i++){
+        var add = list[i].addedNodes;
+        for(var j = 0; j < add.length; j++){
+          var n = add[j]; if(n.nodeType !== 1) continue;
+          if(n.matches && n.matches(SEG)) pend.push(n);
+          else if(n.firstElementChild){ var f = n.querySelectorAll(SEG); for(var k = 0; k < f.length; k++) pend.push(f[k]); }
+        }
+      }
+      alignSoon();
+      /* a switch that was already there but hidden (a window opening) is picked up by a calm
+         full look a moment later */
+      if(!full) full = setTimeout(function(){ full = 0; requestAnimationFrame(scan); }, 250);
+      if(!pend.length || q) return;
+      q = requestAnimationFrame(function(){
+        q = 0; var l = pend; pend = [];
+        l.forEach(function(c){ if(!c.__g22 && c.isConnected && shown(c)) setup(c); });
+      });
+    }).observe(document.body, { childList:true, subtree:true });
     window.addEventListener('resize', alignSoon);
     window.addEventListener('firebaseReady', function(){ setTimeout(paintSettings, 0); });
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && $('m22-np') && $('m22-np').classList.contains('open')) closeNewParty(); });
@@ -30823,22 +30974,33 @@ AMCViewport.onSettle(function(){
     bar.style.setProperty('background-size', '100% 100%', 'important');
     bar.style.setProperty('background-repeat', 'no-repeat', 'important');
   }
+  /* the bar's size and the tabs' places, measured once (not every frame: reading them while
+     a new page is being laid out made each frame wait for the whole page → lag) */
+  var GM = null;
+  function measure(){
+    if(!bar) return;
+    var k = parseFloat(bar.style.scale) || 1, r = bar.getBoundingClientRect(), list = tabs();
+    GM = { bh:bar.offsetHeight, ow:bar.offsetWidth, cl:bar.clientLeft, cx0:r.left + r.width / 2, cy:r.top + r.height / 2, list:list, mids:list.map(mid) };
+    void k;
+  }
   function paint(){
     if(!bar || !G) return;
-    var tw = Wd.x, p = Math.max(0, P.x), e = E.x, bh = bar.offsetHeight, inner = bh - 8;
+    if(!GM) measure();
+    var tw = Wd.x, p = Math.max(0, P.x), e = E.x, bh = GM.bh, inner = bh - 8;
     if(drag) E.to = Math.min(1, Math.abs(X.v) / 700);            /* faster → taller and rounder */
     var wl = tw + HOLD_W + (MOVE_W - HOLD_W) * e, hl = bh + HOLD_H + (MOVE_H - HOLD_H) * e;
     var w = tw + (wl - tw) * p, h = inner + (hl - inner) * p;
     /* the whole bar swells a little while it is held */
-    bar.style.scale = (1 + 0.035 * Math.max(0, Bs.x)).toFixed(4);
+    var kk = 1 + 0.035 * Math.max(0, Bs.x);
+    bar.style.scale = kk.toFixed(4);
     /* the resting pill melts away as the glass rises, and back as it comes down */
     sel.style.width = tw + 'px';
     sel.style.transform = 'translate3d(' + (X.x - tw / 2).toFixed(2) + 'px,0,0)';
     sel.style.opacity = (1 - ss(0.04, 0.45, p)).toFixed(3);
     if(p < 0.004){ if(lens.style.visibility !== 'hidden') lens.style.visibility = 'hidden'; }
     else {
-      var r = bar.getBoundingClientRect(), s = r.width / bar.offsetWidth;
-      var cx = r.left + (bar.clientLeft + X.x) * s, cy = r.top + r.height / 2;
+      var s = kk;
+      var cx = GM.cx0 - GM.ow * s / 2 + (GM.cl + X.x) * s, cy = GM.cy;
       var sx = w * s / G.w0, sy = h * s / G.h0, o = ss(0, 0.22, p).toFixed(3);
       lens.style.visibility = 'visible';
       lens.style.transform = 'translate3d(' + (cx - G.TW / 2).toFixed(2) + 'px,' + (cy - G.TH / 2).toFixed(2) + 'px,0) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
@@ -30846,13 +31008,14 @@ AMCViewport.onSettle(function(){
     }
     var live = p > 0.25;
     bar.classList.toggle('m23-live', live);
-    tabs().forEach(function(t){ t.classList.toggle('m23-under', live && Math.abs(mid(t) - X.x) < w * 0.32); });
+    GM.list.forEach(function(t, i){ t.classList.toggle('m23-under', live && Math.abs(GM.mids[i] - X.x) < w * 0.32); });
   }
-  function lift(to){ clearTimeout(sinkT); P.k = 400; P.c = 25; P.to = to == null ? 1 : to; Bs.to = P.to; sys.kick(); }
+  function lift(to){ measure(); clearTimeout(sinkT); P.k = 400; P.c = 25; P.to = to == null ? 1 : to; Bs.to = P.to; sys.kick(); }
   /* on release the glass melts into the pill fast (~0.1 s, measured on iOS 27); the bar follows (~0.25 s) */
   function sink(wait){ clearTimeout(sinkT); sinkT = setTimeout(function(){ if(drag) return; P.k = 640; P.c = 50; P.to = 0; E.to = 0; Bs.to = 0; sys.kick(); }, wait || 0); }
   function goTab(t, instant){
     if(!t) return;
+    measure();
     X.to = mid(t); Wd.to = t.offsetWidth;
     if(instant || reduce.matches){ X.x = X.to; X.v = 0; Wd.x = Wd.to; Wd.v = 0; }
     sys.kick();
@@ -30912,11 +31075,23 @@ AMCViewport.onSettle(function(){
     /* a tap that came from a slide is not a second tap */
     bar.addEventListener('click', function(e){ if(dragged){ e.stopImmediatePropagation(); e.preventDefault(); } }, true);
     /* follow the app: when the chosen tab changes from elsewhere, the glass travels there */
-    new MutationObserver(function(){
+    var lastOn = null;
+    new MutationObserver(function(list){
+      /* the glass's own classes (m23-under / m23-live) change every frame: ignore those,
+         otherwise every frame measured the tabs again → lag */
+      var real = false;
+      for(var i = 0; i < list.length; i++){ var o = list[i].oldValue || '', n = list[i].target.className || ''; if(o.replace(/\s*m23-(under|live)\b/g, '') !== String(n).replace(/\s*m23-(under|live)\b/g, '')){ real = true; break; } }
+      if(!real || follow) return;
+      follow = requestAnimationFrame(function(){ follow = 0; followTab(); });
+    }).observe(bar, { attributes:true, subtree:true, attributeFilter:['class'], attributeOldValue:true });
+    var follow = 0;
+    function followTab(){
       if(drag) return; var t = onTab();
-      if(!t){ sel.style.opacity = '0'; return; }
+      if(!t){ sel.style.opacity = '0'; lastOn = null; return; }
+      if(t === lastOn && Math.abs(X.to - (GM && GM.list.indexOf(t) >= 0 ? GM.mids[GM.list.indexOf(t)] : X.to)) < 2) return;
+      lastOn = t;
       if(Math.abs(mid(t) - X.to) > 2){ buildLens(); if(P.to === 0 && !reduce.matches){ lift(0.8); sink(200); } goTab(t, false); }
-    }).observe(bar, { attributes:true, subtree:true, attributeFilter:['class'] });
+    }
     new MutationObserver(barGlass).observe(document.body, { attributes:true, attributeFilter:['class'] });
     requestAnimationFrame(function(){ buildLens(); barGlass(); goTab(onTab(), true); paint(); });
     window.addEventListener('resize', function(){ TW0 = 0; buildLens(); barGlass(); goTab(onTab(), true); });
@@ -31589,7 +31764,7 @@ AMCViewport.onSettle(function(){
   /* ── widgets: bars grow, lines draw, rings open ── */
   function widgets(root, delay){
     delay = delay || 0;
-    function each(sel, fn){ var n = root.querySelectorAll(sel); for(var i = 0; i < n.length; i++){ var r = n[i].getBoundingClientRect(); if(r.width && r.top < innerHeight + 40) fn(n[i], i); } }
+    function each(sel, fn){ var n = root.querySelectorAll(sel); for(var i = 0; i < n.length && i < 24; i++) fn(n[i], i); }
     try{
       each('.m5-cmpbars .m5-cb i', function(el, i){
         el.animate([{ scale:'1 0' }, { scale:'1 1' }], { duration:900, delay:delay + 120 + i * 90, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' });
@@ -31624,7 +31799,7 @@ AMCViewport.onSettle(function(){
       blurIn(shell, { blur:16, rise:0, dur:900, step:90, maxDelay:200 });
       blurIn(cards, { blur:16, rise:12, dur:950, step:55, maxDelay:650 });
     }
-    if(pg) widgets(pg, 250);
+    if(pg && !phone()) widgets(pg, 250);
     lastPage = pg ? pg.id : '';
   }
   var intro = D.getElementById('amx-intro');
@@ -31643,15 +31818,12 @@ AMCViewport.onSettle(function(){
   var lastPage = '';
   function enter(pg){
     if(!can || !opened) return;
-    if(phone()){
-      /* phone: one soft fade of the whole page, nothing moves (smoother on a phone) */
-      try{ pg.animate([{ opacity:0 }, { opacity:1 }], { duration:240, easing:'ease-out' }); }catch(e){}
-      widgets(pg, 60);
-    } else {
-      /* PC: cards come out of a light blur one after another, like the video */
-      blurIn(pick(pg, 24), { blur:10, rise:10, dur:620, step:38, maxDelay:420 });
-      widgets(pg, 120);
-    }
+    /* phone / tablet: pages change straight away, no fade (Ziad: keep it simple like before) */
+    if(phone()) return;
+    /* PC: cards come out of a light blur one after another, like the video.
+       The Payments / Receipts hero cards stay still. */
+    blurIn(pick(pg, 24).filter(function(el){ return !el.closest('#pay-kpis, .pay-combined, #m24-still') && !el.querySelector('#pay-kpis'); }), { blur:10, rise:10, dur:620, step:38, maxDelay:420 });
+    widgets(pg, 120);
   }
   var pmo = new MutationObserver(function(list){
     for(var i = 0; i < list.length; i++){
@@ -31741,6 +31913,66 @@ AMCViewport.onSettle(function(){
   var hm = D.getElementById('page-dashboard');
   if(hm) new MutationObserver(addEye).observe(hm, { childList:true, subtree:true });
   addEye();
+
+  /* ── 6 · phone & tablet menu: the app screen slides aside, the orange menu takes over ──
+     The top bar, the page and the bottom bar move together as one rounded card. */
+  var SCREEN = null;
+  function buildScreen(){
+    if(SCREEN) return;
+    var tb = D.getElementById('topbar'), sc = D.getElementById('app-scroll');
+    if(!tb || !sc) return;
+    SCREEN = D.createElement('div'); SCREEN.id = 'm24-screen';
+    sc.parentNode.insertBefore(SCREEN, sc);
+    SCREEN.appendChild(tb); SCREEN.appendChild(sc);
+    var dock = D.getElementById('m10-dock'); if(dock) SCREEN.appendChild(dock);
+    /* the bottom bar is built a little later: keep it inside the card */
+    new MutationObserver(function(){
+      var d = D.getElementById('m10-dock'); if(d && d.parentNode === D.body) SCREEN.appendChild(d);
+    }).observe(D.body, { childList:true });
+    /* a tap on the card closes the menu; a swipe to the left follows the finger */
+    var sx = 0, sy = 0, dx = 0, drag = false, id = null;
+    function isOpen(){ return D.body.classList.contains('mobile-sidebar-open'); }
+    SCREEN.addEventListener('pointerdown', function(e){
+      if(!isOpen() || e.target !== SCREEN) return;
+      id = e.pointerId; sx = e.clientX; sy = e.clientY; dx = 0; drag = false;
+      try{ SCREEN.setPointerCapture(id); }catch(err){}
+    });
+    SCREEN.addEventListener('pointermove', function(e){
+      if(id !== e.pointerId) return;
+      var x = e.clientX - sx;
+      if(!drag && Math.abs(x) > 8 && Math.abs(x) > Math.abs(e.clientY - sy)){ drag = true; SCREEN.classList.add('m24-drag'); }
+      if(drag){ dx = Math.min(0, x); SCREEN.style.setProperty('--m24-dx', dx + 'px'); }
+    });
+    function up(e){
+      if(id !== e.pointerId) return;
+      id = null;
+      SCREEN.classList.remove('m24-drag');
+      SCREEN.style.removeProperty('--m24-dx');
+      if(!drag || dx < -50) closeDrawer();
+      drag = false;
+    }
+    SCREEN.addEventListener('pointerup', up);
+    SCREEN.addEventListener('pointercancel', up);
+    /* the click after a tap on the card must not reach the page under it */
+    SCREEN.addEventListener('click', function(e){ if(e.target === SCREEN){ e.stopPropagation(); e.preventDefault(); } }, true);
+  }
+  buildScreen();
+  /* menu rows come in one after another as the card slides away */
+  if(typeof window.openDrawer === 'function' && !window.openDrawer.__m24){
+    var od = window.openDrawer;
+    window.openDrawer = function(){
+      var was = D.body.classList.contains('mobile-sidebar-open');
+      var r = od.apply(this, arguments);
+      if(!was && D.body.classList.contains('mobile-sidebar-open') && can){
+        var rows = D.querySelectorAll('#sidebar .zmenu > .zm-item, #sidebar .zmenu > .zm-group, #sidebar .zmenu > hr, #sidebar .zmenu > .zm-sep, #sidebar .sb-foot');
+        [].forEach.call(rows, function(el, i){
+          try{ el.animate([{ opacity:0, translate:'-26px 0' }, { opacity:1, translate:'0 0' }], { duration:520, delay:70 + i * 32, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' }); }catch(e){}
+        });
+      }
+      return r;
+    };
+    window.openDrawer.__m24 = 1;
+  }
 })();
 
 </script>
