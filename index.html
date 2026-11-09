@@ -9965,7 +9965,47 @@ html:not(#_#_#_) body:not(#_#_#_) .m16-dn{ gap:10px !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m16-dn-l button span{ font-size:11.5px !important; }}
 @media (max-width:400px){html:not(#_#_#_) body:not(#_#_#_) .modal select:not([multiple]):not([size]), html:not(#_#_#_) body:not(#_#_#_) .m8-sheet select:not([multiple]):not([size]){ font-size:14px !important; padding-left:11px !important; padding-right:26px !important; background-position:right 8px center !important; background-size:14px 14px !important; }}
 html:not(#_#_#_) body:not(#_#_#_) :is(.modal-header, .m8-sheet-h, .m23-grab, .m5-grab, #m5-create .m5-sheet, .m22-glide, .m8-switch, #m10-bar){ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
-html:not(#_#_#_) body:not(#_#_#_) .page.active, html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-fade, html:not(#_#_#_) body:not(#_#_#_) .page.m8-push{ animation:none !important; }</style>
+html:not(#_#_#_) body:not(#_#_#_) .page.active, html:not(#_#_#_) body:not(#_#_#_) .page.active.m10-fade, html:not(#_#_#_) body:not(#_#_#_) .page.m8-push{ animation:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.card, .kpi, .dw-card, .pay-cell, .pay-combined, .qa-tile, .m5-card, .dash-panel, .dash-panel-2, .hero-kpi, .kpi-card, .stat-card):hover,
+html:not(#_#_#_) body:not(#_#_#_) #page-dashboard :is(.dw-card, .card.dash-panel, .card.dash-panel-2, .qa-tile):hover,
+html:not(#_#_#_) body:not(#_#_#_) .qa-tile:hover .qa-ic{
+  transform:none !important; translate:none !important;
+}
+html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu > .m14-pill.m14-anim{
+  transition:transform .48s cubic-bezier(.22,1,.36,1), width .48s cubic-bezier(.22,1,.36,1), height .48s cubic-bezier(.22,1,.36,1), border-radius .48s ease, opacity .2s ease !important;
+}
+html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu :is(.zm-item, .zm-subitem, .zm-ghead){
+  transition:color .3s ease, background-color .25s ease !important;
+}
+html.m24-vt::view-transition-old(root),
+html.m24-vt::view-transition-new(root){ animation:none; mix-blend-mode:normal; }
+html.m24-vt::view-transition-old(root){ z-index:1; }
+html.m24-vt::view-transition-new(root){ z-index:2; }
+html.m24-vt *, html.m24-vt *::before, html.m24-vt *::after{ transition:none !important; }
+.m5-cmpbars .m5-cb i{ transform-origin:50% 100%; }
+.m24-eye{
+  display:inline-flex; align-items:center; justify-content:center; vertical-align:middle;
+  width:28px; height:28px; margin:-4px 0 -4px 6px; padding:0; border:0; border-radius:999px;
+  background:rgba(0,0,0,.05); color:inherit; cursor:pointer; flex-shrink:0;
+  transition:background-color .2s ease;
+}
+.m24-eye:hover{ background:rgba(0,0,0,.09); }
+body.dark-mode .m24-eye{ background:rgba(255,255,255,.08); }
+body.dark-mode .m24-eye:hover{ background:rgba(255,255,255,.14); }
+.m24-eye svg{ width:16px; height:16px; display:block; }
+.m24-eye .m24-off{ display:none; }
+html.m24-hide .m24-eye .m24-on{ display:none; }
+html.m24-hide .m24-eye .m24-off{ display:block; }
+html #m5-home .m5-bal .m5-big,
+html #m5-home .m5-bal .m5-kpis > div:nth-child(-n/**/+2) b,
+html #m5-home .m5-stack .m5-mid{
+  transition:filter .45s cubic-bezier(.2,.8,.2,1), opacity .45s ease;
+}
+html.m24-hide #m5-home .m5-bal .m5-big,
+html.m24-hide #m5-home .m5-bal .m5-kpis > div:nth-child(-n/**/+2) b,
+html.m24-hide #m5-home .m5-stack .m5-mid{
+  filter:blur(11px); opacity:.85; user-select:none; -webkit-user-select:none;
+}</style>
 </head>
 <body>
 <div id="amx-intro" aria-hidden="true"><div id="amx-bgw"><div id="amx-bg"></div><div id="amx-glow"></div><div class="amx-wv" style="background:#FF7E4F"></div><div class="amx-wv" style="background:#D9431F"></div><div class="amx-wv" style="background:#ED532D"></div><div id="amx-ring"></div></div><div id="amx-disc"></div><div id="amx-lk"><div id="amx-amo"><div id="amx-ami"><svg id="amx-am" role="img" aria-label="am. nexus"><path fill="#fff" d="M301.9 766.9C262.8 763.7 232.5 744.3 220.2 714.8C215.3 703.1 213.7 692.9 214.3 677.6C214.8 662.9 216.3 656.2 221.6 645.0C235.4 615.7 264.6 598.7 315.7 590.1C322.5 589.0 338.9 586.9 352.2 585.5C380.6 582.5 386.4 581.6 393.7 578.8C406.8 573.9 412.1 562.8 406.5 552.0C404.2 547.5 396.6 541.4 390.6 539.1C374.4 533.0 351.0 534.1 335.2 541.5C326.4 545.7 318.2 553.5 315.6 560.3L313.8 565.0 L272.4 565.0L231.0 565.0 L231.0 562.7C231.0 555.3 238.7 535.7 245.8 525.3C270.5 488.9 325.4 468.3 385.0 473.0C441.2 477.4 479.0 500.4 493.0 538.8C499.0 555.4 499.0 554.8 499.0 662.1L499.0 760.0 L496.8 760.5C495.5 760.8 475.6 760.9 452.5 760.8L410.5 760.5 L410.0 742.0L409.5 723.5 L407.2 727.2C404.3 731.8 393.7 741.7 386.3 746.8C363.9 762.0 332.4 769.5 301.9 766.9ZM522.0 664.6C522.0 560.1 521.9 561.8 527.6 545.4C538.8 512.6 564.0 487.1 597.6 474.4C614.3 468.1 637.5 465.1 654.8 467.0C687.8 470.5 710.1 482.7 730.2 508.1C732.6 511.0 733.1 511.3 733.9 509.9C736.9 505.0 745.3 496.1 751.7 491.0C781.9 466.6 824.8 459.9 865.0 473.1C903.0 485.6 928.7 514.5 936.7 553.7C938.4 561.8 938.5 570.2 938.5 661.5L938.5 760.5 L895.5 760.5L852.5 760.5 L852.0 668.0C851.5 566.5 851.9 573.3 845.5 562.4C835.1 544.6 809.2 539.2 787.4 550.3C778.9 554.6 774.4 559.4 769.8 568.7L765.5 577.3 L765.0 668.9L764.5 760.5 L723.8 760.8L683.0 761.0 L683.0 673.8C683.0 625.1 682.5 583.2 682.0 579.0C680.7 568.6 675.3 558.0 668.5 552.5C662.1 547.4 653.8 544.6 644.5 544.6C626.0 544.7 611.4 554.9 604.8 572.5L602.5 578.5 L602.2 669.8L601.9 761.0 L562.0 761.0L522.0 761.0 L522.0 664.6ZM358.7 703.4C383.4 698.3 402.0 682.4 407.4 661.7C408.2 658.6 409.2 649.4 409.6 641.4C410.2 628.0 410.2 626.7 408.7 627.3C400.1 630.6 386.9 633.6 368.0 636.5C341.1 640.7 334.8 642.2 325.3 646.5C311.4 652.9 304.0 662.8 304.0 674.9C304.0 683.7 305.3 687.8 309.6 692.8C316.6 701.1 326.7 704.8 342.3 704.9C347.1 705.0 354.5 704.3 358.7 703.4Z"/></svg></div></div><div id="amx-dt"></div></div></div>
@@ -31497,6 +31537,210 @@ AMCViewport.onSettle(function(){
     last = M8.page ? M8.page() : null;
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 60); }); else setTimeout(boot, 60);
+})();
+
+</script>
+<script id="m24-js">/* m24 — motion like the reference video (see m24.css for the list) */
+(function(){
+  'use strict';
+  if(window.__m24) return; window.__m24 = 1;
+  var D = document, H = D.documentElement;
+  var EASE = 'cubic-bezier(.2,.8,.2,1)';
+  var can = !!(D.body && D.body.animate);
+  function phone(){ return innerWidth < 1024 || matchMedia('(pointer:coarse)').matches && innerWidth < 1100; }
+
+  /* ── which pieces of a page animate: each card on its own; plain wrappers are opened up ── */
+  function pick(root, max){
+    var out = [], PW = root.getBoundingClientRect().width || innerWidth, VH = innerHeight;
+    (function walk(el, depth){
+      var kids = el.children;
+      for(var i = 0; i < kids.length; i++){
+        if(out.length >= max) return;
+        var c = kids[i];
+        if(c.nodeName === 'SCRIPT' || c.nodeName === 'STYLE' || c.nodeName === 'TEMPLATE') continue;
+        var r = c.getBoundingClientRect();
+        if(r.width < 2 || r.height < 2) continue;
+        if(r.top > VH + 40 || r.bottom < -40) continue;          // off screen: shows as it is
+        var cs = getComputedStyle(c);
+        if(cs.position === 'fixed' || cs.display === 'contents' && false) continue;
+        var painted = cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || cs.boxShadow !== 'none' || cs.backgroundImage !== 'none';
+        var cardish = painted && parseFloat(cs.borderTopLeftRadius) >= 8;
+        var huge = r.width > PW * 0.9 && r.height > 260;
+        if(depth < 6 && c.children.length && (huge || (!cardish && c.children.length > 1 && r.height > 120))) walk(c, depth + 1);
+        else out.push(c);
+      }
+    })(root, 0);
+    return out.sort(function(a, b){
+      var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      return (Math.round(ra.top / 24) - Math.round(rb.top / 24)) || (ra.left - rb.left);
+    });
+  }
+  function blurIn(list, o){
+    list.forEach(function(el, i){
+      try{
+        el.animate([
+          { opacity:0, filter:'blur(' + o.blur + 'px)', translate:'0 ' + o.rise + 'px' },
+          { opacity:1, filter:'blur(0px)', translate:'0 0' }
+        ], { duration:o.dur, delay:Math.min(i * o.step, o.maxDelay), easing:EASE, fill:'backwards' });
+      }catch(e){}
+    });
+  }
+
+  /* ── widgets: bars grow, lines draw, rings open ── */
+  function widgets(root, delay){
+    delay = delay || 0;
+    function each(sel, fn){ var n = root.querySelectorAll(sel); for(var i = 0; i < n.length; i++){ var r = n[i].getBoundingClientRect(); if(r.width && r.top < innerHeight + 40) fn(n[i], i); } }
+    try{
+      each('.m5-cmpbars .m5-cb i', function(el, i){
+        el.animate([{ scale:'1 0' }, { scale:'1 1' }], { duration:900, delay:delay + 120 + i * 90, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' });
+      });
+      each('.m5-spark, .m16-ch svg, .m5-act svg', function(el){
+        el.animate([{ clipPath:'inset(0 100% 0 0)' }, { clipPath:'inset(0 0% 0 0)' }], { duration:1200, delay:delay + 150, easing:'cubic-bezier(.45,0,.2,1)', fill:'backwards' });
+      });
+      each('.m5-rings .m5-r', function(el, i){
+        el.animate([{ scale:'.7', opacity:0 }, { scale:'1', opacity:1 }], { duration:800, delay:delay + 100 + (3 - (i % 4)) * 80, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' });
+      });
+      each('.m5-ring', function(el){
+        el.animate([{ rotate:'-40deg', scale:'.9', opacity:0 }, { rotate:'0deg', scale:'1', opacity:1 }], { duration:900, delay:delay + 120, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' });
+      });
+      each('.m5-dots > *', function(el, i){
+        el.animate([{ scale:'0', opacity:0 }, { scale:'1', opacity:1 }], { duration:420, delay:delay + 200 + i * 45, easing:'cubic-bezier(.34,1.4,.64,1)', fill:'backwards' });
+      });
+    }catch(e){}
+  }
+
+  /* ── 1 · opening: after the orange animation, the app comes out of a soft blur ── */
+  var opened = false;
+  function reveal(){
+    if(opened || !can) return; opened = true;
+    var pg = D.querySelector('.page.active');
+    var shell = [];
+    ['topbar', 'sidebar'].forEach(function(id){ var e = D.getElementById(id); if(e && e.getBoundingClientRect().width) shell.push(e); });
+    var dock = D.getElementById('m10-dock'); if(dock && dock.getBoundingClientRect().width) shell.push(dock);
+    var cards = pg ? pick(pg, 24) : [];
+    if(phone()){
+      blurIn(shell.concat(cards), { blur:8, rise:14, dur:700, step:45, maxDelay:420 });
+    } else {
+      blurIn(shell, { blur:16, rise:0, dur:900, step:90, maxDelay:200 });
+      blurIn(cards, { blur:16, rise:12, dur:950, step:55, maxDelay:650 });
+    }
+    if(pg) widgets(pg, 250);
+    lastPage = pg ? pg.id : '';
+  }
+  var intro = D.getElementById('amx-intro');
+  if(intro){
+    var mo = new MutationObserver(function(){
+      if(!D.body.contains(intro) || intro.classList.contains('amx-out')){ mo.disconnect(); reveal(); }
+    });
+    mo.observe(intro, { attributes:true, attributeFilter:['class'] });
+    mo.observe(D.body, { childList:true });
+    setTimeout(reveal, 15000);   // safety, if the opening animation never says it ended
+  } else {
+    setTimeout(reveal, 30);
+  }
+
+  /* ── 2 · page changes ── */
+  var lastPage = '';
+  function enter(pg){
+    if(!can || !opened) return;
+    if(phone()){
+      /* phone: one soft fade of the whole page, nothing moves (smoother on a phone) */
+      try{ pg.animate([{ opacity:0 }, { opacity:1 }], { duration:240, easing:'ease-out' }); }catch(e){}
+      widgets(pg, 60);
+    } else {
+      /* PC: cards come out of a light blur one after another, like the video */
+      blurIn(pick(pg, 24), { blur:10, rise:10, dur:620, step:38, maxDelay:420 });
+      widgets(pg, 120);
+    }
+  }
+  var pmo = new MutationObserver(function(list){
+    for(var i = 0; i < list.length; i++){
+      var t = list[i].target;
+      if(t.classList && t.classList.contains('page') && t.classList.contains('active') && t.id !== lastPage){
+        lastPage = t.id;
+        /* wait one frame so the page has drawn its content */
+        requestAnimationFrame(function(){ enter(t); });
+        return;
+      }
+    }
+  });
+  function watchPages(){ var ps = D.querySelectorAll('.page'); for(var i = 0; i < ps.length; i++) pmo.observe(ps[i], { attributes:true, attributeFilter:['class'] }); }
+  watchPages();
+
+  /* ── 3 · dark mode: a dark wave from the switch covers the app ── */
+  var px = innerWidth / 2, py = 60;
+  window.addEventListener('pointerdown', function(e){ px = e.clientX; py = e.clientY; }, true);
+  function blob(cx, cy, R, ph, n){
+    var pts = [], i;
+    for(i = 0; i < n; i++){
+      var a = i / n * Math.PI * 2;
+      var r = R * (1 + 0.11 * Math.sin(3 * a + ph) + 0.06 * Math.sin(5 * a - ph * 1.4) + 0.03 * Math.sin(7 * a + ph * 2));
+      pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+    }
+    /* smooth closed curve through the points (Catmull-Rom → Bézier) */
+    var d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+    for(i = 0; i < n; i++){
+      var p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+      d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ' ' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) + ' ' +
+                  (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ' ' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) + ' ' +
+                  p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+    }
+    return 'path("' + d + ' Z")';
+  }
+  function wave(fn){
+    if(!D.startViewTransition || !can){ fn(); return; }
+    var cx = px, cy = py, W = innerWidth, Hh = innerHeight;
+    var far = Math.max(Math.hypot(cx, cy), Math.hypot(W - cx, cy), Math.hypot(cx, Hh - cy), Math.hypot(W - cx, Hh - cy)) * 1.3;
+    var frames = [], N = 28;
+    for(var k = 0; k <= N; k++){
+      var t = k / N, e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;   // ease in-out
+      frames.push({ clipPath: blob(cx, cy, Math.max(0.5, far * e), t * 2.4, 40) });
+    }
+    H.classList.add('m24-vt');
+    var vt;
+    try{ vt = D.startViewTransition(function(){ fn(); }); }catch(err){ H.classList.remove('m24-vt'); fn(); return; }
+    vt.ready.then(function(){
+      H.animate(frames, { duration:phone() ? 760 : 900, easing:'linear', pseudoElement:'::view-transition-new(root)' });
+    }).catch(function(){});
+    vt.finished.then(function(){ H.classList.remove('m24-vt'); }, function(){ H.classList.remove('m24-vt'); });
+  }
+  function hookTheme(){
+    var f = window.toggleThemeQuick;
+    if(typeof f !== 'function' || f.__m24) return;
+    var w = function(){ var self = this, args = arguments; wave(function(){ f.apply(self, args); }); };
+    w.__m24 = 1;
+    window.toggleThemeQuick = w;
+  }
+  hookTheme(); setTimeout(hookTheme, 1500);
+
+  /* (button press: already done by m23 — a soft squeeze and a springy release) */
+
+  /* ── 5 · eye button on Home: hide / show the totals (blurred, not removed) ── */
+  var KEY = 'm24_hide';
+  try{ if(localStorage.getItem(KEY) === '1') H.classList.add('m24-hide'); }catch(e){}
+  var EYE = '<svg class="m24-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>' +
+            '<svg class="m24-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.6c.46-.07.92-.1 1.4-.1 6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.6C4 8.3 2.5 12 2.5 12S6 18.5 12 18.5c1.9 0 3.5-.6 4.9-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+  function label(){ return H.classList.contains('m24-hide') ? 'Show amounts' : 'Hide amounts'; }
+  function addEye(){
+    var lbl = D.querySelector('#m5-home .m5-bal .m5-tile > .m5-lbl');
+    if(!lbl || lbl.querySelector('.m24-eye')) return;
+    var b = D.createElement('button');
+    b.type = 'button'; b.className = 'm24-eye'; b.innerHTML = EYE;
+    b.setAttribute('aria-label', label()); b.title = label();
+    lbl.appendChild(b);
+  }
+  D.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.m24-eye');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var on = !H.classList.contains('m24-hide');
+    H.classList.toggle('m24-hide', on);
+    try{ localStorage.setItem(KEY, on ? '1' : '0'); }catch(err){}
+    D.querySelectorAll('.m24-eye').forEach(function(x){ x.setAttribute('aria-label', label()); x.title = label(); });
+  }, true);
+  var hm = D.getElementById('page-dashboard');
+  if(hm) new MutationObserver(addEye).observe(hm, { childList:true, subtree:true });
+  addEye();
 })();
 
 </script>
