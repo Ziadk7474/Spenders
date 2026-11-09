@@ -10109,9 +10109,7 @@ html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar .sb-foot button{
     display:grid !important; place-items:center !important; background:rgba(0,0,0,.045) !important;
   }
 html:not(#_#_#_#_) body.sb-collapsed.dark-mode:not(#_#_#_#_) #sidebar .sb-foot button{ background:rgba(255,255,255,.07) !important; }}
-@media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen.m24-card *,
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen.m24-card *::before,
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen.m24-card *::after{
+@media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen.m24-card :is(#m10-bar, #m10-plus){
     backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
   }
 html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m23-lens{ visibility:hidden !important; }}
@@ -22582,7 +22580,8 @@ AMCViewport.onSettle(function(){
     for(var i = 0; i < list.length && !hit; i++){
       var t = list[i].target;
       if(!t || !t.closest || t.closest('#m10-dock, #m23-lens, .m23-fl, .m14-pill, #m23-slens, .m24-skip')) continue;
-      if(!(t === document.body || (t.matches && t.matches('.modal-overlay, [id$="-modal"], #party-edit-modal, .m8-ov, #m5-create, .m8-menu-scrim, #m10-mp-scrim, #m10-mp, .m8-menu, #drawer, .row-menu-panel, .drange-menu, .dropdown, #m12-hist, #m8-pv, #m9q-lib, #m9q-pop, #m8-chq-menu, #m8-cq-menu, #gsearch-modal')))) continue;
+      if(t === document.body){ var so = t.classList.contains('mobile-sidebar-open'); if(so === t.__s2so) continue; t.__s2so = so; hit = true; continue; }
+      if(!((t.matches && t.matches('.modal-overlay, [id$="-modal"], #party-edit-modal, .m8-ov, #m5-create, .m8-menu-scrim, #m10-mp-scrim, #m10-mp, .m8-menu, #drawer, .row-menu-panel, .drange-menu, .dropdown, #m12-hist, #m8-pv, #m9q-lib, #m9q-pop, #m8-chq-menu, #m8-cq-menu, #gsearch-modal')))) continue;
       hit = true;
     }
     if(!hit) return;
@@ -28736,7 +28735,8 @@ AMCViewport.onSettle(function(){
     for(var i = 0; i < list.length && !hit; i++){
       var t = list[i].target;
       if(!t || !t.closest || t.closest('#m10-dock, #m23-lens, .m23-fl, .m14-pill, #m23-slens, .m24-skip')) continue;
-      if(!(t === document.body || (t.matches && t.matches('.modal-overlay, [id$="-modal"], #party-edit-modal, .m8-ov, #m5-create, .m8-menu-scrim, #m10-mp-scrim, #m10-mp, .m8-menu, #drawer, .row-menu-panel, .drange-menu, .dropdown, #m12-hist, #m8-pv, #m9q-lib, #m9q-pop, #m8-chq-menu, #m8-cq-menu, #gsearch-modal')))) continue;
+      if(t === document.body){ var so = t.classList.contains('mobile-sidebar-open'); if(so === t.__m12so) continue; t.__m12so = so; hit = true; continue; }
+      if(!((t.matches && t.matches('.modal-overlay, [id$="-modal"], #party-edit-modal, .m8-ov, #m5-create, .m8-menu-scrim, #m10-mp-scrim, #m10-mp, .m8-menu, #drawer, .row-menu-panel, .drange-menu, .dropdown, #m12-hist, #m8-pv, #m9q-lib, #m9q-pop, #m8-chq-menu, #m8-cq-menu, #gsearch-modal')))) continue;
       hit = true;
     }
     if(!hit) return;
@@ -31015,11 +31015,19 @@ AMCViewport.onSettle(function(){
     lsh.style.inset = G.M + 'px'; lsh.style.borderRadius = (H0 / 2) + 'px';
     lens.style.setProperty('--m', G.M + 'px'); lens.style.setProperty('--r', (H0 / 2) + 'px');
   }
+  /* the glass picture is made again only when the bar's size or the theme really changes
+     (it was remade on every class change of the page — opening the menu, scrolling, changing page —
+     and making it is heavy: that was the biggest single cause of lag) */
+  var bgKey = '', barW = 0, barH = 0;
   function barGlass(){
-    if(!bar || !bar.offsetWidth) return;
+    if(!bar) return;
+    if(!barW){ barW = bar.offsetWidth; barH = bar.offsetHeight; if(!barW) return; }
     var dark = document.body.classList.contains('dark-mode');
+    var key = barW + 'x' + barH + (dark ? 'd' : 'l');
+    if(key === bgKey) return;
+    bgKey = key;
     /* iOS 26 tab bar glass: clear, light, lets the colours behind it through; brighter in light mode, deeper in dark */
-    var g = LG.glass(bar.offsetWidth, bar.offsetHeight, bar.offsetHeight / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:12, sat:2.2, bright:dark ? 1 : 1.12, light:dark ? 0.6 : 0.95, soft:0 });
+    var g = LG.glass(barW, barH, barH / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:12, sat:2.2, bright:dark ? 1 : 1.12, light:dark ? 0.6 : 0.95, soft:0 });
     /* at rest the bar is frosted glass the graphics chip draws for free while the page scrolls under it;
        the full bending glass is kept for the drop you touch (it is only on screen while you touch) */
     LG.setBF(bar, 'blur(12px) saturate(2.2) brightness(' + (dark ? 1 : 1.12) + ')');
@@ -31146,8 +31154,9 @@ AMCViewport.onSettle(function(){
       if(Math.abs(mid(t) - X.to) > 2){ buildLens(); if(P.to === 0 && !reduce.matches){ lift(0.8); sink(200); } goTab(t, false); }
     }
     new MutationObserver(barGlass).observe(document.body, { attributes:true, attributeFilter:['class'] });
+    if(window.ResizeObserver) new ResizeObserver(function(en){ var r = en[0].contentRect; var w = bar.offsetWidth, h = bar.offsetHeight; if(w && (w !== barW || h !== barH)){ barW = w; barH = h; barGlass(); GM = null; } }).observe(bar);
     requestAnimationFrame(function(){ buildLens(); barGlass(); goTab(onTab(), true); paint(); });
-    window.addEventListener('resize', function(){ TW0 = 0; buildLens(); barGlass(); goTab(onTab(), true); });
+    window.addEventListener('resize', function(){ TW0 = 0; barW = 0; buildLens(); barGlass(); goTab(onTab(), true); });
   }
 
   /* ══ 1b · SWITCHES TURN INTO REAL GLASS WHILE YOU TOUCH THEM ═════════════════════════
@@ -31789,7 +31798,9 @@ AMCViewport.onSettle(function(){
   var D = document, H = D.documentElement;
   var EASE = 'cubic-bezier(.2,.8,.2,1)';
   var can = !!(D.body && D.body.animate);
-  function phone(){ return innerWidth < 1024 || matchMedia('(pointer:coarse)').matches && innerWidth < 1100; }
+  /* (media queries answer without measuring the page; innerWidth made the page lay out every time) */
+  var MQ1 = matchMedia('(max-width:1023px)'), MQ2 = matchMedia('(pointer:coarse) and (max-width:1099px)');
+  function phone(){ return MQ1.matches || MQ2.matches; }
 
   /* ── which pieces of a page animate: each card on its own; plain wrappers are opened up ── */
   function pick(root, max){
@@ -32050,14 +32061,9 @@ AMCViewport.onSettle(function(){
       if(SCREEN && phone()){ clearTimeout(SCREEN.__t); SCREEN.classList.add('m24-card'); }
       var r = od.apply(this, arguments);
       if(!was && D.body.classList.contains('mobile-sidebar-open') && can){
-        /* the menu settles in from a little further back while the card slides away … */
+        /* the menu slides in a little with the card, as one piece (never invisible, even on a busy phone) */
         var nav = D.querySelector('#sidebar .sb-nav');
-        try{ if(nav) nav.animate([{ transform:'scale(.94)', opacity:.4 }, { transform:'scale(1)', opacity:1 }], { duration:700, easing:'cubic-bezier(.22,1,.36,1)' }); }catch(e){}
-        /* … and its rows come in one after another */
-        var rows = D.querySelectorAll('#sidebar .zmenu > .zm-item, #sidebar .zmenu > .zm-group, #sidebar .zmenu > hr, #sidebar .zmenu > .zm-sep, #sidebar .sb-foot');
-        [].forEach.call(rows, function(el, i){
-          try{ el.animate([{ opacity:0, transform:'translate3d(-34px,0,0)' }, { opacity:1, transform:'translate3d(0,0,0)' }], { duration:620, delay:90 + i * 38, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' }); }catch(e){}
-        });
+        try{ if(nav) nav.animate([{ transform:'translate3d(-28px,0,0)', opacity:.55 }, { transform:'translate3d(0,0,0)', opacity:1 }], { duration:700, easing:'cubic-bezier(.22,1,.36,1)' }); }catch(e){}
       }
       return r;
     };
@@ -32081,11 +32087,6 @@ AMCViewport.onSettle(function(){
       var was = D.body.classList.contains('mobile-sidebar-open');
       var r = cd.apply(this, arguments);
       if(SCREEN){ clearTimeout(SCREEN.__t); SCREEN.__t = setTimeout(function(){ if(!D.body.classList.contains('mobile-sidebar-open')) SCREEN.classList.remove('m24-card'); }, 760); }
-      if(was && can && phone()){
-        var nav = D.querySelector('#sidebar .sb-nav');
-        try{ if(nav) nav.animate([{ transform:'scale(1)', opacity:1 }, { transform:'scale(.95)', opacity:0 }], { duration:450, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards' }).finished.then(function(a){ }, function(){}); }catch(e){}
-        setTimeout(function(){ if(nav) nav.getAnimations().forEach(function(a){ a.cancel(); }); }, 720);
-      }
       return r;
     };
     window.closeDrawer.__m24 = 1;
