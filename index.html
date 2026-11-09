@@ -10114,7 +10114,50 @@ html:not(#_#_#_#_) body.sb-collapsed.dark-mode:not(#_#_#_#_) #sidebar .sb-foot b
   html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen.m24-card *::after{
     backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
   }
-html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m23-lens{ visibility:hidden !important; }}</style>
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m23-lens{ visibility:hidden !important; }}
+@media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen > #app-scroll{
+    height:100% !important; max-height:100% !important; min-height:0 !important;
+    overscroll-behavior-y:contain;
+  }}
+@media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen.m24-card{
+    border-radius:0;
+    transition:transform .7s cubic-bezier(.22,1,.36,1), border-radius .7s cubic-bezier(.22,1,.36,1) !important;
+    transition-duration:.7s, .7s !important;
+  }
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen.m24-card{ border-radius:34px; touch-action:none; }
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen.m24-card.m24-drag{ transition:none !important; }}
+#m24-theme{
+  display:flex; align-items:center; gap:12px; width:100%; padding:8px 10px; margin:0 0 6px;
+  border:0; background:transparent; color:inherit; font:inherit; font-size:14px; font-weight:600;
+  border-radius:999px; cursor:pointer; text-align:left;
+}
+#m24-theme .m24-ti{
+  position:relative; width:36px; height:36px; flex-shrink:0; border-radius:999px;
+  background:rgba(0,0,0,.055); display:grid; place-items:center;
+}
+body.dark-mode #m24-theme .m24-ti{ background:rgba(255,255,255,.09); }
+#m24-theme .m24-ti i{ position:absolute; inset:0; display:grid; place-items:center; }
+#m24-theme svg{ width:18px; height:18px; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-theme .m24-ti i{
+  transition:opacity .45s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1) !important;
+  transition-duration:.45s, .6s !important;
+}
+#m24-theme .m24-tsun{ opacity:0; transform:rotate(-90deg) scale(.5); }
+#m24-theme .m24-tmoon{ opacity:1; transform:none; }
+body.dark-mode #m24-theme .m24-tsun{ opacity:1; transform:none; }
+body.dark-mode #m24-theme .m24-tmoon{ opacity:0; transform:rotate(90deg) scale(.5); }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-theme:hover .m24-ti{ background:rgba(0,0,0,.09); }
+html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m24-theme:hover .m24-ti{ background:rgba(255,255,255,.14); }
+@media (min-width:901px){html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #m24-theme{ width:44px; height:44px; padding:0; margin:0 auto 8px; justify-content:center; }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #m24-theme .m24-tl{ display:none; }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #m24-theme .m24-ti{ width:44px; height:44px; }
+html:not(#_#_#_#_) body.sb-collapsed:not(#_#_#_#_) #sidebar .sb-foot{ flex-direction:column; align-items:center; }}
+@media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar #m24-theme{ color:#fff !important; font-size:15px; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar #m24-theme .m24-ti{ background:rgba(255,255,255,.18) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar #m24-theme svg{ stroke:#fff; }}
+html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar #m24-theme{ color:#1d1d1f; }
+html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #sidebar #m24-theme{ color:#f2f2f3; }
+@media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar #m24-theme, html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #sidebar #m24-theme{ color:#fff !important; }}</style>
 </head>
 <body>
 <div id="amx-intro" aria-hidden="true"><div id="amx-bgw"><div id="amx-bg"></div><div id="amx-glow"></div><div class="amx-wv" style="background:#FF7E4F"></div><div class="amx-wv" style="background:#D9431F"></div><div class="amx-wv" style="background:#ED532D"></div><div id="amx-ring"></div></div><div id="amx-disc"></div><div id="amx-lk"><div id="amx-amo"><div id="amx-ami"><svg id="amx-am" role="img" aria-label="am. nexus"><path fill="#fff" d="M301.9 766.9C262.8 763.7 232.5 744.3 220.2 714.8C215.3 703.1 213.7 692.9 214.3 677.6C214.8 662.9 216.3 656.2 221.6 645.0C235.4 615.7 264.6 598.7 315.7 590.1C322.5 589.0 338.9 586.9 352.2 585.5C380.6 582.5 386.4 581.6 393.7 578.8C406.8 573.9 412.1 562.8 406.5 552.0C404.2 547.5 396.6 541.4 390.6 539.1C374.4 533.0 351.0 534.1 335.2 541.5C326.4 545.7 318.2 553.5 315.6 560.3L313.8 565.0 L272.4 565.0L231.0 565.0 L231.0 562.7C231.0 555.3 238.7 535.7 245.8 525.3C270.5 488.9 325.4 468.3 385.0 473.0C441.2 477.4 479.0 500.4 493.0 538.8C499.0 555.4 499.0 554.8 499.0 662.1L499.0 760.0 L496.8 760.5C495.5 760.8 475.6 760.9 452.5 760.8L410.5 760.5 L410.0 742.0L409.5 723.5 L407.2 727.2C404.3 731.8 393.7 741.7 386.3 746.8C363.9 762.0 332.4 769.5 301.9 766.9ZM522.0 664.6C522.0 560.1 521.9 561.8 527.6 545.4C538.8 512.6 564.0 487.1 597.6 474.4C614.3 468.1 637.5 465.1 654.8 467.0C687.8 470.5 710.1 482.7 730.2 508.1C732.6 511.0 733.1 511.3 733.9 509.9C736.9 505.0 745.3 496.1 751.7 491.0C781.9 466.6 824.8 459.9 865.0 473.1C903.0 485.6 928.7 514.5 936.7 553.7C938.4 561.8 938.5 570.2 938.5 661.5L938.5 760.5 L895.5 760.5L852.5 760.5 L852.0 668.0C851.5 566.5 851.9 573.3 845.5 562.4C835.1 544.6 809.2 539.2 787.4 550.3C778.9 554.6 774.4 559.4 769.8 568.7L765.5 577.3 L765.0 668.9L764.5 760.5 L723.8 760.8L683.0 761.0 L683.0 673.8C683.0 625.1 682.5 583.2 682.0 579.0C680.7 568.6 675.3 558.0 668.5 552.5C662.1 547.4 653.8 544.6 644.5 544.6C626.0 544.7 611.4 554.9 604.8 572.5L602.5 578.5 L602.2 669.8L601.9 761.0 L562.0 761.0L522.0 761.0 L522.0 664.6ZM358.7 703.4C383.4 698.3 402.0 682.4 407.4 661.7C408.2 658.6 409.2 649.4 409.6 641.4C410.2 628.0 410.2 626.7 408.7 627.3C400.1 630.6 386.9 633.6 368.0 636.5C341.1 640.7 334.8 642.2 325.3 646.5C311.4 652.9 304.0 662.8 304.0 674.9C304.0 683.7 305.3 687.8 309.6 692.8C316.6 701.1 326.7 704.8 342.3 704.9C347.1 705.0 354.5 704.3 358.7 703.4Z"/></svg></div></div><div id="amx-dt"></div></div></div>
@@ -19691,7 +19734,7 @@ function toggleDrawer(){
   syncResponsiveSidebar();
   window.addEventListener('resize',syncResponsiveSidebar,{passive:true});
 })();
-
+function drawerGo(page){ closeDrawer(); showPage(page); }
 
 // ═══════════════════════════════════════════════════════════
 // ZOHO-STYLE UNIFIED MENU  (Sales + Purchase as collapsible groups)
@@ -31574,6 +31617,7 @@ AMCViewport.onSettle(function(){
     return getComputedStyle(ov).display !== 'none';
   }
   function closeSheet(ov){
+    sheetSwallow = 0;
     if(ov.id === 'm5-create' && window.m5CloseCreate){ window.m5CloseCreate(); return; }
     var x = ov.querySelector('.modal-close, [data-x], [aria-label="Close"]');
     if(x){ x.click(); return; }
@@ -31649,7 +31693,18 @@ AMCViewport.onSettle(function(){
     if(e.cancelable) e.preventDefault();
   }, { capture:true, passive:false });
   /* once the sheet is moving, the page underneath must not scroll */
-  document.addEventListener('touchmove', function(e){ if(SD && SD.live && e.cancelable) e.preventDefault(); }, { capture:true, passive:false });
+  /* on a real finger the phone starts scrolling on the first move and then cancels our drag
+     (pointercancel) before the sheet ever moved — so a swipe down never closed it. The very first
+     move of a downward swipe on the sheet is claimed here, so the drag keeps going. */
+  document.addEventListener('touchmove', function(e){
+    if(!SD || !e.cancelable) return;
+    if(SD.live){ e.preventDefault(); return; }
+    var t = e.touches && e.touches[0]; if(!t) return;
+    var dy = t.clientY - SD.y0, dx = t.clientX - SD.x0;
+    if(Math.abs(dx) > Math.abs(dy)) return;                          /* sideways: let it be */
+    if(SD.body && (dy < 0 || SD.body.scrollTop > 0)) return;          /* content scrolling: let it scroll */
+    e.preventDefault();
+  }, { capture:true, passive:false });
   function sheetUp(e){
     var s = SD; if(!s || s.done || (e && e.pointerId !== s.id)) return;
     if(!s.live){ SD = null; return; }
@@ -31686,7 +31741,9 @@ AMCViewport.onSettle(function(){
   document.addEventListener('pointercancel', sheetUp, true);
   document.addEventListener('click', function(e){
     /* the click that ends a drag is not a tap on the backdrop or a button */
-    if(performance.now() < sheetSwallow){ e.stopImmediatePropagation(); e.preventDefault(); sheetSwallow = 0; return; }
+    /* (only the browser's own click: our own close click after a fast flick must go through —
+       swallowing it left the sheet open, and it came back) */
+    if(e.isTrusted && performance.now() < sheetSwallow){ e.stopImmediatePropagation(); e.preventDefault(); sheetSwallow = 0; return; }
     /* a tap on the empty space outside a sheet closes it */
     var ov = e.target; if(!phone.matches || !ov.matches || !ov.matches(OVERLAYS)) return;
     setTimeout(function(){ if(isOpen(ov)) closeSheet(ov); }, 0);
@@ -31946,22 +32003,41 @@ AMCViewport.onSettle(function(){
       id = e.pointerId; sx = e.clientX; sy = e.clientY; dx = 0; drag = false;
       try{ SCREEN.setPointerCapture(id); }catch(err){}
     });
+    /* while dragging, the card is exactly where your finger says: it grows back towards full screen
+       and its corners straighten in step, like a sheet following the finger */
+    var X0 = 0, lastX = 0, lastT = 0, vel = 0;
+    function place(q){   /* q: 1 = open, 0 = closed */
+      SCREEN.style.setProperty('transform', 'translate3d(' + (X0 * q).toFixed(2) + 'px,0,0) scale(' + (1 - 0.14 * q).toFixed(4) + ')', 'important');
+      SCREEN.style.setProperty('border-radius', (34 * q).toFixed(1) + 'px', 'important');
+    }
     SCREEN.addEventListener('pointermove', function(e){
       if(id !== e.pointerId) return;
-      var x = e.clientX - sx;
-      if(!drag && Math.abs(x) > 8 && Math.abs(x) > Math.abs(e.clientY - sy)){ drag = true; SCREEN.classList.add('m24-drag'); }
-      if(drag){ dx = Math.min(0, x); SCREEN.style.setProperty('--m24-dx', dx + 'px'); }
+      var x = e.clientX - sx, now = performance.now();
+      if(!drag && Math.abs(x) > 6 && Math.abs(x) > Math.abs(e.clientY - sy)){
+        drag = true; SCREEN.classList.add('m24-drag');
+        X0 = new DOMMatrix(getComputedStyle(SCREEN).transform).m41 || innerWidth * 0.68;
+        lastX = e.clientX; lastT = now;
+      }
+      if(drag){
+        dx = Math.min(0, x);
+        var q = Math.max(0, Math.min(1, 1 + dx / X0));
+        place(q);
+        if(now > lastT){ vel = (e.clientX - lastX) / (now - lastT) * 1000; lastX = e.clientX; lastT = now; }
+      }
     });
     function up(e){
       if(id !== e.pointerId) return;
       id = null;
+      var wasDrag = drag; drag = false;
+      /* the transition picks up from where the finger left the card (no jump) */
       SCREEN.classList.remove('m24-drag');
-      SCREEN.style.removeProperty('--m24-dx');
-      if(!drag || dx < -50) closeDrawer();
-      drag = false;
+      SCREEN.style.removeProperty('transform'); SCREEN.style.removeProperty('border-radius');
+      if(!wasDrag || dx < -X0 * 0.3 || vel < -350) closeDrawer();
     }
     SCREEN.addEventListener('pointerup', up);
     SCREEN.addEventListener('pointercancel', up);
+    /* the phone must not take the swipe for itself (it cancelled the drag before) */
+    SCREEN.addEventListener('touchmove', function(e){ if(isOpen() && e.cancelable) e.preventDefault(); }, { passive:false });
     /* the click after a tap on the card must not reach the page under it */
     SCREEN.addEventListener('click', function(e){ if(e.target === SCREEN){ e.stopPropagation(); e.preventDefault(); } }, true);
   }
@@ -31987,6 +32063,18 @@ AMCViewport.onSettle(function(){
     };
     window.openDrawer.__m24 = 1;
   }
+  /* choosing a page in the phone menu: the card starts sliding back first, then the page is built
+     (building it first froze the slide for a moment) */
+  ['navMain', 'drawerGo'].forEach(function(n){
+    var f = window[n]; if(typeof f !== 'function' || f.__m24) return;
+    var w = function(){
+      var self = this, args = arguments;
+      if(!(D.body.classList.contains('mobile-sidebar-open') && phone())) return f.apply(self, args);
+      window.closeDrawer();
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(function(){ f.apply(self, args); }, 0); }); });
+    };
+    w.__m24 = 1; window[n] = w;
+  });
   if(typeof window.closeDrawer === 'function' && !window.closeDrawer.__m24){
     var cd = window.closeDrawer;
     window.closeDrawer = function(){
@@ -32002,6 +32090,27 @@ AMCViewport.onSettle(function(){
     };
     window.closeDrawer.__m24 = 1;
   }
+
+  /* ── 7 · dark / light button in the side menu (one button: it shows the mode you can switch to) ── */
+  var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z"/></svg>';
+  function themeBtn(){
+    var foot = D.querySelector('#sidebar .sb-foot'); if(!foot || D.getElementById('m24-theme')) return;
+    var b = D.createElement('button');
+    b.type = 'button'; b.id = 'm24-theme';
+    b.innerHTML = '<span class="m24-ti"><i class="m24-tsun">' + SUN + '</i><i class="m24-tmoon">' + MOON + '</i></span><span class="m24-tl"></span>';
+    foot.insertBefore(b, foot.firstChild);
+    b.addEventListener('click', function(e){ e.stopPropagation(); if(typeof window.toggleThemeQuick === 'function') window.toggleThemeQuick(); });
+    sync();
+  }
+  function sync(){
+    var b = D.getElementById('m24-theme'); if(!b) return;
+    var dark = D.body.classList.contains('dark-mode');
+    var t = dark ? 'Light mode' : 'Dark mode';
+    b.querySelector('.m24-tl').textContent = t; b.title = t; b.setAttribute('aria-label', 'Switch to ' + t.toLowerCase());
+  }
+  themeBtn();
+  new MutationObserver(sync).observe(D.body, { attributes:true, attributeFilter:['class'] });
 })();
 
 </script>
