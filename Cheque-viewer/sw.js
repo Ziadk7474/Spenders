@@ -3,7 +3,7 @@
    then quietly downloads the newest version for the next time you open it.
    The Firebase library and fonts are saved too, so nothing big is downloaded
    again on each open. Live cheque data still comes from Firebase every time. */
-var CACHE = 'am-cheque-viewer-v8';
+var CACHE = 'am-cheque-viewer-v9';
 var CORE = ['./', './index.html', './manifest.json?v=7', './icon-192.png?v=7', './icon-512.png?v=7', './apple-touch-icon.png?v=7', './favicon-32.png?v=7'];
 self.addEventListener('install', function(e){
   self.skipWaiting();
@@ -25,7 +25,7 @@ function fresh(req, c){
 self.addEventListener('fetch', function(e){
   var r = e.request; if(r.method !== 'GET') return;
   var u = new URL(r.url);
-  if(u.hostname.indexOf('firebaseio.com') >= 0 || u.hostname.indexOf('firebasedatabase.app') >= 0) return;   // live data: never cached here
+  if(/(^|\.)(firebaseio\.com|firebasedatabase\.app)$/.test(u.hostname)) return;   // live data: never cached here
   /* Firebase library + fonts: the same file never changes, keep it */
   if(u.hostname === 'www.gstatic.com' || u.hostname === 'fonts.gstatic.com' || u.hostname === 'fonts.googleapis.com'){
     e.respondWith(caches.open(CACHE).then(function(c){ return c.match(r).then(function(hit){ return hit || fetch(r).then(function(res){ if(res && (res.ok || res.type === 'opaque')) c.put(r, res.clone()); return res; }); }); }));

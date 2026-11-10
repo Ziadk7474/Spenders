@@ -1138,7 +1138,7 @@ function printChequeListPdf(){
   };
   M8.capture = function(fn, run){ capture = fn; try{ run(); }catch(e){ capture = null; throw e; } };
 
-  function titleOf(html){ var m = /<title>([\s\S]*?)<\/title>/i.exec(html); return m ? m[1].replace(/<[^>]+>/g,'').trim() : 'Document'; }
+  function titleOf(html){ var m = /<title>([\s\S]*?)<\/title>/i.exec(html); if(!m) return 'Document'; try{ return new DOMParser().parseFromString('<title>' + m[1] + '</title>', 'text/html').title.trim() || 'Document'; }catch(e){ return 'Document'; } }   /* read as text, never run */
   var PAPER_W = 794;     /* A4 at 96 dpi — the preview is laid out exactly like the printed page */
   var FRAME_CSS = '<style id="m8-frame">html,body{background:#fff!important;margin:0!important;padding:0!important;min-height:0!important}'+
     '*,*::before,*::after{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}'+
@@ -1146,7 +1146,7 @@ function printChequeListPdf(){
     '.inv-doc.inv-doc-page{margin-bottom:0!important;border-bottom:10px solid #e9e9eb!important}'+
     '@media print{.inv-doc.inv-doc-page{border-bottom:0!important}}</style>';
   function prepare(html){
-    html = String(html||'').replace(AUTO_PRINT, '');
+    html = String(html||''); var was; do { was = html; html = html.replace(AUTO_PRINT, ''); } while(html !== was);   /* the page's own auto-print script, nested copies too */
     if(/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, FRAME_CSS+'</head>');
     else html = FRAME_CSS + html;
     return html;

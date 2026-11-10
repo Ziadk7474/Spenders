@@ -12258,7 +12258,8 @@ function amqPrint(){
   var comp=(compEl?compEl.textContent:'').replace(/[^a-zA-Z0-9 \-]/g,'').trim()||'Quotation';
   var refEl=clone.querySelector('#amq-ref-no');
   var refNo=(refEl?refEl.textContent:'').replace(/[^a-zA-Z0-9 \-]/g,'').trim();
-  var css=document.getElementById('amq-style').textContent;
+  /* the app's own print style; a '<' can never appear in it (it would end the <style> block) */
+  var css=document.getElementById('amq-style').textContent.replace(/</g,'\\3c ');
   /* Letter is the default and the page carries no @page margin of its own:
      the letterhead (thead) and the footer strip (tfoot) ARE the margins, and
      the browser repeats and reserves space for both on every sheet. Change
@@ -13684,11 +13685,15 @@ const fmtShort = n => Number(n).toLocaleString('en-AE',{minimumFractionDigits:0,
 const fmtDate  = d => { if(!d) return ''; const dt = new Date(d); return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); };
 const today    = () => new Date().toISOString().split('T')[0];
 
+/* a message is plain text: a name typed into a field can never turn into HTML here.
+   The AED sign is the only picture a message may carry. */
+const TOAST_AED = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><use href="#aed-glyph"/></svg>';
 function toast(msg, type='success') {
   const t = document.getElementById('toast-container');
   const d = document.createElement('div');
   d.className = `toast ${type}`;
-  d.innerHTML = '' + ' ' + msg;
+  d.innerHTML = ' ' + String(msg == null ? '' : msg).split(TOAST_AED)
+    .map(s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join(TOAST_AED);
   t.appendChild(d);
   setTimeout(() => d.remove(), 3500);
 }
@@ -14266,6 +14271,9 @@ function drillFlash(id) {
 // ── Sales-ERP helpers ────────────────────────────────────────
 // Compact currency for tight spaces: 1.2M / 340k / 980
 
+/* a value put inside onclick="fn('…')": first made safe as JS text, then as HTML text */
+function jsAttr(v){ return String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r/g,'\\r').replace(/\n/g,'\\n')
+  .replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function _dashEsc(v){ return String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 // Receivables aging (point-in-time, ALL open invoices, not the dash range).
 // Payments are tracked per-customer, not per-invoice, so we age using FIFO:
@@ -14387,7 +14395,7 @@ function renderHeroKpi(moduleKey) {
   const sales = moduleKey === 'sales';
   const d = _heroDataFor(moduleKey);
   const rangeTag = dashHasRange()
-    ? ' <span style="font-weight:600;color:rgba(255,255,255,.4);text-transform:none;letter-spacing:0;font-size:10px">(' + dashRange.label + ')</span>'
+    ? ' <span style="font-weight:600;color:rgba(255,255,255,.4);text-transform:none;letter-spacing:0;font-size:10px">(' + _dashEsc(dashRange.label) + ')</span>'
     : '';
   el.innerHTML =
     '<div class="hk-shield">' + HK_SHIELD_SVG + '</div>' +
@@ -15350,7 +15358,7 @@ async function saveEntry() {
     await fbSaveCustomLists();
   }
 
-  toast(`Saved: ${poNo || invno} — <svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><use href="#aed-glyph"/></svg> ${fmt(totalAmount)}`, 'success');
+  toast(`Saved: ${poNo || invno} — ${TOAST_AED} ${fmt(totalAmount)}`, 'success');
   clearEntry();
   } finally {
     _entrySaveBusy = false;
@@ -18130,12 +18138,12 @@ function renderManageLists() {
       ? '<div class="manage-empty">No custom parties yet</div>'
       : customPartyObjs.map(p => {
           const name = p.name||'';
-          const safeName = name.replace(/'/g,"\\'");
+          const safeName = jsAttr(name);
           const hasDetails = p.companyEn||p.companyUr||p.phone||p.trn||p.addressEn||p.creditLimit||p.creditDays;
           return `<div class="manage-item" id="row-party-${CSS.escape(name)}" style="flex-direction:column;align-items:stretch;gap:0">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 0">
               <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-                <span class="manage-item-name" style="flex:1">${name}</span>
+                <span class="manage-item-name" style="flex:1">${_dashEsc(name)}</span>
                 ${p.creditLimit>0 ? '<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:var(--gold-lt);color:var(--gold2);font-weight:700;flex-shrink:0">Limit '+fmt(p.creditLimit)+'</span>' : ''}
                 ${hasDetails ? '<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(21,163,74,.12);color:var(--green);font-weight:600;flex-shrink:0"><svg class="m9i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Details</span>' : '<span style="font-size:10px;color:var(--t3);flex-shrink:0">No details</span>'}
               </div>
@@ -18153,7 +18161,7 @@ function renderManageLists() {
           </div>`;
         }).join('');
     const builtinPartyEl = document.getElementById('ml-party-builtin');
-    if(builtinPartyEl) builtinPartyEl.innerHTML = builtinParties.map(x=>`<div class="manage-built-in"><span class="manage-built-in-name">${x}</span><span class="manage-built-in-badge">from records</span></div>`).join('');
+    if(builtinPartyEl) builtinPartyEl.innerHTML = builtinParties.map(x=>`<div class="manage-built-in"><span class="manage-built-in-name">${_dashEsc(x)}</span><span class="manage-built-in-badge">from records</span></div>`).join('');
   }
 
   // ── descriptions — special: all entries editable, shows unit ──
@@ -18164,14 +18172,14 @@ function renderManageLists() {
       descEl.innerHTML = '<div class="manage-empty">No descriptions</div>';
     } else {
       const units = getUnits();
-      const unitOptsHtml = units.map(u=>`<option value="${u}">${u}</option>`).join('');
+      const unitOptsHtml = units.map(u=>`<option value="${_dashEsc(u)}">${_dashEsc(u)}</option>`).join('');
       descEl.innerHTML = allDescs.map(d => {
         const isBuiltin = BUILTIN_DESCS.includes(d.name);
-        const safeName = d.name.replace(/'/g,"\\'");
+        const safeName = jsAttr(d.name);
         return `<div class="manage-item" id="desc-row-${CSS.escape(d.name)}" style="flex-direction:column;align-items:stretch;gap:8px;padding:10px 14px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-              <span class="manage-item-name" style="flex:1">${d.name}</span>
+              <span class="manage-item-name" style="flex:1">${_dashEsc(d.name)}</span>
               ${isBuiltin ? '<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(212,160,23,.15);color:var(--gold2);font-weight:600;flex-shrink:0">built-in</span>' : ''}
               <span style="font-size:11px;color:var(--t3);flex-shrink:0">${d.unit ? '→ <b style="color:var(--blue)">' + d.unit + '</b>' : '<span style="color:var(--t3);font-style:italic">no unit</span>'}</span>
             </div>
@@ -18182,7 +18190,7 @@ function renderManageLists() {
           </div>
           <div id="desc-edit-${CSS.escape(d.name)}" style="display:none;background:var(--blue-lt);border-radius:8px;padding:10px;border:1px solid var(--border2)">
             <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center">
-              <input type="text" id="desc-edit-name-${CSS.escape(d.name)}" value="${d.name}" placeholder="Description name" style="padding:0 10px;height:36px;background:var(--field-bg);border:1px solid var(--field-border);border-radius:var(--field-radius);font-family:inherit;font-size:13px;color:var(--t1);outline:none">
+              <input type="text" id="desc-edit-name-${CSS.escape(d.name)}" value="${_dashEsc(d.name)}" placeholder="Description name" style="padding:0 10px;height:36px;background:var(--field-bg);border:1px solid var(--field-border);border-radius:var(--field-radius);font-family:inherit;font-size:13px;color:var(--t1);outline:none">
               <select id="desc-edit-unit-${CSS.escape(d.name)}" style="padding:0 10px;height:36px;background:var(--field-bg);border:1px solid var(--field-border);border-radius:var(--field-radius);font-family:inherit;font-size:13px;color:var(--t1);outline:none">
                 <option value="">— No Unit —</option>${unitOptsHtml}
               </select>
@@ -20440,6 +20448,7 @@ function runUrduStmt() {
   } else if(from||to) {
     periodLbl = (from||'') + (from&&to?' — ':'') + (to||'');
   }
+  periodLbl = _dashEsc(periodLbl);   /* shown inside the statement's HTML */
 
   var timeline = [];
   recs.forEach(function(r) {
@@ -20719,7 +20728,7 @@ function printUrduStmt() {
 
   var html = '<!DOCTYPE html><html dir="rtl"><head>' +
     '<meta charset="UTF-8">' +
-    '<title>\u0645\u0646\u062c\u0631\u0629 \u0627\u0644\u0645\u0627\u0636\u064a \u2014 \u0627\u0631\u062f\u0648 \u0628\u06cc\u0627\u0646 \u2014 ' + party + (withInv ? ' + انوائسز' : '') + ' \u2014 ' + dateFile + '</title>' +
+    '<title>\u0645\u0646\u062c\u0631\u0629 \u0627\u0644\u0645\u0627\u0636\u064a \u2014 \u0627\u0631\u062f\u0648 \u0628\u06cc\u0627\u0646 \u2014 ' + _dashEsc(party) + (withInv ? ' + انوائسز' : '') + ' \u2014 ' + dateFile + '</title>' +
     '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">' +
     '<style>' +
 
@@ -22404,7 +22413,7 @@ AMCViewport.onSettle(function(){
   };
   M8.capture = function(fn, run){ capture = fn; try{ run(); }catch(e){ capture = null; throw e; } };
 
-  function titleOf(html){ var m = /<title>([\s\S]*?)<\/title>/i.exec(html); return m ? m[1].replace(/<[^>]+>/g,'').trim() : 'Document'; }
+  function titleOf(html){ var m = /<title>([\s\S]*?)<\/title>/i.exec(html); if(!m) return 'Document'; try{ return new DOMParser().parseFromString('<title>' + m[1] + '</title>', 'text/html').title.trim() || 'Document'; }catch(e){ return 'Document'; } }   /* read as text, never run */
   var PAPER_W = 794;     /* A4 at 96 dpi — the preview is laid out exactly like the printed page */
   var FRAME_CSS = '<style id="m8-frame">html,body{background:#fff!important;margin:0!important;padding:0!important;min-height:0!important}'+
     '*,*::before,*::after{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}'+
@@ -22412,7 +22421,7 @@ AMCViewport.onSettle(function(){
     '.inv-doc.inv-doc-page{margin-bottom:0!important;border-bottom:10px solid #e9e9eb!important}'+
     '@media print{.inv-doc.inv-doc-page{border-bottom:0!important}}</style>';
   function prepare(html){
-    html = String(html||'').replace(AUTO_PRINT, '');
+    html = String(html||''); var was; do { was = html; html = html.replace(AUTO_PRINT, ''); } while(html !== was);   /* the page's own auto-print script, nested copies too */
     if(/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, FRAME_CSS+'</head>');
     else html = FRAME_CSS + html;
     return html;
@@ -23645,10 +23654,10 @@ AMCViewport.onSettle(function(){
   }
   /* Buttons across the pages: the same action always shows the same icon */
   var BTN_IC = [
-    [/^exportChequeExcel|exportFullXLSX/, 'excel'],
+    [/^exportChequeExcel/, 'excel'], [/exportFullXLSX/, 'excel'],
     [/^save/, 'check'], [/^print/, 'print'], [/^delete|^chqOpenDeleteAll/, 'trash'],
     [/^openEdit|^startEdit|^openPartyEditModal/, 'edit'], [/^export|^downloadBackup/, 'download'],
-    [/^restoreBackup|chq-import-file/, 'upload'], [/^clear/, 'x'], [/^runSearch|^openGlobalSearch/, 'search'],
+    [/^restoreBackup/, 'upload'], [/chq-import-file/, 'upload'], [/^clear/, 'x'], [/^runSearch|^openGlobalSearch/, 'search'],
     [/^showPage\('entry'\)|^openChequeModal\(\)|^add/, 'plus'], [/^closeManageModal/, 'left'],
     [/^openPaymentModal/, 'pay'], [/^openDupeScan/, 'zap'], [/^toggleSidebar/, 'collapse']
   ];
@@ -26707,7 +26716,7 @@ AMCViewport.onSettle(function(){
   }
 
   /* ══ PRINT — the very pages on screen ══ */
-  function printCSS(){ var s = $('m9q-style'); return s ? s.textContent : ''; }
+  function printCSS(){ var s = $('m9q-style'); return s ? s.textContent.replace(/</g, '\\3c ') : ''; }   /* no '<' can end the <style> block early */
   function print(){
     sync(); paginate();
     var pg = $('m9q-pages'); if(!pg) return;
@@ -29225,6 +29234,7 @@ AMCViewport.onSettle(function(){
 
   /* ── period ────────────────────────────────────────────────────────── */
   var S = store('state') || {};
+  ['ym', 'from', 'to'].forEach(function(k){ if(S[k] != null) S[k] = String(S[k]).replace(/[^0-9-]/g, ''); });
   if(!S.mode) S.mode = 'month';
   if(!S.ym){ var n0 = new Date(); S.ym = n0.getFullYear() + '-' + String(n0.getMonth() + 1).padStart(2, '0'); }
   function save(){ store('state', S); }
@@ -29678,9 +29688,11 @@ AMCViewport.onSettle(function(){
   function top(){ var sc = $('app-scroll'), pg = $('page-reports'); if(sc && pg) sc.scrollTop = Math.max(0, pg.offsetTop - 10); }
   function onChange(e){
     var t = e.target; if(!t.closest || !t.closest('.m16')) return;
-    if(t.id === 'm16-ym' && t.value){ S.ym = t.value; save(); rerender(); }
-    else if(t.id === 'm16-until' && t.value){ S.to = t.value; save(); rerender(); }
-    else if((t.id === 'm16-from' || t.id === 'm16-to') && t.value){ S[t.id === 'm16-from' ? 'from' : 'to'] = t.value; save(); rerender(); }
+    /* date fields hold digits and dashes only (they are shown inside the report's HTML) */
+    var dv = String(t.value || '').replace(/[^0-9-]/g, '');
+    if(t.id === 'm16-ym' && dv){ S.ym = dv; save(); rerender(); }
+    else if(t.id === 'm16-until' && dv){ S.to = dv; save(); rerender(); }
+    else if((t.id === 'm16-from' || t.id === 'm16-to') && dv){ S[t.id === 'm16-from' ? 'from' : 'to'] = dv; save(); rerender(); }
   }
   function onKey(e){ if((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.m16 [role="button"]')){ e.preventDefault(); e.target.click(); } }
   document.addEventListener('click', onClick);
@@ -29801,9 +29813,9 @@ AMCViewport.onSettle(function(){
     var pick = document.createElement('input'); pick.type = 'month'; pick.className = 'm17-pick m8-dsrc'; pick.tabIndex = -1; pick.setAttribute('aria-hidden', 'true');
     g.appendChild(box); g.appendChild(pick);
     var hide = inp.closest('.m8-dw') || inp; hide.classList.add('m17-hidden');
-    function dateOf(){ var d = $(inputId.replace('month', 'date')); return d && d.value ? d.value.slice(0, 7) : ym(new Date()); }
+    function dateOf(){ var d = $(inputId.replace('month', 'date')); return d && d.value ? String(d.value).slice(0, 7).replace(/[^0-9-]/g, '') : ym(new Date()); }
     function paint(){
-      var v = inp.value || '', base = dateOf(), p = base.split('-'), prev = ym(new Date(+p[0], +p[1] - 2, 1));
+      var v = String(inp.value || '').replace(/[^0-9-]/g, ''), base = dateOf(), p = base.split('-'), prev = ym(new Date(+p[0], +p[1] - 2, 1));
       var opts = [['', 'Same month', ymLabel(base)], [prev, 'Last month', ymLabel(prev)]];
       var custom = v && v !== prev;
       box.innerHTML = opts.map(function(o){ var on = v === o[0]; return '<button type="button" role="radio" aria-checked="' + on + '" class="m17-chip' + (on ? ' on' : '') + '" data-v="' + o[0] + '"><b>' + o[1] + '</b><small>' + o[2] + '</small></button>'; }).join('') +

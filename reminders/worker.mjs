@@ -13,7 +13,9 @@
    Cron trigger: every 5 minutes (written as: star-slash-5 then four stars).
 
    It only ever writes under almadhi/push. Cheques, invoices and payments are
-   read, never changed. */
+   read, never changed.
+   Its log and its web address show counts only — never amounts, names or dates
+   (the GitHub log of this public project can be read by anyone). */
 
 const DEFAULT_DB = 'https://al-madhi-ledger-default-rtdb.firebaseio.com';
 const LATE_MS = 24 * 3600e3;          // a reminder missed while the phone/service was down is still sent, up to 24 h late
@@ -24,7 +26,7 @@ export default {
   /* open the worker's address in a browser to see that it is alive; add ?run=1 to check right now */
   async fetch(req, env){
     const u = new URL(req.url);
-    if(u.searchParams.get('run') === '1'){ const r = await run(env, Date.now()); return json(r); }
+    if(u.searchParams.get('run') === '1'){ const r = await run(env, Date.now()); return json({ ok:r.ok, sent:r.sent }); }   /* counts only: this address is public */
     return json({ ok:true, service:'am. nexus cheque reminders', time:new Date().toISOString(), hint:'add ?run=1 to check for reminders now' });
   }
 };
@@ -64,10 +66,10 @@ export async function run(env, NOW, opts){
       const ids = m.ids; delete m.ids;
       try{
         const res = await sendPush(s.sub, JSON.stringify(m), vapid, http);
-        if(res.status === 404 || res.status === 410){ gone = true; log.push(id + ' gone'); break; }
-        if(res.status >= 400){ log.push(id + ' failed ' + res.status + ' ' + (await res.text()).slice(0, 120)); continue; }
-        sent++; (ids || []).forEach(q => okIds[q] = 1); if(m.tag === 'almadhi-test') testOk = true; log.push(id + ' sent ' + m.title);
-      }catch(e){ log.push(id + ' error ' + (e && e.message || e)); }
+        if(res.status === 404 || res.status === 410){ gone = true; log.push(id.slice(0, 4) + '… phone address expired'); break; }
+        if(res.status >= 400){ log.push(id.slice(0, 4) + '… failed ' + res.status); continue; }
+        sent++; (ids || []).forEach(q => okIds[q] = 1); if(m.tag === 'almadhi-test') testOk = true; log.push(id.slice(0, 4) + '… sent ' + (m.tag === 'almadhi-test' ? 'a test' : (ids || []).length + ' reminder(s)'));
+      }catch(e){ log.push(id.slice(0, 4) + '… error ' + String(e && e.message || e).slice(0, 80)); }
     }
     /* the phone's address no longer works: mark it, the app signs up again by itself next time it opens */
     if(gone){ await patch('almadhi/push/subs/' + id, { off:true, gone:NOW }); continue; }
