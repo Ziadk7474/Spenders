@@ -15,6 +15,7 @@ async function main(){
     try{
       const r = await fetch(DB + '/almadhi/push.json' + AUTH + (AUTH ? '&' : '?') + 'shallow=false');
       const p = r.ok ? await r.json() : null;
+      if(p) console.log('last check: ' + (p.lastRun ? Math.round((NOW - p.lastRun) / 60e3) + ' min ago' : 'never') + ' by ' + (p.lastBy || '—'));
       if(p && p.lastBy === 'cloudflare' && NOW - (+p.lastRun || 0) < 20 * 60e3){ console.log('Cloudflare Worker is running (last check ' + Math.round((NOW - p.lastRun) / 60e3) + ' min ago) — nothing to do.'); return; }
     }catch(e){ console.log('could not read status, running anyway:', e.message); }
   }
