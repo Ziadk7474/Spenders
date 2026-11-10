@@ -47,6 +47,10 @@ export async function run(env, NOW, opts){
   const [chq, subs, fired, tests] = await Promise.all([ get('almadhi/cheques'), get('almadhi/push/subs'), get('almadhi/push/fired'), get('almadhi/push/test') ]);
   const cheques = Object.values(chq || {});
   let sent = 0; const log = [];
+  /* counts only (this log is public): how many phones are signed up, and how many reminders are waiting */
+  const all = Object.values(subs || {}), on = all.filter(s => s && s.sub && !s.off);
+  log.push('phones signed up: ' + all.length + ' (' + on.length + ' active, ' + (all.length - on.length) + ' switched off or expired) · cheques: ' + cheques.length + ' (' + cheques.filter(q => q && !q.cleared).length + ' pending)');
+  if(!on.length) log.push('no active phone: open the app on the phone once and turn on Cheque reminders, so it signs up again');
   for(const [id, s] of Object.entries(subs || {})){
     if(!s || !s.sub || s.off) continue;
     const cfg = s.cfg || {}, tz = cfg.tzOff == null ? -240 : cfg.tzOff, done = (fired || {})[id] || {};
@@ -59,6 +63,8 @@ export async function run(env, NOW, opts){
       msgs.push({ title: uniq.length + ' cheques need attention · AED ' + money(uniq.reduce((a, x) => a + (+x.q.amount || 0), 0)),
         body: uniq.map(x => x.q.party).slice(0, 4).join(', ') + (uniq.length > 4 ? ' and more' : '') + '. Check the bank balance and deposit money in time if needed.', tag:'almadhi-chq-sum', ids:uniq.map(x => x.q.id) });
     } else uniq.forEach(x => msgs.push(Object.assign(message(x.q, tz, NOW), { tag:'almadhi-chq-' + x.q.id, chq:x.q.id, db:DB, ids:[x.q.id] })));
+    const rules = Array.isArray(cfg.rules) ? cfg.rules.length : 0;
+    log.push(id.slice(0, 4) + '… ' + (s.app || 'erp') + ' · ' + rules + ' reminder time(s) set · ' + due.length + ' due now · signed up ' + (s.at ? Math.round((NOW - s.at) / 86400e3) + ' days ago' : 'unknown'));
     if(!msgs.length) continue;
 
     let gone = false; const okIds = {}; let testOk = false;
