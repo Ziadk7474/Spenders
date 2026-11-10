@@ -8283,6 +8283,17 @@ html:not(#_#_#_) body:not(#_#_#_) #party-edit-modal.m19-pem > div > div:last-chi
 @media (max-width:599px){html:not(#_#_#_) body:not(#_#_#_) #party-edit-modal.m19-pem{ align-items:flex-end !important; padding:0 !important; }
 html:not(#_#_#_) body:not(#_#_#_) #party-edit-modal.m19-pem > div{ max-height:92vh !important; border-radius:26px 26px 0 0 !important; }
 html:not(#_#_#_) body:not(#_#_#_) #party-edit-modal.m19-pem [style*="grid-template-columns:1fr 1fr"]{ grid-template-columns:minmax(0, 1fr) !important; }}}
+html:not(#_) body:not(#_) .m27-ob{ grid-column:1 / -1; display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:18px; background:var(--k-card); }
+html:not(#_) body:not(#_) .m27-l{ font-size:12.5px; font-weight:500; color:var(--k-ink3); padding-left:4px; }
+html:not(#_) body:not(#_) .m27-row{ display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(0, 1fr); gap:8px; }
+html:not(#_#_#_) body:not(#_#_#_) .m27-row input{ height:46px !important; min-width:0 !important; padding:0 14px !important; border:1px solid var(--k-line) !important; border-radius:14px !important; background:var(--k-tile) !important; color:var(--k-ink) !important; font:600 15px/1 var(--k-font) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m27-row input:focus{ border-color:var(--k-acc) !important; outline:0 !important; }
+html:not(#_) body:not(#_) .m27-seg{ display:flex; gap:2px; padding:3px; border-radius:999px; background:var(--k-line); }
+html:not(#_) body:not(#_) .m27-seg button{ flex:1 1 0; min-width:0; height:36px; padding:0 10px; border:0; border-radius:999px; background:transparent; color:var(--k-ink2); font:500 13px/1.1 var(--k-font); cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_) body:not(#_) .m27-seg button.on{ background:var(--k-tile); color:var(--k-ink); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.08), 0 0 0 1px var(--k-line); }
+html:not(#_) body:not(#_) .m27-h{ font-size:12px; color:var(--k-ink3); padding-left:4px; line-height:1.35; }
+html:not(#_) body:not(#_) .m27-pem{ margin-top:14px; grid-column:1 / -1; width:100%; }
+@media (max-width:380px){html:not(#_) body:not(#_) .m27-seg button{ font-size:12px; padding:0 6px; }}
 html:not(#_) body:not(#_) #m20-install{ display:flex; align-items:center; gap:10px; width:100%; height:40px; margin:0 0 8px; padding:0 14px; border:0; border-radius:12px;
   background:var(--k-acc); color:#fff; font:600 13.5px/1 var(--k-font); cursor:pointer; box-shadow:0 4px 12px rgba(237,83,45,.25); }
 html:not(#_) body:not(#_) #m20-install[hidden]{ display:none; }
@@ -12753,7 +12764,8 @@ function toast(msg, type='success') {
   const t = document.getElementById('toast-container');
   const d = document.createElement('div');
   d.className = `toast ${type}`;
-  d.innerHTML = ' ' + String(msg == null ? '' : msg).split(TOAST_AED)
+  /* the app's own AED sign (any of its spellings) is kept as the picture; everything else is shown as text */
+  d.innerHTML = ' ' + String(msg == null ? '' : msg).split(/<svg class="aed-sym"[^<>]*>\s*<use href="#aed-glyph"\s*\/?>\s*(?:<\/use>\s*)?<\/svg>/)
     .map(s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join(TOAST_AED);
   t.appendChild(d);
   setTimeout(() => d.remove(), 3500);
@@ -13431,8 +13443,11 @@ function _heroDataFor(moduleKey) {
   const mod  = DB[moduleKey] || { records:[], payments:[], customParties:[] };
   const recs = dashHasRange() ? (mod.records||[]).filter(r => dashInRange(r.date))  : (mod.records||[]);
   const pays = dashHasRange() ? (mod.payments||[]).filter(p => dashInRange(p.date)) : (mod.payments||[]);
-  const total = recs.reduce((s,r)=>s+(+r.amount||0),0);
-  const paid  = pays.reduce((s,p)=>s+(+p.amount||0),0);
+  /* an opening balance (m27) counts in what is owed, not as a purchase / payment */
+  const _ob   = (a)=>a.filter(x=>x.opening).reduce((s,x)=>s+(+x.amount||0),0);
+  const obOwe = _ob(recs), obAdv = _ob(pays);
+  const total = recs.reduce((s,r)=>s+(r.opening?0:(+r.amount||0)),0);
+  const paid  = pays.reduce((s,p)=>s+(p.opening?0:(+p.amount||0)),0);
   const fromRecords = recs.map(r=>r.party).filter(Boolean);
   const fromCustom  = (mod.customParties||[]).map(p => typeof p==='object' ? p.name : p).filter(Boolean);
   const parties = dashHasRange()
@@ -13442,11 +13457,11 @@ function _heroDataFor(moduleKey) {
   const pPaid = p => pays.filter(x=>x.party===p).reduce((s,x)=>s+(+x.amount||0),0);
   const bal   = p => pRec(p) - pPaid(p);
   return {
-    total, paid, balance: total - paid,
+    total, paid, balance: total + obOwe - paid - obAdv,
     parties: parties.length,
     owing:   parties.filter(p => bal(p) > 0.5).length,
     cleared: parties.filter(p => bal(p) <= 0.5).length,
-    invoices: recs.length
+    invoices: recs.filter(r=>!r.opening).length
   };
 }
 
@@ -15916,7 +15931,7 @@ async function savePayment() {
     closePaymentModal();
     const advNote = c.advance>0.005 ? ` — ${ALLOC_AED} ${fmt(c.advance)} advance` : '';
     const woNote  = _woDone ? ` — ${ALLOC_AED} ${fmt(_woPlan.residual)} written off` : '';
-    toast(`${sales?'Receipt':'Payment'} ${ALLOC_AED} ${fmt(amount)} for ${_alEsc(party)}${advNote}${woNote} saved`, 'success');
+    toast(`${sales?'Receipt':'Payment'} ${ALLOC_AED} ${fmt(amount)} for ${party}${advNote}${woNote} saved`, 'success');
   }
   } finally { _paySaveBusy = false; }
 }
@@ -23994,11 +24009,11 @@ AMCViewport.onSettle(function(){
   function recentParties(){
     var seen = {}, out = [];
     (AD().records||[]).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || (+b.id||0)-(+a.id||0); })
-      .forEach(function(r){ if(r.party && !seen[r.party] && out.length < 8){ seen[r.party] = 1; out.push(r.party); } });
+      .forEach(function(r){ if(r.party && !r.opening && !seen[r.party] && out.length < 8){ seen[r.party] = 1; out.push(r.party); } });
     return out;
   }
   function lastBill(party){
-    return (AD().records||[]).filter(function(r){ return r.party === party; })
+    return (AD().records||[]).filter(function(r){ return r.party === party && !r.opening; })
       .sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || (+b.id||0)-(+a.id||0); })[0] || null;
   }
   function itemsEmpty(){
@@ -24517,6 +24532,7 @@ AMCViewport.onSettle(function(){
   function usage(){
     var map = {};
     (AD().records || []).forEach(function(r){
+      if(r.opening) return;   /* an opening balance is not an item */
       var its = (r.items && r.items.length) ? r.items : [{ desc:r.desc, unit:r.unit, qty:r.qty, price:r.price }];
       its.forEach(function(it){
         var k = up(it.desc); if(!k) return;
@@ -24641,7 +24657,7 @@ AMCViewport.onSettle(function(){
     var q = S.pq.toLowerCase(), word = sales() ? 'customer' : 'vendor';
     var custom = (AD().customParties || []).map(function(p){ return typeof p === 'object' ? p : { name:p }; });
     var cmap = {}; custom.forEach(function(p){ if(p.name) cmap[p.name] = p; });
-    var bills = {}; (AD().records || []).forEach(function(r){ if(r.party){ var b = bills[r.party] || (bills[r.party] = { n:0, last:'' }); b.n++; if((r.date || '') > b.last) b.last = r.date; } });
+    var bills = {}; (AD().records || []).forEach(function(r){ if(r.party && !r.opening){ var b = bills[r.party] || (bills[r.party] = { n:0, last:'' }); b.n++; if((r.date || '') > b.last) b.last = r.date; } });
     var names = getParties().filter(function(n){ return !q || n.toLowerCase().indexOf(q) >= 0 || ((cmap[n] || {}).phone || '').indexOf(q) >= 0 || ((cmap[n] || {}).companyEn || '').toLowerCase().indexOf(q) >= 0; });
     names.sort(function(a, b){ return ((bills[b] || {}).last || '').localeCompare((bills[a] || {}).last || '') || a.localeCompare(b); });
     var h = '<div class="m9-bar"><label class="m9-search">' + icon('search') + '<input id="m9-pa-q" type="search" placeholder="Search ' + word + 's, phone or company" value="' + esc(S.pq) + '" autocomplete="off"></label>' +
@@ -26863,7 +26879,7 @@ AMCViewport.onSettle(function(){
   function lines(book, d){
     var out = [], B = DB[book]; if(!B) return out;
     (B.records || []).forEach(function(r){
-      if(r.deleted) return;
+      if(r.deleted || r.opening) return;
       var its = (r.items && r.items.length) ? r.items : [{ desc:r.desc, qty:r.qty, unit:r.unit, price:r.price }];
       its.forEach(function(it){ if(norm(it.desc) === d && (+it.price) > 0) out.push({ party:r.party, date:r.date || '', qty:it.qty, unit:it.unit, price:+it.price, kg:it.kgPerBag }); });
     });
@@ -27704,7 +27720,7 @@ AMCViewport.onSettle(function(){
     var r = range(S.itemP || 'year'), q = (S.itemQ || '').toLowerCase(), map = {}, now = new Date(), months = [];
     for(var i = 5; i >= 0; i--){ var d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push(ymd(d).slice(0, 7)); }
     (AD().records || []).forEach(function(rec){
-      if(!rec.date) return;
+      if(!rec.date || rec.opening) return;   /* an opening balance is not a purchase */
       itemsOf(rec).forEach(function(it){
         var name = String(it.desc || '').trim(); if(!name) return;
         var key = name.toUpperCase() + '|' + (it.unit || ''), qty = +it.qty || 0, amt = +it.amount || (qty * (+it.price || 0));
@@ -28330,7 +28346,7 @@ AMCViewport.onSettle(function(){
     if(typeof clearLedgerCache === 'function') clearLedgerCache();
     var out = [], maps = {};
     (AD().records || []).forEach(function(r){
-      if(!r.date || r.date < a || r.date > b) return;
+      if(!r.date || r.opening || r.date < a || r.date > b) return;   /* an opening balance is not a purchase */
       var m = maps[r.party] || (maps[r.party] = partyAllocationMap(r.party));
       var row = m.rows.find(function(x){ return x.rec === r || x.rec.id === r.id; }) || { invoiced:+r.amount || 0, paid:0, outstanding:+r.amount || 0, status:'unpaid', payments:[] };
       var cash = 0; (row.payments || []).forEach(function(p){ if(isCash(p.pay && p.pay.method)) cash += +p.amount || 0; });
@@ -28438,7 +28454,7 @@ AMCViewport.onSettle(function(){
   function chartsHtml(L, party){
     var s = sales(), word = s ? 'invoices' : 'bills';
     var ms = monthsShown(), mv = {};
-    (AD().records || []).forEach(function(r){ if(r.date && (!party || r.party === party)){ var k = r.date.slice(0, 7); mv[k] = (mv[k] || 0) + (+r.amount || 0); } });
+    (AD().records || []).forEach(function(r){ if(r.date && !r.opening && (!party || r.party === party)){ var k = r.date.slice(0, 7); mv[k] = (mv[k] || 0) + (+r.amount || 0); } });
     var endYm = range()[1].slice(0, 7);
     var sel = S.mode === 'month' && ms.indexOf(S.ym) >= 0 ? S.ym : S.mode !== 'year' && ms.indexOf(endYm) >= 0 ? endYm : ms.indexOf(ymNow()) >= 0 ? ymNow() : ms[ms.length - 1];
     var wave = waveCard({ title:'Month by month', months:ms, values:mv, sel:sel, go:function(k){ return ' data-go-m="' + k + '"'; } });
@@ -28601,7 +28617,7 @@ AMCViewport.onSettle(function(){
 
   /* groups editor (small sheet inside the page) */
   function groupsHtml(){
-    var names = {}; (AD().records || []).forEach(function(r){ ((r.items && r.items.length) ? r.items : [{ desc:r.desc }]).forEach(function(it){ var n = String(it.desc || '').trim(); if(n) names[n.toUpperCase()] = n; }); });
+    var names = {}; (AD().records || []).forEach(function(r){ if(r.opening) return; ((r.items && r.items.length) ? r.items : [{ desc:r.desc }]).forEach(function(it){ var n = String(it.desc || '').trim(); if(n) names[n.toUpperCase()] = n; }); });
     var list = Object.keys(names).sort();
     return '<div class="m16-gedit" id="m16-gedit"><div class="m16-ge-h"><b>Which group is each item in?</b><button type="button" class="m16-ib" data-s-gclose="1" aria-label="Close">' + icon('x') + '</button></div>' +
       '<p>Pick a group for any item. The summary updates at once. Saved on this device.</p>' +
@@ -29017,6 +29033,7 @@ AMCViewport.onSettle(function(){
      name, phone, credit days / limit — and puts the vendor in the bill.
      You never leave the bill you are typing.
    · Party details window: checks phone, e-mail and TRN before saving.
+   · Opening balance (m27) can be set right here, or later in the details window.
    ══════════════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
@@ -29078,6 +29095,7 @@ AMCViewport.onSettle(function(){
         '<div class="m19-f m19-full"><label for="m19-name">Name *</label><input id="m19-name" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. AL NOOR TRADING"><small class="m19-warn" id="m19-sim" hidden></small></div>' +
         '<div class="m19-f"><label for="m19-phone">Phone</label><input id="m19-phone" type="tel" inputmode="tel" placeholder="05x xxx xxxx"></div>' +
         '<div class="m19-f"><label for="m19-contact">Contact person</label><input id="m19-contact" type="text" placeholder="optional"></div>' +
+        (window.M27 ? M27.block('m19') : '') +
         '<div class="m19-f m19-trn"><label for="m19-trn">TRN</label><input id="m19-trn" type="text" inputmode="numeric" placeholder="15 digits"></div>' +
         '<div class="m19-f"><label for="m19-days">Credit days</label><input id="m19-days" type="number" inputmode="numeric" min="0" step="1" placeholder="e.g. 30"></div>' +
         '<div class="m19-f"><label for="m19-limit">Credit limit (AED)</label><input id="m19-limit" type="number" inputmode="decimal" min="0" step="0.01" placeholder="optional"></div>' +
@@ -29086,6 +29104,7 @@ AMCViewport.onSettle(function(){
       '<div class="m19-foot"><button type="button" class="m8-btn ghost" data-x>Cancel</button><button type="button" class="m8-btn acc" id="m19-save">' + icon('check') + '<span>Add</span><kbd>Ctrl A</kbd></button></div>' +
     '</div>';
     document.body.appendChild(sheet);
+    if(window.M27) M27.wire('m19');
     sheet.addEventListener('click', function(e){ if(e.target === sheet || e.target.closest('[data-x]')) close(); });
     $('m19-save').addEventListener('click', save);
     $('m19-name').addEventListener('input', function(){ var s = similar(this.value), w = $('m19-sim'); w.hidden = !s; if(s) w.innerHTML = 'Similar name already there: <b>' + esc(s) + '</b> · <button type="button" id="m19-use">use it</button>'; });
@@ -29102,6 +29121,7 @@ AMCViewport.onSettle(function(){
     ['m19-name', 'm19-phone', 'm19-contact', 'm19-trn', 'm19-days', 'm19-limit'].forEach(function(id){ $(id).value = ''; });
     $('m19-name').value = clean(prefill || ''); $('m19-err').hidden = true; $('m19-sim').hidden = true;
     sheet.querySelector('.m19-trn').hidden = !sales();
+    if(window.M27) M27.fill('m19', null);
     if(prefill) $('m19-name').dispatchEvent(new Event('input'));
     M8.openSheet(sheet);
     setTimeout(function(){ var n = $('m19-name'); n.focus(); try{ n.setSelectionRange(n.value.length, n.value.length); }catch(e){} }, 120);
@@ -29119,7 +29139,10 @@ AMCViewport.onSettle(function(){
     var use = decide(o.name); if(!use) return;
     if(use !== o.name){ close(); if(onDone) onDone(use); toast(use + ' selected', 'success'); return; }
     saving = true;
-    try{ var name = await create(o); close(); toast(name + ' added', 'success'); if(onDone) onDone(name); }
+    var ob = window.M27 ? M27.read('m19') : null;
+    try{ var name = await create(o);
+      if(name && ob && ob.amount > 0){ await M27.set(name, ob.amount, ob.kind, ob.date); }
+      close(); toast(name + ' added' + (ob && ob.amount > 0 ? ' with opening balance AED ' + ob.amount.toLocaleString('en-US', { minimumFractionDigits:2 }) : ''), 'success'); if(onDone) onDone(name); }
     finally{ saving = false; }
   }
   /* put a party into the New Entry bill */
@@ -29445,6 +29468,8 @@ AMCViewport.onSettle(function(){
     return ov;
   }
   function openNewParty(){
+    /* one form for a new vendor / customer everywhere: name, phone, terms and opening balance together */
+    if(window.AMParty && AMParty.open){ AMParty.open('', function(){ try{ if(typeof renderPartySummary === 'function') renderPartySummary(); }catch(e){} }); return; }
     var ov = sheet(), w = sales() ? 'customer' : 'vendor';
     $('m22-np-t').textContent = 'New ' + w; $('m22-np-l').textContent = (sales() ? 'Customer' : 'Vendor') + ' name';
     var i = $('m22-np-in'); i.value = '';
@@ -30945,6 +30970,157 @@ AMCViewport.onSettle(function(){
   /* run after every other layer has wrapped these functions */
   if(D.readyState === 'loading') D.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 400); }); else setTimeout(boot, 400);
   window.M25 = { sig:sig, last:last, log:LOG };
+})();
+
+</script>
+<script id="m27-js">/* ══════════════════════════════════════════════════════════════════════
+   m27 · OPENING BALANCE for a vendor / customer
+   The app works out every balance as bills minus payments, so an opening
+   balance is saved the same way the app already corrects balances: as ONE
+   real entry, marked opening:true and labelled "Opening balance".
+     · they owe / we owe  → a bill (Purchase) or invoice (Sales) entry
+     · advance            → a payment (Purchase) or receipt (Sales) entry,
+                            used up by later bills oldest first
+   So the balance, the statement, ageing, reminders and the watch all include
+   it without any change. It is NOT counted as a purchase / sale: reports,
+   item lists, rate history and "repeat last bill" leave it out.
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  if(window.M27) return;
+  var $ = function(id){ return document.getElementById(id); };
+  function sales(){ return DB.mode === 'sales'; }
+  function today(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]; }); }
+  function money(n){ return (+n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  var LABEL = 'OPENING BALANCE';
+
+  function isOpening(x){ return !!(x && x.opening); }
+  /* the party's opening entry, if any */
+  function get(party){
+    var r = (AD().records || []).find(function(x){ return x.opening && x.party === party; });
+    if(r) return { kind:'owe', amount:+r.amount || 0, date:r.date || '', obj:r };
+    var p = (AD().payments || []).find(function(x){ return x.opening && x.party === party; });
+    if(p) return { kind:'adv', amount:+p.amount || 0, date:p.date || '', obj:p };
+    return null;
+  }
+  function who(){ return sales() ? 'customer' : 'vendor'; }
+  function words(){
+    return sales() ? { owe:'They owe us', adv:'They paid advance' } : { owe:'We owe them', adv:'We paid advance' };
+  }
+  async function trash(kind, obj){
+    var path = MODE_ROOT() + (kind === 'owe' ? '/records/' : '/payments/') + obj.id;
+    try{ await fbWrite('almadhi/trash/' + (kind === 'owe' ? 'record_' : 'payment_') + obj.id, Object.assign({}, obj, { _deletedAt:new Date().toISOString(), _deletedBy:window._user ? window._user.email : 'system', _kind:kind === 'owe' ? 'record' : 'payment', _module:DB.mode })); }catch(e){}
+    try{ await window._fbRemove(window._fbRef(window._db, path)); }catch(e){}
+  }
+  /* set (or change, or clear with amount 0) a party's opening balance */
+  async function set(party, amount, kind, date){
+    amount = Math.round((+amount || 0) * 100) / 100; date = date || today();
+    var cur = get(party), by = window._user ? window._user.email : 'system', at = new Date().toISOString();
+    if(cur && (amount <= 0 || cur.kind !== kind)){ await trash(cur.kind, cur.obj); cur = null; }
+    if(amount <= 0){ refresh(); return true; }
+    if(cur){                                     /* same kind: change the amount / date in place */
+      var o = JSON.parse(JSON.stringify(cur.obj)); o.amount = amount; o.date = date; o.updatedAt = at;
+      if(kind === 'owe'){ o.subtotal = amount; o.price = amount; o.items = [{ desc:LABEL, qty:1, unit:'', price:amount, amount:amount }]; await fbSaveRecord(o); }
+      else await fbSavePayment(o);
+      refresh(); return true;
+    }
+    var id = (await allocateRecordIds(1))[0];
+    AD().nextId = Math.max(AD().nextId || 1, id + 1);
+    if(kind === 'owe'){
+      await fbSaveRecord({ id:id, date:date, invNo:'OPENING', party:party, vehicle:'Opening balance', desc:LABEL, qty:1, unit:'', price:amount,
+        subtotal:amount, vatApplied:false, vatAmount:0, amount:amount, items:[{ desc:LABEL, qty:1, unit:'', price:amount, amount:amount }],
+        notes:'Opening balance', opening:true, createdAt:at, createdBy:by });
+    } else {
+      await fbSavePayment({ id:id, date:date, party:party, paidBy:'', method:LABEL, amount:amount, withInvoice:false, allocations:[],
+        notes:'Opening balance (advance)', opening:true, createdAt:at, createdBy:by });
+    }
+    try{ await fbSaveMeta(); }catch(e){}
+    refresh(); return true;
+  }
+  function refresh(){
+    try{ if(typeof clearLedgerCache === 'function') clearLedgerCache(); }catch(e){}
+    setTimeout(function(){
+      ['renderPartySummary', 'filterRecords', 'renderPayments'].forEach(function(f){ try{ if(typeof window[f] === 'function') window[f](); }catch(e){} });
+      try{ if(window.M8 && M8.refreshParty) M8.refreshParty(); }catch(e){}
+    }, 120);
+  }
+
+  /* ── the form block: amount · who owes whom · as of date ── */
+  function block(pre){
+    var w = words();
+    return '<div class="m27-ob" id="' + pre + '-ob">' +
+      '<label class="m27-l" for="' + pre + '-ob-amt">Opening balance (AED)</label>' +
+      '<div class="m27-row"><input id="' + pre + '-ob-amt" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00">' +
+      '<input id="' + pre + '-ob-date" type="date" aria-label="Opening balance as of"></div>' +
+      '<div class="m27-seg" role="radiogroup" aria-label="Who owes">' +
+        '<button type="button" role="radio" data-ob="owe" class="on" aria-checked="true">' + w.owe + '</button>' +
+        '<button type="button" role="radio" data-ob="adv" aria-checked="false">' + w.adv + '</button></div>' +
+      '<small class="m27-h" id="' + pre + '-ob-h">Money already due before you started using the app. Leave empty if none.</small>' +
+    '</div>';
+  }
+  function wire(pre){
+    var box = $(pre + '-ob'); if(!box || box.__m27) return; box.__m27 = 1;
+    box.querySelector('.m27-seg').addEventListener('click', function(e){
+      var b = e.target.closest('button'); if(!b) return;
+      [].forEach.call(this.children, function(x){ x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b ? 'true' : 'false'); });
+    });
+    var amt = $(pre + '-ob-amt');
+    amt.addEventListener('blur', function(){ var v = parse(amt.value); amt.value = v ? money(v) : ''; });
+  }
+  function parse(v){ var n = parseFloat(String(v || '').replace(/[,\s]/g, '')); return isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 0; }
+  function read(pre){
+    var box = $(pre + '-ob'); if(!box) return null;
+    var on = box.querySelector('.m27-seg .on');
+    return { amount:parse($(pre + '-ob-amt').value), kind:on ? on.dataset.ob : 'owe', date:$(pre + '-ob-date').value || today() };
+  }
+  function fill(pre, party){
+    var box = $(pre + '-ob'); if(!box) return;
+    var w = words(), b = box.querySelectorAll('.m27-seg button'); b[0].textContent = w.owe; b[1].textContent = w.adv;
+    var cur = party ? get(party) : null;
+    $(pre + '-ob-amt').value = cur ? money(cur.amount) : '';
+    $(pre + '-ob-date').value = cur ? cur.date : today();
+    [].forEach.call(b, function(x){ var on = x.dataset.ob === (cur ? cur.kind : 'owe'); x.classList.toggle('on', on); x.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    box.dataset.was = cur ? (cur.kind + '|' + cur.amount + '|' + cur.date) : '';
+    $(pre + '-ob-h').textContent = cur ? 'Saved as an “Opening balance” entry on ' + cur.date + '. Change it here; set 0 to remove it.' : 'Money already due before you started using the app. Leave empty if none.';
+  }
+  function changed(pre){
+    var box = $(pre + '-ob'), r = read(pre); if(!box || !r) return false;
+    var w = (box.dataset.was || '').split('|');
+    if(!box.dataset.was) return r.amount > 0;
+    return r.amount !== +w[1] || (r.amount > 0 && (r.kind !== w[0] || r.date !== w[2]));
+  }
+
+  /* ── the party details window (existing vendors / customers) ── */
+  function wireDetails(){
+    var modal = $('party-edit-modal'); if(!modal) return;
+    var host = modal.querySelector('#pem-credit-days'); host = host && host.closest('.form-group, .form-row, .pem-row, div');
+    if(!$('pem-ob')){
+      var wrap = document.createElement('div'); wrap.className = 'm27-pem'; wrap.innerHTML = block('pem');
+      var anchor = host && host.parentElement ? host.parentElement : modal.querySelector('.modal-body');
+      if(anchor) anchor.appendChild(wrap); wire('pem');
+    }
+    var o = window.openPartyEditModal;
+    if(typeof o === 'function' && !o.__m27){
+      var w = function(name){ var r = o.apply(this, arguments); try{ fill('pem', name); }catch(e){} return r; };
+      for(var k in o) if(Object.prototype.hasOwnProperty.call(o, k)) w[k] = o[k];
+      w.__m27 = 1; window.openPartyEditModal = w;
+    }
+    var s = window.savePartyDetails;
+    if(typeof s === 'function' && !s.__m27){
+      var ws = async function(){
+        var name = ($('pem-original-name') || {}).value, r = read('pem'), go = name && changed('pem');
+        var res = await s.apply(this, arguments);
+        if(go){ await set(name, r.amount, r.kind, r.date); toast(r.amount ? 'Opening balance saved: AED ' + money(r.amount) : 'Opening balance removed', 'success'); }
+        return res;
+      };
+      for(var k2 in s) if(Object.prototype.hasOwnProperty.call(s, k2)) ws[k2] = s[k2];
+      ws.__m27 = 1; window.savePartyDetails = ws;
+    }
+  }
+  function boot(){ wireDetails(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 50); }); else setTimeout(boot, 50);
+  window.M27 = { isOpening:isOpening, get:get, set:set, block:block, wire:wire, read:read, fill:fill, LABEL:LABEL };
 })();
 
 </script>
