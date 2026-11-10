@@ -1,8 +1,8 @@
-// am. nexus service worker — v12
+// am. nexus service worker — v13
 // Pages, the manifest and the icons always come from the internet first, so a new
 // upload (or a new logo) shows at once. The saved copy is only used when offline.
 // Firebase traffic is never touched.
-const CACHE = 'almadhi-v12';
+const CACHE = 'almadhi-v13';
 const CORE = ['./', 'index.html', 'manifest.json?v=10', 'icon-192.png?v=9', 'icon-512.png?v=9', 'apple-touch-icon.png?v=6',
   // PDF / Excel tools now live on our own site (checked copies), saved so exports work offline too
   'lib/jspdf-4.2.1.umd.min.js', 'lib/jspdf.plugin.autotable-5.0.9.min.js', 'lib/xlsx-0.20.3.full.min.js'];
@@ -21,7 +21,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.hostname.includes('firebaseio.com') || url.hostname.includes('firebasedatabase.app')) return;
+  if (/(^|\.)(firebaseio\.com|firebasedatabase\.app)$/.test(url.hostname)) return;   // live data: never touched
   // fonts / Firebase SDK from gstatic: cache-first (they never change for a given URL)
   if (url.hostname === 'www.gstatic.com' || url.hostname === 'fonts.gstatic.com') {
     e.respondWith(caches.open(CACHE).then(c => c.match(req).then(hit =>
