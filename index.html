@@ -9114,18 +9114,23 @@ function target(){
 function ready(){return !!(window._firebaseReady||document.getElementById('am-signin')||target())}
 const E='cubic-bezier(.65,0,.2,1)';
 function glide(el,w,h,r,T){                                 /* move a piece from where it is to a box on the page */
-  const cur=new DOMMatrix(getComputedStyle(el).transform);
-  an(el,[{transform:cur.toString()},{transform:at(r.left+r.width/2,r.top+r.height/2,w,h,r.width/w)}],{duration:T,easing:E,fill:'forwards'})}
+  const cur=new DOMMatrix(getComputedStyle(el).transform);  /* (the stage may sit lower or higher by dy: see "lock" below) */
+  an(el,[{transform:cur.toString()},{transform:at(r.left+r.width/2,r.top+r.height/2-dy,w,h,r.width/w)}],{duration:T,easing:E,fill:'forwards'})}
+/* while the opening's own logo and name glide into place, the page's copies wait hidden,
+   so the two are never seen at once (that showed as a second, faint "am. nexus") */
+const hid=[];function hideReal(els){els.forEach(e=>{if(e&&e.style.visibility!=='hidden'){e.style.visibility='hidden';hid.push(e)}})}
+function showReal(){hid.splice(0).forEach(e=>{e.style.visibility=''})}
 /* the name's svg on the page is drawn "xMinYMid meet": find the box the letters really fill */
 const fitW=r=>{if(!r)return r;const k=2361/316,w=Math.min(r.width,r.height*k),h=w/k;return {left:r.left,top:r.top+(r.height-h)/2,width:w,height:h}};
 const fade=(el,T,d)=>an(el,[{opacity:+getComputedStyle(el).opacity},{opacity:0}],{duration:T,delay:d||0,easing:'linear',fill:'forwards'});
 function settle(){A.forEach(a=>{try{if(a.effect&&a.effect.getTiming().iterations!==Infinity&&a.playState!=='finished')a.finish()}catch(e){}})}
-function finish(T){timers.push(setTimeout(()=>{if(done)return;done=true;restoreTheme();dropPre();
+function finish(T){timers.push(setTimeout(()=>{if(done)return;done=true;restoreTheme();dropPre();showReal();
   root.style.transition='opacity .2s linear';root.classList.add('amx-out');
   setTimeout(()=>{A.forEach(a=>{try{a.cancel()}catch(e){}});root.remove()},240)},T))}
 function toLock(t,fast){                                    /* one design: the lock card just rises in */
   handing=true;dropPre();root.classList.add('amx-hand');const T=fast?280:460;
-  if(t.logo&&(Math.abs(t.logo.left+t.logo.width/2-L.x)>1||Math.abs(t.logo.top+t.logo.height/2-L.y)>1||Math.abs(t.logo.width-LS)>1))glide(logo,LS,LS,t.logo,T);
+  {const o=document.getElementById('lock-overlay');if(o)hideReal([o.querySelector('.lock-logo-wrap'),o.querySelector('.lock-title')])}
+  if(t.logo&&(Math.abs(t.logo.left+t.logo.width/2-L.x)>1||Math.abs(t.logo.top+t.logo.height/2-L.y-dy)>1||Math.abs(t.logo.width-LS)>1))glide(logo,LS,LS,t.logo,T);
   if(t.word)glide(word,WW,WH,fitW(t.word),T);
   fade(tag,T*.5);fade(glow,T);fade(shade,T);fade(bg,T,T*.35);
   try{if(t.card&&t.card.animate)t.card.animate([{opacity:0,transform:'translateY(22px)'},{opacity:1,transform:'translateY(0)'}],{duration:560,delay:T*.3,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'})}catch(e){}
@@ -9136,8 +9141,8 @@ function toApp(fast){                                       /* the logo and the 
   handing=true;dropPre();root.classList.add('amx-hand');const T=fast?340:680;
   const hl=document.querySelector('#m5-logo svg'),hw=document.querySelector('#m5-hdr .amx-hdr svg');
   const lr=hl&&shown(hl)?hl.getBoundingClientRect():null,wr=hw&&shown(hw)?hw.getBoundingClientRect():null;
-  if(lr&&lr.top<H*.4)glide(logo,LS,LS,lr,T);else fade(logo,T*.6);
-  if(wr&&wr.top<H*.4)glide(word,WW,WH,fitW(wr),T);else fade(word,T*.6);
+  if(lr&&lr.top<H*.4){glide(logo,LS,LS,lr,T);hideReal([hl])}else fade(logo,T*.6);
+  if(wr&&wr.top<H*.4){glide(word,WW,WH,fitW(wr),T);hideReal([hw])}else fade(word,T*.6);
   fade(tag,T*.3);fade(shade,T*.4);fade(glow,T*.5);fade(bg,T*.7,T*.15);
   finish(T)}
 function decide(fast){
@@ -9151,6 +9156,17 @@ function decide(fast){
     an(glow,[{transform:at(L.x,L.y,LS*3.2,LS*3.2,1)},{transform:at(L.x,L.y,LS*3.2,LS*3.2,1.12)},{transform:at(L.x,L.y,LS*3.2,LS*3.2,1)}],{duration:1600,iterations:Infinity,easing:'cubic-bezier(.45,0,.55,1)'})}
   timers.push(setTimeout(()=>decide(false),120))}
 let t0=0;const elapsed=()=>t0?performance.now()-t0:0;
+/* ── lock: the logo and the name sit exactly where the lock screen shows them ──
+   The lock screen centres its whole group (logo, name and the password card), so its logo is higher
+   than the middle of the screen. As soon as the lock screen is there (under this opening, before the
+   logo appears) the scene moves to its height, so the hand-over is only the card rising in.
+   Phones without a lock keep the scene in the middle. */
+let dy=0;
+const lockSoon=(()=>{try{return !!localStorage.getItem('almadhi_pin_hash')&&sessionStorage.getItem('almadhi_unlocked')!=='1'}catch(e){return false}})();
+if(lockSoon){const t1=performance.now();const fit=()=>{if(done||handing)return;const t=target();
+  if(t&&t.kind==='lock'&&t.logo){const want=t.logo.top+t.logo.height/2-L.y;if(Math.abs(want-dy)>.5){
+    stage.style.transition=performance.now()-t1>800?'translate .6s cubic-bezier(.2,.8,.2,1)':'none';dy=want;stage.style.translate=`0px ${dy.toFixed(1)}px`}return}
+  if(performance.now()-t1<6000)timers.push(setTimeout(fit,40))};fit()}
 last.finished.then(()=>{t0=performance.now();timers.push(setTimeout(()=>decide(false),250))}).catch(()=>{});
 /* a tap skips straight to the hand-over */
 root.addEventListener('pointerdown',()=>{if(done||handing)return;decide(true)},{passive:true});
@@ -13030,7 +13046,9 @@ function getParties() {
   const fromCustom = (AD().customParties||[]).map(p => typeof p==='object' ? p.name : p).filter(Boolean);
   return [...new Set([...fromRecords, ...fromCustom])].sort();
 }
-function getDescs()   { return getAllDescObjs().map(d=>d.name); }
+// Items are listed in order: numbers first (counted as numbers, so 2 comes before 10), then A to Z
+const _natCmp = (a,b) => String(a).localeCompare(String(b), undefined, { numeric:true, sensitivity:'base' });
+function getDescs()   { return getAllDescObjs().map(d=>d.name).sort(_natCmp); }
 function getUnits()   { return [...new Set([...BUILTIN_UNITS,   ...(AD().customUnits||[])])]; }
 function getMethods() { return [...new Set([...BUILTIN_METHODS, ...(AD().customMethods||[])])]; }
 function getPaidBys() { return [...new Set([...BUILTIN_PAIDBY,  ...(AD().customPaidBy||[])])]; }
@@ -14004,7 +14022,8 @@ function _dcList() {
       if(t === el || (t && t.nodeType === 1 && el.contains(t))) return; // scroll inside the dropdown — ignore
       _dcPosition(el); // page scrolled — follow the input
     }, true);
-    window.addEventListener('resize', () => { if(_dcInput && el.style.display === 'block') _dcPosition(el); });
+    // The phone keyboard opening resizes the screen: keep the list open, bring the field into view and follow it
+    window.addEventListener('resize', () => { if(!_dcInput || document.activeElement !== _dcInput) return; const r = _dcInput.getBoundingClientRect(); if(r.bottom > window.innerHeight || r.top < 0) { try { _dcInput.scrollIntoView({ block:'center' }); } catch(e) {} } requestAnimationFrame(() => { if(_dcInput) _dcPosition(el); }); });
   }
   return el;
 }
@@ -14058,10 +14077,10 @@ function _dcRender() {
 function _dcFilter(q) {
   const all = getDescs();
   q = (q||'').trim().toLowerCase();
-  if(!q) return all.slice(0, 60);
+  if(!q) return all.slice(0, 500);
   const starts = all.filter(d => d.toLowerCase().startsWith(q));
   const contains = all.filter(d => !d.toLowerCase().startsWith(q) && d.toLowerCase().includes(q));
-  return starts.concat(contains).slice(0, 60);
+  return starts.concat(contains).slice(0, 200);
 }
 
 function descComboOpen(input) {
@@ -17724,7 +17743,7 @@ function _edcList() {
     el.style.cssText = 'display:none;position:fixed;z-index:10060;max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface,#fff);border:1px solid var(--field-border,#d3dbe7);border-radius:5px;box-shadow:0 8px 26px rgba(15,35,70,.22);font-size:13px';
     el.addEventListener('mousedown', e => e.preventDefault());
     window.addEventListener('scroll', () => { if(_edcInput && el.style.display==='block') _edcPos(el); }, true);
-    window.addEventListener('resize', () => { if(_edcInput && el.style.display==='block') _edcPos(el); });
+    window.addEventListener('resize', () => { if(!_edcInput || document.activeElement !== _edcInput) return; const r=_edcInput.getBoundingClientRect(); if(r.bottom > window.innerHeight || r.top < 0) { try { _edcInput.scrollIntoView({ block:'center' }); } catch(e) {} } requestAnimationFrame(() => { if(_edcInput) _edcPos(el); }); });
     document.body.appendChild(el);
   }
   return el;
@@ -17754,7 +17773,7 @@ function _edcRender() {
   _edcPos(list);
   const act=list.querySelector('.dc-item[data-i="'+_edcActive+'"]'); if(act) act.scrollIntoView({block:'nearest'});
 }
-function _edcFilter(q) { const all=getDescs(); q=(q||'').trim().toLowerCase(); if(!q) return all.slice(0,60); return all.filter(d=>d.toLowerCase().startsWith(q)).concat(all.filter(d=>!d.toLowerCase().startsWith(q)&&d.toLowerCase().includes(q))).slice(0,60); }
+function _edcFilter(q) { const all=getDescs(); q=(q||'').trim().toLowerCase(); if(!q) return all.slice(0,500); return all.filter(d=>d.toLowerCase().startsWith(q)).concat(all.filter(d=>!d.toLowerCase().startsWith(q)&&d.toLowerCase().includes(q))).slice(0,200); }
 function _editDescComboOpen(input) { _edcInput=input; _edcItems=_edcFilter(input.value); _edcActive=_edcItems.length?0:-1; _edcRender(); }
 function _editDescComboInput(input) { _edcInput=input; _edcItems=_edcFilter(input.value); _edcActive=_edcItems.length?0:-1; _edcRender(); }
 function _editDescComboToggle(btn) { const input=btn.parentElement.querySelector('.eli-desc'); if(_edcInput===input&&document.getElementById('edit-desc-combo-list')&&document.getElementById('edit-desc-combo-list').style.display==='block'){_edcClose();return;} input.focus(); _edcInput=input; _edcItems=_edcFilter(''); _edcActive=_edcItems.length?0:-1; _edcRender(); }
@@ -22345,7 +22364,7 @@ AMCViewport.onSettle(function(){
     var SHORT = [['users',sales?'Customers':'Vendors','parties'],['statement','Statement','statement'],['urdu','Urdu statement','urdu'],['quote','Quotation','quotation'],['box','Items & lists','items'],['pay','Payments','payments']];
     var cf = (DR && DR.from) || '', ct = (DR && DR.to) || '';
 
-    home.innerHTML =
+    var html =
     '<section class="m5-hero">'+
       '<div class="m5-hello">'+
         '<div class="m5-hello-t"><h2>Hey Ziad, <br>'+greet+'</h2>'+
@@ -22526,6 +22545,17 @@ AMCViewport.onSettle(function(){
         '<div class="m5-qrow">'+CREATE.map(function(c,i){ return '<button type="button" class="m5-q" data-create="'+i+'" title="'+c[1]+'"><span>'+I[c[0]]+'</span><small>'+c[1].split(' ')[0]+'</small></button>'; }).join('')+'</div>'+
       '</div>'+
     '</section>';
+    /* No blinking when the app opens: the books arrive from the server in several parts (bills,
+       payments, cheques, both books) and each part asked Home to draw itself again — the page was
+       rebuilt 3–5 times in the first seconds, in the middle of its opening animation.
+       · the same page is never drawn again (nothing changed → nothing happens)
+       · while the opening animation plays, a change waits until it has finished, then is drawn once */
+    if(home._m5html === html && home.firstElementChild) return;
+    var wait = (window.M30 && M30.busy) ? M30.busy() : 0;
+    if(wait > 0 && home.firstElementChild){ clearTimeout(home._m5wait); home._m5wait = setTimeout(renderHome, wait + 40); return; }
+    clearTimeout(home._m5wait);
+    home._m5html = html;
+    home.innerHTML = html;
   }
 
   function bindHome(home){
@@ -23765,7 +23795,7 @@ AMCViewport.onSettle(function(){
       var shut = function(){ m.classList.remove('open'); s.classList.remove('open'); };
       s.addEventListener('click', shut);
       document.addEventListener('keydown', function(e){ if(e.key === 'Escape') shut(); });
-      window.addEventListener('resize', shut, { passive:true });
+      var w0 = innerWidth; window.addEventListener('resize', function(){ if(innerWidth === w0) return; w0 = innerWidth; shut(); }, { passive:true });   /* only a real width change (not the keyboard) closes it */
       document.addEventListener('scroll', function(){ if(!M8.isPhone()) shut(); }, true);
       m.addEventListener('click', function(e){
         var b = e.target.closest('[data-cm]'); if(!b) return;
@@ -24587,7 +24617,7 @@ AMCViewport.onSettle(function(){
     ctx = null;
   }
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && menu && menu.classList.contains('open')) close(); });
-  window.addEventListener('resize', close, { passive:true });
+  var w0 = innerWidth; window.addEventListener('resize', function(){ if(innerWidth === w0) return; w0 = innerWidth; close(); }, { passive:true });   /* the keyboard opening or closing must not shut the menu */
   document.addEventListener('scroll', function(e){ if(menu && menu.classList.contains('open') && !M8.isPhone()) close(); }, true);
 
   function item(a, ic, label, extra){
@@ -26436,7 +26466,7 @@ AMCViewport.onSettle(function(){
       if(b.dataset.a === 'clear'){ pick(''); return; }
     });
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && mp.classList.contains('open')) closePicker(); });
-    window.addEventListener('resize', closePicker, { passive:true });
+    var w0 = innerWidth; window.addEventListener('resize', function(){ if(innerWidth === w0) return; w0 = innerWidth; closePicker(); }, { passive:true });   /* only a real width change closes it */
   }
   function paintPicker(){
     var v = cur ? cur.src.value : '', d = new Date(), nowK = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
@@ -26781,7 +26811,9 @@ AMCViewport.onSettle(function(){
     document.body.appendChild(plist);
     plist.addEventListener('mousedown', function(e){ e.preventDefault(); });
     plist.addEventListener('click', function(e){ var o = e.target.closest('[data-i]'); if(o && active) active.pick(+o.dataset.i, 'click'); });
-    window.addEventListener('resize', function(){ if(active) active.close(); }, { passive:true });
+    /* the phone keyboard opening (or closing) resizes the screen: the list stays open and follows the field.
+       It used to close here, so the first tap only blinked the list and a second tap was needed. */
+    window.addEventListener('resize', function(){ if(active && plist.classList.contains('open')) requestAnimationFrame(function(){ if(active) place(active.input); }); }, { passive:true });
     document.addEventListener('scroll', function(e){ if(active && plist.classList.contains('open') && !plist.contains(e.target)) place(active.input); }, true);
     return plist;
   }
@@ -31969,7 +32001,9 @@ AMCViewport.onSettle(function(){
     later(function(){ ioWant = false; if(io){ io.disconnect(); io = null; } }, 20000);
   }
 
-  var lastPlay = 0;
+  var lastPlay = 0, playEnd = 0;
+  /* how long the opening still needs (ms): Home waits that long before drawing a change */
+  function busy(){ return Math.max(0, playEnd - Date.now()); }
   function play(pg, o){
     o = o || {};
     pg = pg || D.getElementById('page-dashboard');
@@ -31978,11 +32012,12 @@ AMCViewport.onSettle(function(){
     var now = Date.now(); if(now - lastPlay < 400) return; lastPlay = now;
     stop();
     var base = o.delay || 0;
+    playEnd = now + base + (o.open ? 1900 : 1500);
     if(o.open) cards(pg, base);
     widgets(pg, base + (o.open ? 160 : 40));
     if(o.open) below(pg);
   }
-  window.M30 = { play:play, stop:stop };
+  window.M30 = { play:play, stop:stop, busy:busy };
 
   /* ── when: the lock opens ── */
   function lockUp(){ var l = D.getElementById('lock-overlay'); return !!l && l.style.display === 'flex' && !l.classList.contains('hiding'); }
