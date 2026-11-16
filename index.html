@@ -9113,7 +9113,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-cq-s b{ font-size:16px !import
    Reports and Settings slid out of sight under the account area. On short PC screens the
    rows are a little tighter so the whole menu fits; tall screens are unchanged. */
 @media (min-width:901px) and (max-height:820px){
-  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar .zmenu .zm-item, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar .zmenu .zm-ghead{ min-height:40px !important; margin-bottom:1px !important; }
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar:has(.zm-group.open) .zmenu .zm-item, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar:has(.zm-group.open) .zmenu .zm-ghead{ min-height:40px !important; margin-bottom:1px !important; }
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar .zmenu .zm-sub .zm-subitem{ min-height:34px !important; }
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #sidebar .sb-nav{ padding-top:6px !important; padding-bottom:6px !important; }
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #sidebar .sb-foot{ padding-top:4px !important; padding-bottom:4px !important; }
@@ -9122,9 +9122,42 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-cq-s b{ font-size:16px !import
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #sidebar #m20-acct{ min-height:0 !important; padding-top:2px !important; padding-bottom:2px !important; }
 }
 @media (min-width:901px) and (max-height:680px){
-  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar .zmenu .zm-item, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar .zmenu .zm-ghead{ min-height:35px !important; margin-bottom:0 !important; }
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar:has(.zm-group.open) .zmenu .zm-item, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar:has(.zm-group.open) .zmenu .zm-ghead{ min-height:35px !important; margin-bottom:0 !important; }
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_):not(.sb-collapsed) #sidebar .zmenu .zm-sub .zm-subitem{ min-height:31px !important; }
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #sidebar #sb-collapse-btn{ min-height:0 !important; height:24px !important; }
+}
+/* ══ GLASS POP-UPS (Apple style, idea from Glassy UI) ══
+   Things that float over the page — the ⋯ menus, row menus, the phone action sheet, the month
+   picker, the vendor/customer list, Ctrl K search and the cheque alert — are now see-through glass:
+   the page shows softly through them and their top edge catches the light, like iOS 26 / macOS menus.
+   Only these floating pieces change; cards, tables, forms and buttons on the page stay solid, so
+   reading and typing are as clear as before. Devices without blur keep the old solid look. */
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu, #m10-mp, #m12-plist, #m8-rb, .gsearch-panel){
+    background-color:rgba(255,255,255,.74) !important;
+    background-image:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 42%) !important;
+    -webkit-backdrop-filter:blur(26px) saturate(1.9) !important; backdrop-filter:blur(26px) saturate(1.9) !important;
+    border:1px solid rgba(255,255,255,.62) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 .5px rgba(255,255,255,.7), 0 0 0 .5px rgba(0,0,0,.07),
+      0 2px 6px rgba(40,20,10,.05), 0 26px 60px -22px rgba(40,20,10,.38) !important; }
+  /* lists you read from stay a little more solid */
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(#m12-plist, .gsearch-panel){ background-color:rgba(255,255,255,.84) !important; }
+  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu, #m10-mp, #m12-plist, #m8-rb, .gsearch-panel){
+    background-color:rgba(36,36,40,.74) !important;
+    background-image:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 42%) !important;
+    border-color:rgba(255,255,255,.1) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 0 .5px rgba(255,255,255,.06), 0 0 0 .5px rgba(0,0,0,.5),
+      0 26px 60px -22px rgba(0,0,0,.7) !important; }
+  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(#m12-plist, .gsearch-panel){ background-color:rgba(36,36,40,.86) !important; }
+  /* menu rows: a soft glass highlight under the finger / pointer */
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu) :is(button, a, [role=menuitem]):is(:hover, :focus-visible){ background-color:rgba(0,0,0,.055) !important; }
+  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu) :is(button, a, [role=menuitem]):is(:hover, :focus-visible){ background-color:rgba(255,255,255,.08) !important; }
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu) :is(button, a, [role=menuitem]):active{ background-color:rgba(0,0,0,.09) !important; }
+  /* the little toasts: dark glass capsule (light glass in dark mode) */
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #toast-container .toast:not(.error){ background-color:rgba(22,22,24,.82) !important;
+    -webkit-backdrop-filter:blur(20px) saturate(1.6) !important; backdrop-filter:blur(20px) saturate(1.6) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 14px 34px -14px rgba(0,0,0,.5) !important; }
+  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) #toast-container .toast:not(.error){ background-color:rgba(242,242,243,.86) !important; box-shadow:inset 0 1px 0 #fff, 0 14px 34px -14px rgba(0,0,0,.6) !important; }
 }</style>
 </head>
 <body>
