@@ -951,14 +951,14 @@ html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m8-chq .m8-seg > button.on{ bac
   box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 3px 8px rgba(0,0,0,.3) !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-chip{ height:36px; min-height:36px; font-weight:600; }
 /* the list */
-html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-sumline b{ font-size:18px !important; font-weight:700 !important; letter-spacing:-.015em; line-height:1.2; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-sumline small{ font-size:12.5px !important; margin-top:3px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-sumline b{ font-size:15px !important; font-weight:650 !important; letter-spacing:-.01em; line-height:1.25; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-sumline small{ font-size:12px !important; margin-top:2px !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg{ background:rgb(244,244,244); border-radius:28px; padding:8px; margin-bottom:14px !important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 1px rgba(255,255,255,.55); }
 html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m8-chq .m8-dg{ background:rgb(29,29,32); box-shadow:inset 0 1px 0 rgba(255,255,255,.06), inset 0 0 0 1px rgba(255,255,255,.03); }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg > header{ padding:6px 8px 8px !important; align-items:baseline !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg > header b{ font-size:13px !important; font-weight:700 !important; color:var(--k-acc, #e8613a) !important; letter-spacing:0; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg > header span{ font-size:12.5px !important; font-weight:500 !important; color:var(--k-ink3) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg > header b{ font-size:13px !important; font-weight:500 !important; color:var(--k-acc, #e8613a) !important; letter-spacing:0; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg > header span{ font-size:12px !important; font-weight:400 !important; color:var(--k-ink3) !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg .m8-cq{ background:#fff !important; border-radius:22px !important; padding:14px 10px 14px 14px !important; margin-bottom:8px !important;
   box-shadow:inset 0 1px 0 #fff, 0 0 0 1px rgba(60,25,10,.035) !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-dg .m8-cq:last-child{ margin-bottom:0 !important; }
@@ -978,7 +978,6 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) .m8-st.wait{ color:var(--k-wait) !importan
 html:not(#_#_#_#_) body:not(#_#_#_#_) .m8-st.ok{ color:var(--k-pos) !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-cq-more{ width:36px !important; height:36px !important; flex:0 0 36px !important; color:var(--k-ink2) !important; }
 @media (max-width:599px){
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-sumline b{ font-size:16px !important; }
   html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-seg > button{ height:36px !important; min-height:36px !important; }
   html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-chip{ height:40px; min-height:40px; }
   html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-cq-more{ width:40px !important; height:40px !important; flex-basis:40px !important; }
@@ -988,40 +987,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-cq-more{ width:36px !important
 #vh .tt, #vh .sync{ transition:opacity .18s ease, transform .18s ease; }
 body.cv-scrolled #vh .tt, body.cv-scrolled #vh .sync{ opacity:0; transform:translate3d(0,-4px,0); pointer-events:none; }
 #vh .lg, #vh .m8-bell{ transition:box-shadow .18s ease; }
-body.cv-scrolled #vh .lg, body.cv-scrolled #vh .m8-bell{ box-shadow:0 6px 18px -8px rgba(0,0,0,.35) !important; }
-/* ══ GLASS POP-UPS (Apple style, idea from Glassy UI) ══
-   Things that float over the page — the ⋯ menus, row menus, the phone action sheet, the month
-   picker, the vendor/customer list, Ctrl K search and the cheque alert — are now see-through glass:
-   the page shows softly through them and their top edge catches the light, like iOS 26 / macOS menus.
-   Only these floating pieces change; cards, tables, forms and buttons on the page stay solid, so
-   reading and typing are as clear as before. Devices without blur keep the old solid look. */
-@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
-  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu, #m10-mp, #m12-plist, #m8-rb, .gsearch-panel){
-    background-color:rgba(255,255,255,.74) !important;
-    background-image:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 42%) !important;
-    -webkit-backdrop-filter:blur(26px) saturate(1.9) !important; backdrop-filter:blur(26px) saturate(1.9) !important;
-    border:1px solid rgba(255,255,255,.62) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 .5px rgba(255,255,255,.7), 0 0 0 .5px rgba(0,0,0,.07),
-      0 2px 6px rgba(40,20,10,.05), 0 26px 60px -22px rgba(40,20,10,.38) !important; }
-  /* lists you read from stay a little more solid */
-  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(#m12-plist, .gsearch-panel){ background-color:rgba(255,255,255,.84) !important; }
-  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu, #m10-mp, #m12-plist, #m8-rb, .gsearch-panel){
-    background-color:rgba(36,36,40,.74) !important;
-    background-image:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 42%) !important;
-    border-color:rgba(255,255,255,.1) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 0 .5px rgba(255,255,255,.06), 0 0 0 .5px rgba(0,0,0,.5),
-      0 26px 60px -22px rgba(0,0,0,.7) !important; }
-  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(#m12-plist, .gsearch-panel){ background-color:rgba(36,36,40,.86) !important; }
-  /* menu rows: a soft glass highlight under the finger / pointer */
-  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu) :is(button, a, [role=menuitem]):is(:hover, :focus-visible){ background-color:rgba(0,0,0,.055) !important; }
-  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu) :is(button, a, [role=menuitem]):is(:hover, :focus-visible){ background-color:rgba(255,255,255,.08) !important; }
-  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-menu, .row-menu-panel, #m9-rmenu) :is(button, a, [role=menuitem]):active{ background-color:rgba(0,0,0,.09) !important; }
-  /* the little toasts: dark glass capsule (light glass in dark mode) */
-  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #toast-container .toast:not(.error){ background-color:rgba(22,22,24,.82) !important;
-    -webkit-backdrop-filter:blur(20px) saturate(1.6) !important; backdrop-filter:blur(20px) saturate(1.6) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 14px 34px -14px rgba(0,0,0,.5) !important; }
-  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) #toast-container .toast:not(.error){ background-color:rgba(242,242,243,.86) !important; box-shadow:inset 0 1px 0 #fff, 0 14px 34px -14px rgba(0,0,0,.6) !important; }
-}</style>
+body.cv-scrolled #vh .lg, body.cv-scrolled #vh .m8-bell{ box-shadow:0 6px 18px -8px rgba(0,0,0,.35) !important; }</style>
 </head>
 <body class="m8">
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0"><symbol id="aed-glyph" viewBox="0 0 1000 870"></symbol></svg>
