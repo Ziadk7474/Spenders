@@ -9668,7 +9668,8 @@ function showLockScreen() {
   lo.classList.remove('hiding');
   document.getElementById('lock-input-field').dataset.awaitingClear = '';
   try{ document.getElementById('lock-input-field').inputMode = localStorage.getItem('almadhi_pin_numeric') === '0' ? 'text' : 'numeric'; }catch(e){}
-  setTimeout(() => document.getElementById('lock-input-field').focus(), 100);
+  /* phone/tablet: no keyboard until the password box is tapped; PC: ready to type */
+  if(!(window.matchMedia && matchMedia('(pointer:coarse)').matches)) setTimeout(() => document.getElementById('lock-input-field').focus(), 100);
   syncLockBioVisibility();
   _bioFastFailRetried = false;
   clearTimeout(_lockErrorClearTimer);
@@ -9775,6 +9776,7 @@ async function checkLockPin() {
 // ── Biometrics (WebAuthn) ──
 async function lockBioAuth() {
   if(!_bioSupported) return;
+  { const i = document.getElementById('lock-input-field'); if(i && document.activeElement === i) i.blur(); }
   const btn = document.getElementById('lock-bio-btn');
   btn.disabled = true;
   const startedAt = Date.now();
@@ -32410,9 +32412,11 @@ AMCViewport.onSettle(function(){
   function q(){ if(!raf) raf = requestAnimationFrame(fit); }
   vv.addEventListener('resize', q); vv.addEventListener('scroll', q);
   document.addEventListener('focusin', q); document.addEventListener('focusout', function(){ setTimeout(q, 60); });
-  /* tapping the fingerprint button while the keyboard is up: close the keyboard first */
-  document.addEventListener('pointerdown', function(e){
-    if(e.target && e.target.closest && e.target.closest('#lock-bio-btn')){ var i = document.getElementById('lock-input-field'); if(i && document.activeElement === i) i.blur(); }
+  /* fingerprint button while the keypad is up: one tap. The press must not take the focus away
+     (that closed the keypad, the card slid down under the finger and the tap was lost);
+     the keypad is closed when the fingerprint check starts instead. */
+  document.addEventListener('mousedown', function(e){
+    if(e.target && e.target.closest && e.target.closest('#lock-bio-btn')) e.preventDefault();
   }, true);
 })();
 </script>
