@@ -2632,7 +2632,21 @@ body.mode-sales .alloc-seg-btn.on{background:#0284c7;color:#fff}
 }
 #lock-overlay.hiding{ opacity: 0; pointer-events: none; }
 /* keyboard open: logo, name and card slide up together so the whole card (with fingerprint) sits above the keyboard */
-#lock-overlay > *{ translate:0 calc(-1 * var(--lk-up, 0px)); transition:translate .3s cubic-bezier(.2,.8,.2,1); }
+#lock-overlay > :not(#lock-pad){ translate:0 calc(-1 * var(--lk-up, 0px)); transition:translate .3s cubic-bezier(.2,.8,.2,1); }
+/* the app's own number pad on phones/tablets (7 8 9 / 4 5 6 / 1 2 3 / 0, like a PC keypad) — Samsung's keyboard never opens here */
+#lock-pad{ position:fixed; left:0; right:0; bottom:0; z-index:2; padding:12px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  background:var(--k-sheet, #fff); border-radius:28px 28px 0 0; box-shadow:0 -10px 30px -18px rgba(0,0,0,.25);
+  transform:translate3d(0,105%,0); transition:transform .3s cubic-bezier(.2,.8,.2,1); visibility:hidden; }
+#lock-pad.open{ transform:none; visibility:visible; }
+#lock-pad .lk-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; max-width:420px; margin:0 auto; }
+#lock-pad .lk-k{ height:54px; border:0; border-radius:16px; background:var(--k-zone, #efefef); color:var(--k-ink, #111);
+  font:500 24px/1 var(--k-font, inherit); display:flex; align-items:center; justify-content:center; touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent; transition:background-color .12s ease, transform .12s ease; }
+#lock-pad .lk-k:active{ transform:scale(.96); background:var(--k-card, #e4e4e4); }
+#lock-pad .lk-fn{ color:var(--k-ink2, #555); }
+#lock-pad .lk-go{ background:var(--k-acc, #ED532D); color:#fff; }
+#lock-pad .lk-go:active{ background:var(--k-acc, #ED532D); filter:brightness(.92); }
+#lock-input-field.lk-on{ box-shadow:0 0 0 2px var(--k-acc, #ED532D) inset !important; }
 .lock-logo-wrap{ margin-bottom: 12px; }
 .lock-logo-wrap svg{ display: block; width: 78px; height: auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,.4)); }
 .lock-title{ font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 26px; text-align: center; }
@@ -9405,6 +9419,7 @@ catch (e) { document.documentElement.classList.add('in-frame'); }
       </button>
     </div>
   </div>
+  <div id="lock-pad" aria-hidden="true"><div class="lk-grid"><button type="button" class="lk-k" data-k="7">7</button><button type="button" class="lk-k" data-k="8">8</button><button type="button" class="lk-k" data-k="9">9</button><button type="button" class="lk-k" data-k="4">4</button><button type="button" class="lk-k" data-k="5">5</button><button type="button" class="lk-k" data-k="6">6</button><button type="button" class="lk-k" data-k="1">1</button><button type="button" class="lk-k" data-k="2">2</button><button type="button" class="lk-k" data-k="3">3</button><button type="button" class="lk-k lk-fn" data-k="del" aria-label="Delete"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6-7z"/><path d="m11 9.5 5 5m0-5-5 5"/></svg></button><button type="button" class="lk-k" data-k="0">0</button><button type="button" class="lk-k lk-go" data-k="go" aria-label="Unlock"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button></div></div>
 </div>
 
 <!-- LOCK SETTINGS MODAL -->
@@ -9667,7 +9682,9 @@ function showLockScreen() {
   lo.style.display = 'flex';
   lo.classList.remove('hiding');
   document.getElementById('lock-input-field').dataset.awaitingClear = '';
-  try{ document.getElementById('lock-input-field').inputMode = localStorage.getItem('almadhi_pin_numeric') === '0' ? 'text' : 'numeric'; }catch(e){}
+  try{ var _num = localStorage.getItem('almadhi_pin_numeric') !== '0', _touch = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+    document.getElementById('lock-input-field').inputMode = _num ? (_touch ? 'none' : 'numeric') : 'text'; }catch(e){}
+  if(window.lockPad) lockPad.close();
   /* phone/tablet: no keyboard until the password box is tapped; PC: ready to type */
   if(!(window.matchMedia && matchMedia('(pointer:coarse)').matches)) setTimeout(() => document.getElementById('lock-input-field').focus(), 100);
   syncLockBioVisibility();
@@ -9678,6 +9695,7 @@ function showLockScreen() {
 
 function hideLockScreen() {
   const lo = document.getElementById('lock-overlay');
+  if(window.lockPad) lockPad.close();
   lo.classList.add('hiding');
   setTimeout(() => { lo.style.display = 'none'; lo.classList.remove('hiding'); }, 150);
   LOCK.setUnlocked();
@@ -9777,6 +9795,7 @@ async function checkLockPin() {
 async function lockBioAuth() {
   if(!_bioSupported) return;
   { const i = document.getElementById('lock-input-field'); if(i && document.activeElement === i) i.blur(); }
+  if(window.lockPad) lockPad.close();
   const btn = document.getElementById('lock-bio-btn');
   btn.disabled = true;
   const startedAt = Date.now();
@@ -32398,18 +32417,52 @@ AMCViewport.onSettle(function(){
     raf = 0;
     var lo = document.getElementById('lock-overlay'), inp = document.getElementById('lock-input-field');
     if(!lo || !inp) return;
-    var kb = (window.innerHeight - vv.height) > 120 && document.activeElement === inp && lo.style.display === 'flex';
+    var pad = document.getElementById('lock-pad'), padOn = !!(pad && pad.classList.contains('open'));
+    var kb = !padOn && (window.innerHeight - vv.height) > 120 && document.activeElement === inp && lo.style.display === 'flex';
     var want = 0;
-    if(kb){
+    if(kb || (padOn && lo.style.display === 'flex')){
       var card = lo.querySelector('.lock-card'); if(!card) return;
       var r = card.getBoundingClientRect();
-      var bottom = r.bottom - vv.offsetTop + up;              /* where the card ends with no slide */
-      want = Math.max(0, Math.round(bottom - (vv.height - 14)));
+      var bottom = (kb ? r.bottom - vv.offsetTop : r.bottom) + up;   /* where the card ends with no slide */
+      var room = kb ? vv.height : window.innerHeight - pad.offsetHeight;
+      want = Math.max(0, Math.round(bottom - (room - 14)));
     }
     if(Math.abs(want - up) < 2) return;
     up = want; lo.style.setProperty('--lk-up', up + 'px');
   }
   function q(){ if(!raf) raf = requestAnimationFrame(fit); }
+  /* ── the app's own number pad ── */
+  function inp(){ return document.getElementById('lock-input-field'); }
+  function padEl(){ return document.getElementById('lock-pad'); }
+  function usePad(){ var i = inp(); return !!(i && i.inputMode === 'none'); }
+  window.lockPad = {
+    open: function(){ var p = padEl(), i = inp(); if(!p || !usePad()) return; p.classList.add('open'); p.setAttribute('aria-hidden', 'false'); if(i) i.classList.add('lk-on'); q(); },
+    close: function(){ var p = padEl(), i = inp(); if(!p) return; p.classList.remove('open'); p.setAttribute('aria-hidden', 'true'); if(i) i.classList.remove('lk-on'); q(); }
+  };
+  function press(k){
+    var i = inp(); if(!i) return;
+    try{ if(navigator.vibrate) navigator.vibrate(8); }catch(e){}
+    if(k === 'go'){ if(typeof checkLockPin === 'function') checkLockPin(); return; }
+    if(k === 'del'){ if(i.dataset.awaitingClear === '1'){ i.dataset.awaitingClear = ''; i.value = ''; } else i.value = i.value.slice(0, -1); i.classList.remove('error'); var er = document.getElementById('lock-error'); if(er) er.textContent = ''; return; }
+    i.value += k; if(typeof onLockInputChange === 'function') onLockInputChange();
+  }
+  document.addEventListener('mousedown', function(e){ if(e.target && e.target.closest && e.target.closest('#lock-pad')) e.preventDefault(); }, true);
+  document.addEventListener('click', function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    var k = t.closest('#lock-pad .lk-k'); if(k){ press(k.getAttribute('data-k')); return; }
+    if(t.closest('#lock-input-field')){ if(usePad()) lockPad.open(); return; }
+  }, true);
+  /* a tap anywhere else on the lock screen (not the fingerprint button) puts the pad away */
+  document.addEventListener('pointerdown', function(e){
+    var p = padEl(); if(!p || !p.classList.contains('open')) return;
+    var t = e.target; if(!t || !t.closest || !t.closest('#lock-overlay')) return;
+    if(t.closest('#lock-pad') || t.closest('#lock-input-field') || t.closest('#lock-bio-btn')) return;
+    lockPad.close();
+  }, true);
+  /* delete key held down: clear everything */
+  var holdT = 0;
+  document.addEventListener('pointerdown', function(e){ var d = e.target && e.target.closest && e.target.closest('#lock-pad [data-k="del"]'); if(!d) return; clearTimeout(holdT); holdT = setTimeout(function(){ var i = inp(); if(i){ i.value = ''; i.dataset.awaitingClear = ''; } }, 550); }, true);
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){ document.addEventListener(n, function(){ clearTimeout(holdT); }, true); });
   vv.addEventListener('resize', q); vv.addEventListener('scroll', q);
   document.addEventListener('focusin', q); document.addEventListener('focusout', function(){ setTimeout(q, 60); });
   /* fingerprint button while the keypad is up: one tap. The press must not take the focus away
