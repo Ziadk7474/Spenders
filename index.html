@@ -2631,6 +2631,8 @@ body.mode-sales .alloc-seg-btn.on{background:#0284c7;color:#fff}
   transition: opacity .15s ease;
 }
 #lock-overlay.hiding{ opacity: 0; pointer-events: none; }
+/* keyboard open: logo, name and card slide up together so the whole card (with fingerprint) sits above the keyboard */
+#lock-overlay > *{ translate:0 calc(-1 * var(--lk-up, 0px)); transition:translate .3s cubic-bezier(.2,.8,.2,1); }
 .lock-logo-wrap{ margin-bottom: 12px; }
 .lock-logo-wrap svg{ display: block; width: 78px; height: auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,.4)); }
 .lock-title{ font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 26px; text-align: center; }
@@ -9391,6 +9393,7 @@ catch (e) { document.documentElement.classList.add('in-frame'); }
     <div class="lock-label" id="lock-prompt-label">Enter Password</div>
     <div style="position:relative">
       <input type="password" id="lock-input-field" class="lock-pass-input" placeholder="••••" autocomplete="off"
+        inputmode="numeric" pattern="[0-9]*" enterkeyhint="go"
         oninput="onLockInputChange()" onkeydown="if(event.key==='Enter')checkLockPin()">
     </div>
     <div class="lock-error-msg" id="lock-error"></div>
@@ -9664,6 +9667,7 @@ function showLockScreen() {
   lo.style.display = 'flex';
   lo.classList.remove('hiding');
   document.getElementById('lock-input-field').dataset.awaitingClear = '';
+  try{ document.getElementById('lock-input-field').inputMode = localStorage.getItem('almadhi_pin_numeric') === '0' ? 'text' : 'numeric'; }catch(e){}
   setTimeout(() => document.getElementById('lock-input-field').focus(), 100);
   syncLockBioVisibility();
   _bioFastFailRetried = false;
@@ -9747,6 +9751,7 @@ async function checkLockPin() {
   const val = document.getElementById('lock-input-field').value;
   if(!val) return;
   if(await LOCK.checkPin(val)) {
+    try{ localStorage.setItem('almadhi_pin_numeric', /^\d+$/.test(val) ? '1' : '0'); }catch(e){}
     clearTimeout(_lockErrorClearTimer);
     document.getElementById('lock-input-field').dataset.awaitingClear = '';
     hideLockScreen();
@@ -9847,6 +9852,7 @@ async function processSetupPin() {
     if(val === _setupFirst) {
       // Save new Password
       await LOCK.savePin(val);
+      try{ localStorage.setItem('almadhi_pin_numeric', /^\d+$/.test(val) ? '1' : '0'); }catch(e){}
       closePinSetup(true);
       updateLockSettingsUI();
       if(typeof toast === 'function') toast('Password set successfully', 'success');
@@ -32379,6 +32385,36 @@ AMCViewport.onSettle(function(){
   window.M31 = { TIMING:TIMING, shake:shake };
 })();
 
+</script>
+
+<script>/* Lock screen + phone keyboard: when the password box is tapped and the keyboard comes up, the logo,
+   name and card slide up with it, so the fingerprint button is still there if you change your mind. */
+(function(){
+  var vv = window.visualViewport; if(!vv) return;
+  var raf = 0, up = 0;
+  function fit(){
+    raf = 0;
+    var lo = document.getElementById('lock-overlay'), inp = document.getElementById('lock-input-field');
+    if(!lo || !inp) return;
+    var kb = (window.innerHeight - vv.height) > 120 && document.activeElement === inp && lo.style.display === 'flex';
+    var want = 0;
+    if(kb){
+      var card = lo.querySelector('.lock-card'); if(!card) return;
+      var r = card.getBoundingClientRect();
+      var bottom = r.bottom - vv.offsetTop + up;              /* where the card ends with no slide */
+      want = Math.max(0, Math.round(bottom - (vv.height - 14)));
+    }
+    if(Math.abs(want - up) < 2) return;
+    up = want; lo.style.setProperty('--lk-up', up + 'px');
+  }
+  function q(){ if(!raf) raf = requestAnimationFrame(fit); }
+  vv.addEventListener('resize', q); vv.addEventListener('scroll', q);
+  document.addEventListener('focusin', q); document.addEventListener('focusout', function(){ setTimeout(q, 60); });
+  /* tapping the fingerprint button while the keyboard is up: close the keyboard first */
+  document.addEventListener('pointerdown', function(e){
+    if(e.target && e.target.closest && e.target.closest('#lock-bio-btn')){ var i = document.getElementById('lock-input-field'); if(i && document.activeElement === i) i.blur(); }
+  }, true);
+})();
 </script>
 </body>
 </html>
