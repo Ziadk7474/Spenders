@@ -9498,48 +9498,61 @@ html:not(#_) body:not(#_) .m22-row .am-dot + .m22-chev{ margin-left:8px; }
    avatar | name (wraps, never cut) ......................... [⋯]
           | details (wrap, never cut)
           | [status]                                    AED amount        */
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc{ display:grid; grid-template-columns:44px minmax(0, 1fr); column-gap:12px; row-gap:3px; align-items:start; width:100%; min-width:0; text-align:left; font:inherit; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-av{ grid-column:1; grid-row:1 / span 3; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:14px; font-weight:600; letter-spacing:.02em;
-  background:rgba(var(--am-acc-rgb), .1); color:var(--am-acc); flex:none; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc{ display:grid; grid-template-columns:42px minmax(0, 1fr); column-gap:12px; row-gap:3px; align-items:start; width:100%; min-width:0; text-align:left; font:inherit; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-av{ grid-column:1; grid-row:1 / span 3; width:42px; height:42px; margin-top:1px; border-radius:50%; display:grid; place-items:center; font-size:13px; font-weight:600; letter-spacing:.02em;
+  background:rgb(244,244,244); color:rgb(18,18,18); flex:none; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-av{ background:rgb(29,29,32); color:rgb(242,242,243); }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-av.ico svg{ width:20px; height:20px; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-t{ grid-column:2; display:block; margin:1px 0 0; padding-right:42px; font-size:15.5px; font-weight:600; line-height:1.32; color:var(--k-ink, var(--t1));
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-t{ grid-column:2; display:block; margin:1px 0 0; padding-right:46px; font-size:15px; font-weight:500; line-height:1.35; color:rgb(18,18,18);
   white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; -webkit-line-clamp:unset; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-m{ grid-column:2; display:block; padding-right:38px; font-size:13px; line-height:1.5; color:var(--k-ink3, var(--t3)); white-space:normal; overflow:visible; overflow-wrap:anywhere; -webkit-line-clamp:unset; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-m{ grid-column:2; display:block; margin-top:2px; padding-right:46px; font-size:12.5px; font-weight:500; line-height:1.5; color:rgb(155,155,160); white-space:normal; overflow:visible; overflow-wrap:anywhere; -webkit-line-clamp:unset; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-m > span.nb{ white-space:nowrap; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-m > i{ font-style:normal; margin:0 2px; opacity:.6; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-f{ grid-column:2; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 10px; margin-top:8px; min-height:26px; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-amt{ margin-left:auto; font-size:17px; font-weight:650; line-height:1.2; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--k-ink, var(--t1)); }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-amt{ margin-left:auto; font-size:15.5px; font-weight:600; line-height:1.2; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgb(18,18,18); }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-t, html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-amt{ color:rgb(242,242,243); }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-m{ color:rgb(116,116,124); }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-chips{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st{ display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:999px; font-size:12px; font-weight:600; line-height:1.15; white-space:nowrap;
-  background:var(--k-tile, rgba(0,0,0,.05)); color:var(--k-ink2, var(--t2)); }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st{ display:inline-flex; align-items:center; gap:6px; padding:0; border-radius:0; font-size:12px; font-weight:600; line-height:1.2; white-space:nowrap;
+  background:none !important; color:rgb(102,102,107); }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st:is(.ok,.bad,.warn,.info)::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st *{ color:inherit !important; font-size:inherit !important; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.ok{ background:rgba(22,163,74,.12); color:#15803d; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.bad{ background:rgba(220,38,38,.1); color:#c62828; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.warn{ background:rgba(217,119,6,.13); color:#a35a06; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.info{ background:rgba(var(--am-acc-rgb), .1); color:var(--am-acc); }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.unit{ background:var(--k-ink, #141414); color:var(--k-card, #fff); letter-spacing:.03em; }
-html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-st.ok{ background:rgba(74,222,128,.14); color:#4ade80; }
-html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-st.bad{ background:rgba(248,113,113,.14); color:#f87171; }
-html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-st.warn{ background:rgba(251,191,36,.14); color:#fbbf24; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.ok{ color:rgb(31,157,85); }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.bad{ color:#ef4444; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.warn{ color:#d97706; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.info{ color:var(--am-acc); }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-st.unit{ background:rgb(18,18,18) !important; color:#fff; padding:5px 11px; border-radius:999px; letter-spacing:.03em; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-st.unit{ background:rgb(242,242,243) !important; color:rgb(18,18,18); }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-chips .amc-st:not(.unit){ padding:5px 0; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-st.ok{ color:#4ade80; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-st.bad{ color:#f87171; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-st.warn{ color:#fbbf24; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-f .m8-btn.sm{ height:30px; padding:0 12px; font-size:12.5px; }
 
 /* the ⋯ / open button: same size and place on every card */
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-more,
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody tr[data-m5] td.m5-act .row-menu-btn{
-  width:34px !important; height:34px !important; min-width:0 !important; min-height:0 !important; padding:0 !important; border-radius:50% !important; border:0 !important;
-  background:var(--k-tile, rgba(0,0,0,.05)) !important; color:var(--k-ink2, var(--t2)) !important; display:grid !important; place-items:center !important; box-shadow:none !important; }
+  width:40px !important; height:40px !important; min-width:0 !important; min-height:0 !important; padding:0 !important; border-radius:50% !important; border:0 !important;
+  background:rgb(244,244,244) !important; color:rgb(18,18,18) !important; display:grid !important; place-items:center !important; box-shadow:none !important; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-more,
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody tr[data-m5] td.m5-act .row-menu-btn{ background:rgb(29,29,32) !important; color:rgb(242,242,243) !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-more svg{ width:17px; height:17px; }
 
 /* ── the card itself: same white box, corners, padding and spacing in every list ── */
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-card,
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m9-row:has(> .amc-card){ background:var(--k-card, #fff) !important; border-radius:22px !important; border:0 !important; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-card{ display:block !important; position:relative !important; padding:14px !important; margin:0 0 10px !important; box-shadow:none !important; cursor:pointer; min-width:0; width:100%; box-sizing:border-box; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-card > .amc-more{ position:absolute !important; top:12px !important; right:12px !important; margin:0 !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m9-row:has(> .amc-card){ background:#fff !important; border-radius:22px !important; border:0 !important;
+  box-shadow:inset 0 1px 0 #fff, 0 0 0 1px rgba(60,25,10,.035) !important; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .amc-card, html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .m9-row:has(> .amc-card){ background:rgb(38,38,42) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), inset 0 0 0 1px rgba(255,255,255,.035) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-card{ display:block !important; position:relative !important; padding:14px !important; margin:0 !important; cursor:pointer; min-width:0; width:100%; box-sizing:border-box; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .amc-card > .amc-more{ position:absolute !important; top:10px !important; right:10px !important; margin:0 !important; }
 /* cheques */
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m8-chq .m8-dg .m8-cq.amc-card{ padding:14px !important; margin-bottom:8px !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m8-cq.amc-card.is-clr .amc-amt{ text-decoration:line-through; text-decoration-color:var(--k-ink3); }
 /* items: separate cards like every other list (it was one box with lines) */
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m9-list:has(.amc-card){ display:flex !important; flex-direction:column !important; gap:10px !important; background:transparent !important; border:0 !important; box-shadow:none !important; padding:0 !important; overflow:visible !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m9-list:has(.amc-card){ display:flex !important; flex-direction:column !important; gap:8px !important; padding:8px !important; border:0 !important; border-radius:28px !important; overflow:visible !important;
+  background:rgb(244,244,244) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 1px rgba(255,255,255,.55) !important; }
+html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) .m9-list:has(.amc-card){ background:rgb(29,29,32) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.06), inset 0 0 0 1px rgba(255,255,255,.03) !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m9-row:has(> .amc-card){ overflow:hidden; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m9-row > .amc-card{ margin:0 !important; border-radius:0 !important; background:transparent !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m9-row:not(.open) > .amc-card{ border-radius:22px !important; }
@@ -9552,12 +9565,15 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m16-tr .m16-nm b, html:not(#_#_#_#_#_
 /* bills, payments, customers / vendors (phone & tablet: the table rows become cards) */
 @media (max-width:900px){
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody tr[data-m5]{
-    display:block !important; position:relative !important; padding:14px !important; margin:0 0 10px !important; min-height:0 !important; height:auto !important;
-    background:var(--k-card, #fff) !important; border-radius:22px !important; border:0 !important; box-shadow:none !important; contain-intrinsic-size:auto 120px; }
+    display:block !important; position:relative !important; padding:14px !important; margin:0 !important; min-height:0 !important; height:auto !important;
+    background:#fff !important; border-radius:22px !important; border:0 !important; box-shadow:inset 0 1px 0 #fff, 0 0 0 1px rgba(60,25,10,.035) !important; contain-intrinsic-size:auto 120px; }
+  html:not(#_#_#_#_#_) body.dark-mode:not(#_#_#_#_#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody tr[data-m5]{ background:rgb(38,38,42) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), inset 0 0 0 1px rgba(255,255,255,.035) !important; }
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody tr[data-m5] td.m5-cell{ display:block !important; width:100% !important; padding:0 !important; }
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(#all-records-table,#pay-table,#party-summary-table,#cheque-table) tbody tr[data-m5] td.m5-act{
-    position:absolute !important; top:12px !important; right:12px !important; bottom:auto !important; left:auto !important; transform:none !important; width:auto !important; height:auto !important; padding:0 !important; z-index:2; }
+    position:absolute !important; top:10px !important; right:10px !important; bottom:auto !important; left:auto !important; transform:none !important; width:auto !important; height:auto !important; padding:0 !important; z-index:2; }
 }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m8-cq .m8-cq-m b, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m8-cq .m8-cq-m small{ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:anywhere; }
 </style>
 
 </head>
@@ -24609,11 +24625,11 @@ AMCViewport.onSettle(function(){
       return '<section class="m8-dg"><header><b>'+(rel ? rel+' · ' : '')+dLong(g.d)+(new Date(g.d+'T00:00:00').getFullYear()!==new Date().getFullYear()?' '+new Date(g.d+'T00:00:00').getFullYear():'')+'</b><span>'+g.items.length+' · AED '+money(gt)+'</span></header>'+
         g.items.map(function(c){
           var m = dd(c.date), st = c.cleared ? ['ok','Cleared'] : m<0 ? ['late', Math.abs(m)+'d late'] : m===0 ? ['due','Today'] : m===1 ? ['due','Tomorrow'] : ['wait','In '+m+'d'];
-          var sym = '<svg class="aed-sym" viewBox="0 0 1000 870" aria-hidden="true" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><use href="#aed-glyph"></use></svg> ';
-          return '<div class="m8-cq amc-card'+(c.cleared?' is-clr':'')+'" data-edit="'+esc(c.id)+'" role="button" tabindex="0">'+
-            window.amcCard({ av:initials(c.party), title:c.party || '—', meta:['Cheque #'+esc(c.chequeNo||'—'), c.bank ? esc(c.bank) : '', c.note ? esc(c.note) : ''],
-              st:window.amcChip(st[1], st[0]==='late' ? 'bad' : st[0]==='ok' ? 'ok' : st[0]==='due' ? 'warn' : ''), amt:sym + money(c.amount) }) +
-            '<button type="button" class="m8-cq-more amc-more" data-cqm="'+esc(c.id)+'" aria-haspopup="menu" aria-label="More for this cheque" title="More">'+icon('more')+'</button>'+
+          return '<div class="m8-cq'+(c.cleared?' is-clr':'')+'" data-edit="'+esc(c.id)+'" role="button" tabindex="0">'+
+            '<span class="m8-av">'+esc(initials(c.party))+'</span>'+
+            '<span class="m8-cq-m"><b>'+esc(c.party||'—')+'</b><small>#'+esc(c.chequeNo||'—')+(c.note?' · '+esc(c.note):'')+'</small></span>'+
+            '<span class="m8-cq-s"><b>'+money(c.amount)+'</b><span class="m8-st '+st[0]+'">'+st[1]+'</span></span>'+
+            '<button type="button" class="m8-cq-more" data-cqm="'+esc(c.id)+'" aria-haspopup="menu" aria-label="More for this cheque" title="More">'+icon('more')+'</button>'+
             '</div>';
         }).join('')+'</section>';
     }).join('');
