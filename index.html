@@ -30529,17 +30529,22 @@ AMCViewport.onSettle(function(){
     var t = d.moved ? gsNear(d.fx) : d.t;
     if(t){
       gX.to = gsMid(t); gW.to = t.offsetWidth; gE.to = 0;
+      gsSwallow = performance.now() + 450; gsUpXY = e ? [e.clientX, e.clientY] : null;
       if(!gsOn(t)){ gsJumpPill(t); gsPass = true; try{ t.click(); } finally { gsPass = false; } }
-      gsSwallow = performance.now() + 450;
     }
     gsSink(0);
   }
   document.addEventListener('pointerup', gsUp, true);
   document.addEventListener('pointercancel', gsUp, true);
   /* we choose the option ourselves on release, so the browser's own click is not a second choice */
+  /* The choice can redraw the page (Purchase ⇄ Sales rebuilds Home), so the phone's own click can land on
+     a NEW switch whose other option now sits under the finger — that used to flip it straight back.
+     So the phone's click is matched by where the finger was, not by which element it hits. */
+  var gsUpXY = null;
   document.addEventListener('click', function(e){
     if(gsPass || performance.now() > gsSwallow || !e.target.closest) return;
-    if(e.target.closest('.m22-glide, .m8-switch')){ e.stopImmediatePropagation(); e.preventDefault(); gsSwallow = 0; }
+    var near = gsUpXY && e.isTrusted && Math.abs(e.clientX - gsUpXY[0]) < 24 && Math.abs(e.clientY - gsUpXY[1]) < 24;
+    if(near || e.target.closest('.m22-glide, .m8-switch')){ e.stopImmediatePropagation(); e.preventDefault(); gsSwallow = 0; gsUpXY = null; }
   }, true);
 
   /* the + button is tinted glass: the page bends at its rim and light runs round its edge */
