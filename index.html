@@ -13468,9 +13468,31 @@ function _refreshCurrentPageNow() {
 
 
 
+/* Purchase and Sales each keep their own unfinished line items: switching mode used to leave the
+   purchase lines sitting in the sales invoice (and the other way round). */
+const _entryRowsByMode = { purchase:null, sales:null };
+function _entryReadRows() {
+  const out = [];
+  document.querySelectorAll('#line-items-body tr').forEach(tr => {
+    const v = c => { const e = tr.querySelector(c); return e ? e.value : ''; };
+    const r = { desc:v('.li-desc'), unit:v('.li-unit'), qty:v('.li-qty'), price:v('.li-price'), kgPerBag:v('.li-kgbag'), totalKg:v('.li-totalkg'), total:v('.li-total') };
+    if(r.desc || r.qty || r.price || r.total) out.push(r);
+  });
+  return out;
+}
+function _entrySwapRows(from, to) {
+  const body = document.getElementById('line-items-body'); if(!body || typeof addLineItem !== 'function') return;
+  _entryRowsByMode[from] = _entryReadRows();
+  const next = _entryRowsByMode[to] || [];
+  body.innerHTML = '';
+  next.forEach(r => addLineItem(r));
+  if(!next.length) addLineItem();
+  if(typeof updateGrandTotal === 'function') updateGrandTotal();
+}
 function setAppMode(mode) {
   mode = (mode === 'sales') ? 'sales' : 'purchase';
   if(DB.mode === mode) return;
+  try { _entrySwapRows(DB.mode === 'sales' ? 'sales' : 'purchase', mode); } catch(e) {}
   DB.mode = mode;
   localStorage.setItem('almadhi_mode', mode);
   // Mode identity: navy chrome stays, but an accent colour + banner make it
@@ -27047,7 +27069,7 @@ AMCViewport.onSettle(function(){
       M8.haptic && M8.haptic('select');
       if(how === 'click'){ if(TOUCH) inp.blur(); else try{ inp.select(); }catch(e){} }
     };
-    inp.addEventListener('focus', function(){ if(!inp.readOnly) try{ inp.select(); }catch(e){} self.open(); });
+    inp.addEventListener('focus', function(){ if(!inp.readOnly) try{ inp.select(); }catch(e){} if(inp._m12quiet){ inp._m12quiet = false; return; } self.open(); });
     inp.addEventListener('click', function(){ if(!self.isOpen()) self.open(); });
     inp.addEventListener('input', function(e){
       if(!e.isTrusted) return;
@@ -27369,7 +27391,7 @@ AMCViewport.onSettle(function(){
 
   function startFocus(){
     if(TOUCH || (M8.isDock && M8.isDock())) return;            /* phone + tablet: no auto focus */
-    setTimeout(function(){ if(M8.page() === 'entry' && $('m12-type')) focusSel($('m12-type')); }, 140);
+    setTimeout(function(){ var t = $('m12-type'); if(M8.page() === 'entry' && t && document.activeElement !== t){ t._m12quiet = true; focusSel(t); t._m12quiet = false; } }, 140);
   }
   function refresh(){
     if(!build()) return;
@@ -27907,6 +27929,7 @@ AMCViewport.onSettle(function(){
       if(M8.page() === 'quotation' && !topLayer()) return;
       var dl = $('desc-combo-list'), el2 = $('edit-desc-combo-list');
       if((dl && dl.style.display === 'block') || (el2 && el2.style.display === 'block')) return;   /* the item list closes itself */
+      var cmb = e.target && e.target._m12combo; if(cmb && cmb.isOpen && cmb.isOpen()) return;   /* an open pick list takes the first Esc */
       var inEntry = e.target && e.target.closest && e.target.closest('#m12, #m12e');
       if(typing(e.target) && !inEntry) return;   /* elsewhere the first Esc just leaves the field (the app does that) */
       e.preventDefault(); e.stopImmediatePropagation();
@@ -32312,8 +32335,10 @@ AMCViewport.onSettle(function(){
     if(wasOpen) remember(el);   /* it was already open when it was found */
     new MutationObserver(function(){
       var open = el.id === 'm12-plist' ? el.classList.contains('open') : el.style.display === 'block';
-      if(open){ remember(el); }
-      else if(wasOpen){ last[id] = null; }   /* closes cleanly; the fading copy lost the list's styles and flashed as plain text */
+      /* the up/down look is chosen once, when the list opens. Choosing it again on every change made a loop on PC:
+         the class restarts the opening animation, the list moves, the choice flips, and the page froze */
+      if(open && !wasOpen){ remember(el); }
+      else if(!open && wasOpen){ last[id] = null; }   /* closes cleanly; the fading copy lost the list's styles and flashed as plain text */
       wasOpen = open;
     }).observe(el, { attributes:true, attributeFilter:['class', 'style'], childList:true, subtree:false });
     el.addEventListener('scroll', function(){ if(last[id]) last[id].r = el.getBoundingClientRect(); }, { passive:true });
