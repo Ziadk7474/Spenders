@@ -8827,7 +8827,7 @@ html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m24-screen{ background-color:#0
 html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m24-shade{ box-shadow:-24px 0 60px -10px rgba(0, 0, 0, .6); }
 html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-shade{ opacity:1; transform:translate3d(calc(var(--m24-x) + var(--m24-dx)), 0, 0) scale(.86); }
 #m24-screen::after{ content:""; position:absolute; inset:0; z-index:2147483000; display:none; }
-html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen::after{ display:block; }
+html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen::after, html:not(#_#_#_#_) body.m24-peek:not(#_#_#_#_) #m24-screen::after{ display:block; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar{
     transform:none !important; translate:none !important;
     left:0 !important; top:0 !important; right:auto !important; bottom:auto !important;
@@ -32132,6 +32132,8 @@ AMCViewport.onSettle(function(){
      landed — the "box" glitch, the glow coming in late, and sometimes the orange menu showing through
      the top), and the menu's heavy re-style happened in the same frame the slide had to start. */
   var Q = 0, X0 = 0, RUN = [], RUNID = 0;
+  /* a slide is running and the menu's full switch is still to come at its end */
+  var OPENING = false, CLOSING = false;
   /* iOS-style curve: quick but not a jump on the first frame (the old .22,1,.36,1 moved ~30% in one frame) */
   var EASE_M = 'cubic-bezier(.32,.72,0,1)';
   function openX(){ return Math.min(innerWidth * 0.68, 340); }
@@ -32207,7 +32209,7 @@ AMCViewport.onSettle(function(){
     /* a tap on the card closes the menu; a swipe to the left follows the finger */
     var sx = 0, sy = 0, dx = 0, drag = false, id = null, lastX = 0, lastT = 0, vel = 0;
     SCREEN.addEventListener('pointerdown', function(e){
-      if(!isOpen() || e.target !== SCREEN) return;
+      if(CLOSING || !(isOpen() || OPENING) || e.target !== SCREEN) return;
       id = e.pointerId; sx = e.clientX; sy = e.clientY; dx = 0; drag = false; vel = 0;
       try{ SCREEN.setPointerCapture(id); }catch(err){}
     });
@@ -32228,12 +32230,12 @@ AMCViewport.onSettle(function(){
       id = null;
       var wasDrag = drag; drag = false;
       if(!wasDrag){ closeDrawer(); return; }
-      if(dx < -X0 * 0.3 || vel < -350) closeDrawer(); else glide(1, Math.max(220, Math.round(560 * (1 - Q))));
+      if(dx < -X0 * 0.3 || vel < -350) closeDrawer(); else window.openDrawer();
     }
     SCREEN.addEventListener('pointerup', up);
     SCREEN.addEventListener('pointercancel', up);
     /* the phone must not take the swipe for itself (it cancelled the drag before) */
-    SCREEN.addEventListener('touchmove', function(e){ if(isOpen() && e.cancelable) e.preventDefault(); }, { passive:false });
+    SCREEN.addEventListener('touchmove', function(e){ if((isOpen() || OPENING) && e.cancelable) e.preventDefault(); }, { passive:false });
     /* the click after a tap on the card must not reach the page under it */
     SCREEN.addEventListener('click', function(e){ if(e.target === SCREEN){ e.stopPropagation(); e.preventDefault(); } }, true);
 
@@ -32257,7 +32259,7 @@ AMCViewport.onSettle(function(){
     }
     D.addEventListener('touchstart', function(e){
       odr = null;
-      if(!WIDE.matches || isOpen() || drag || e.touches.length !== 1) return;
+      if(!WIDE.matches || isOpen() || OPENING || CLOSING || drag || e.touches.length !== 1) return;
       var t = e.touches[0]; if(t.clientX > innerWidth / 2) return;
       if(!SCREEN.contains(e.target) || blocked(e.target)) return;
       odr = { x0:t.clientX, y0:t.clientY, live:false, lx:t.clientX, lt:performance.now(), v:0 };
@@ -32271,8 +32273,9 @@ AMCViewport.onSettle(function(){
         if(!(ddx > 8 && ddx > Math.abs(ddy) * 1.3)) return;
         if(!e.cancelable){ odr = null; return; }                                         /* the page already took it */
         odr.live = true; odr.x0 += 8; ddx = t.clientX - odr.x0;
+        /* only the light "peek" switch here: the menu's full switch (20–45 ms of re-style on a phone)
+           waits until the card has stopped, so the card follows the finger from the very first frame */
         X0 = openX(); peek(true); hold(0);
-        try{ if(od && !isOpen()) od.call(window); }catch(err){}
         try{ D.activeElement && D.activeElement.blur && D.activeElement.blur(); }catch(err){}
       }
       e.preventDefault();
@@ -32291,36 +32294,43 @@ AMCViewport.onSettle(function(){
   }
   buildScreen();
   function cardOn(){ return SCREEN && SHADE && matchMedia('(max-width:900px)').matches && can; }
-  /* open: the slide starts first (on the graphics chip); the menu's heavy re-style comes two frames later,
-     while the card is already moving, so it can no longer hold up the start */
+  /* open / close: the card starts moving in the same frame as the tap or the finger lifting.
+     The menu's full on/off switch (the body class: a 20–45 ms re-style of the whole app on a phone)
+     is done only when the card has stopped at the end of its slide — the card covers the screen /
+     sits still there, so the work can't be seen. Before, the switch ran first and the slide waited
+     two more frames: the card stood still for ~40–100 ms right after the finger let go. */
   if(typeof window.openDrawer === 'function' && !window.openDrawer.__m24){
     var od = window.openDrawer;
     window.openDrawer = function(){
       var self = this, args = arguments;
       if(!cardOn()) return od.apply(self, args);
-      if(D.body.classList.contains('mobile-sidebar-open')){
-        /* already switched on (a swipe did it at its start): just finish the slide */
+      var on = isOpen();
+      if(on && !CLOSING){
+        /* already open (the finger let go after dragging it a bit): slide back fully open */
         if(HOLD){ glide(1, Math.max(220, Math.round(560 * (1 - Q)))); return; }
         return od.apply(self, args);
       }
-      if(!HOLD) Q = RUN.length ? liveQ() : 0;
+      if(OPENING && !HOLD) return;                         /* already on its way */
+      if(!on && !OPENING && D.body.classList.contains('sb-collapsed')){
+        /* rare: the menu was left folded small on a wide screen — unfold it first (the old way) */
+        if(!HOLD) Q = RUN.length ? liveQ() : 0;
+        X0 = openX(); peek(true); hold(Q); od.apply(self, args);
+        glide(1, Math.max(260, Math.round(560 * (1 - Q)))); return;
+      }
+      if(!HOLD) Q = RUN.length ? liveQ() : (on ? 1 : 0);
       X0 = openX(); peek(true);
-      /* 1 · hold the card still and switch the menu on — the heavy re-style happens while nothing moves
-         2 · two frames later the card slides. Switching it on mid-slide froze the card for a frame. */
-      hold(Q);
-      od.apply(self, args);
-      var q0 = Q;
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){
-        if(!D.body.classList.contains('mobile-sidebar-open') || !HOLD) return;   /* closed again meanwhile */
-        glide(1, Math.max(260, Math.round(560 * (1 - Q))));
-        var nav = D.querySelector('#sidebar .sb-nav');
-        try{ if(nav && q0 < 0.5) nav.animate([{ transform:'translate3d(-24px,0,0)', opacity:.6 }, { transform:'translate3d(0,0,0)', opacity:1 }], { duration:560, easing:EASE_M }); }catch(e){}
-      }); });
+      var q0 = Q, T = Math.max(260, Math.round(560 * (1 - Q)));
+      if(on){ CLOSING = false; glide(1, T); return; }      /* was closing: the menu is still switched on */
+      OPENING = true;
+      try{ SB.inert = false; }catch(e){}
+      /* the menu's bottom button already says "Close menu" while it slides open (it changed at the end before) */
+      try{ var cb = D.querySelector('#sb-collapse-btn > span'); if(cb && cb.textContent !== 'Close menu') cb.textContent = 'Close menu'; }catch(e){}
+      glide(1, T, function(){ OPENING = false; if(!isOpen()) od.apply(self, args); });
+      var nav = D.querySelector('#sidebar .sb-nav');
+      try{ if(nav && q0 < 0.5) nav.animate([{ transform:'translate3d(-24px,0,0)', opacity:.6 }, { transform:'translate3d(0,0,0)', opacity:1 }], { duration:560, easing:EASE_M }); }catch(e){}
     };
     window.openDrawer.__m24 = 1;
   }
-  /* choosing a page in the phone menu: the card starts sliding back first, then the page is built
-     (building it first froze the slide for a moment) */
   /* The new page is built first, while the menu is still open and still (the page builds its lists
      two frames after it opens). Only then does the card slide back, so the slide never stops halfway.
      Building it during the slide froze the card for ~0.3 s on a phone. */
@@ -32329,7 +32339,7 @@ AMCViewport.onSettle(function(){
     var f = window[n]; if(typeof f !== 'function' || f.__m24) return;
     var w = function(){
       var self = this, args = arguments;
-      if(NAVHOLD || !(D.body.classList.contains('mobile-sidebar-open') && phone() && cardOn())) return f.apply(self, args);
+      if(NAVHOLD || CLOSING || !((isOpen() || OPENING) && phone() && cardOn())) return f.apply(self, args);
       NAVHOLD = 1;
       var release = function(){ if(!NAVHOLD) return; NAVHOLD = 0; window.closeDrawer(); };
       try{ f.apply(self, args); }
@@ -32340,24 +32350,29 @@ AMCViewport.onSettle(function(){
     };
     w.__m24 = 1; window[n] = w;
   });
-  /* close: the same — the slide back starts first, the menu's state is switched off two frames later */
   if(typeof window.closeDrawer === 'function' && !window.closeDrawer.__m24){
     var cd = window.closeDrawer;
     window.closeDrawer = function(){
       var self = this, args = arguments;
-      if(NAVHOLD && cardOn() && D.body.classList.contains('mobile-sidebar-open')) return;   /* a page is being built under the menu: it closes right after */
-      if(!cardOn() || !D.body.classList.contains('mobile-sidebar-open')) return cd.apply(self, args);
-      if(!HOLD) Q = RUN.length ? liveQ() : 1;
+      if(NAVHOLD && cardOn() && (isOpen() || OPENING)) return;   /* a page is being built under the menu: it closes right after */
+      if(!cardOn() || !(isOpen() || OPENING)) return cd.apply(self, args);
+      if(CLOSING) return;                                   /* already on its way */
+      if(!HOLD) Q = RUN.length ? liveQ() : (OPENING ? 0 : 1);
+      OPENING = false; CLOSING = true;
       X0 = X0 || openX(); peek(true);
-      /* same as opening: hold still, switch the menu off, then slide (it used to switch mid-slide) */
-      hold(Q);
-      cd.apply(self, args);
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){
-        if(D.body.classList.contains('mobile-sidebar-open') || !HOLD) return;    /* opened again meanwhile */
-        glide(0, Math.max(240, Math.round(500 * Q)));
-      }); });
+      glide(0, Math.max(240, Math.round(500 * Q)), function(){ CLOSING = false; cd.apply(self, args); });
     };
     window.closeDrawer.__m24 = 1;
+  }
+  /* the menu button while the card is still moving: turn it around */
+  if(typeof window.toggleDrawer === 'function' && !window.toggleDrawer.__m24){
+    var tg = window.toggleDrawer;
+    window.toggleDrawer = function(){
+      if(cardOn() && OPENING) return window.closeDrawer();
+      if(cardOn() && CLOSING) return window.openDrawer();
+      return tg.apply(this, arguments);
+    };
+    window.toggleDrawer.__m24 = 1;
   }
 
   /* ── 7 · dark / light button in the side menu (one button: it shows the mode you can switch to) ── */
