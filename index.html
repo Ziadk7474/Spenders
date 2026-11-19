@@ -8799,6 +8799,12 @@ html.m24-hide #m5-home .m5-bal .m5-big, html.m24-hide #m5-home .m5-bal .m5-kpis 
   filter:blur(11px); opacity:.85; user-select:none; -webkit-user-select:none;
 }
 #m24-screen{ display:contents; }
+@media print{
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m24-screen{ display:block !important; position:static !important; inset:auto !important; height:auto !important; min-height:0 !important; max-height:none !important;
+    overflow:visible !important; transform:none !important; border-radius:0 !important; background:none !important; will-change:auto !important; }
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m24-screen > #app-scroll{ height:auto !important; max-height:none !important; overflow:visible !important; position:static !important; }
+  html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m24-shade, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m24-screen::after{ display:none !important; }
+}
 @media (max-width:900px){html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-screen{
     display:block; position:fixed; inset:0; z-index:5;
     transform-origin:0 50%; will-change:transform;
@@ -27142,7 +27148,10 @@ AMCViewport.onSettle(function(){
     /* the open-section heights are measured after the slide too */
     var z = window.zsbSyncHeights;
     if(typeof z === 'function' && !z.__m10){
-      var wz = function(animate){ if(animate !== true && small.matches){ var a = arguments, self = this; clearTimeout(wz._t); wz._t = setTimeout(function(){ z.apply(self, a); }, 300); return; } return z.apply(this, arguments); };
+      var wz = function(animate){ if(animate !== true && small.matches){ var a = arguments, self = this; clearTimeout(wz._t);
+          /* while the phone menu card is sliding, measure after the slide (it used to land mid-slide and stall it) */
+          var go = function(){ if(document.body.classList.contains('m24-peek')){ wz._t = setTimeout(go, 160); return; } z.apply(self, a); };
+          wz._t = setTimeout(go, document.body.classList.contains('m24-peek') ? 760 : 300); return; } return z.apply(this, arguments); };
       wz.__m10 = true; window.zsbSyncHeights = wz;
     }
   }
@@ -32174,13 +32183,22 @@ AMCViewport.onSettle(function(){
   }
   /* choosing a page in the phone menu: the card starts sliding back first, then the page is built
      (building it first froze the slide for a moment) */
+  /* The new page is built first, while the menu is still open and still (the page builds its lists
+     two frames after it opens). Only then does the card slide back, so the slide never stops halfway.
+     Building it during the slide froze the card for ~0.3 s on a phone. */
+  var NAVHOLD = 0;
   ['navMain', 'drawerGo'].forEach(function(n){
     var f = window[n]; if(typeof f !== 'function' || f.__m24) return;
     var w = function(){
       var self = this, args = arguments;
-      if(!(D.body.classList.contains('mobile-sidebar-open') && phone())) return f.apply(self, args);
-      window.closeDrawer();
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(function(){ f.apply(self, args); }, 0); }); });
+      if(NAVHOLD || !(D.body.classList.contains('mobile-sidebar-open') && phone() && cardOn())) return f.apply(self, args);
+      NAVHOLD = 1;
+      var release = function(){ if(!NAVHOLD) return; NAVHOLD = 0; window.closeDrawer(); };
+      try{ f.apply(self, args); }
+      finally{
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(release, 0); }); }); });
+        setTimeout(release, 600);   /* safety */
+      }
     };
     w.__m24 = 1; window[n] = w;
   });
@@ -32189,6 +32207,7 @@ AMCViewport.onSettle(function(){
     var cd = window.closeDrawer;
     window.closeDrawer = function(){
       var self = this, args = arguments;
+      if(NAVHOLD && cardOn() && D.body.classList.contains('mobile-sidebar-open')) return;   /* a page is being built under the menu: it closes right after */
       if(!cardOn() || !D.body.classList.contains('mobile-sidebar-open')) return cd.apply(self, args);
       if(!HOLD && !RUN.length) Q = 1;
       X0 = X0 || openX(); peek(true);
