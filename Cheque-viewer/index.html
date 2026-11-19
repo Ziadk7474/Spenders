@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#EFEFEF">
-<style id="am-theme-vars">:root{--am-acc:#e8613a;--am-acc-rgb:232,97,58;--am-brand:#ED532D;--am-brand-rgb:237,83,45;--am-acc-dk:#f06a42;--am-acc-dk-rgb:240,106,66;--am-acc-deep:#c94f2b;--am-acc-deep2:#E8582F;--am-acc-2:#f07b55;--am-acc-3:#ff7a52;--am-acc-lt:#ffb08f;--am-acc-lt2:#f3b49b;--am-acc-soft:#fde8e0;--am-glow-rgb:240,112,70;--am-glow2-rgb:255,140,100;--am-shade-rgb:150,40,10;--am-shade2-rgb:120,30,5;--am-disc-hi:#F8774E;--am-disc-lo:#E04725;}</style>
+<style id="am-theme-vars">:root{--am-acc:#e8613a;--am-acc-rgb:232,97,58;--am-brand:#ED532D;--am-brand-rgb:237,83,45;--am-acc-dk:#f06a42;--am-acc-dk-rgb:240,106,66;--am-acc-deep:#c94f2b;--am-acc-deep2:#E8582F;--am-acc-2:#f07b55;--am-acc-3:#ff7a52;--am-acc-lt:#ffb08f;--am-acc-lt2:#f3b49b;--am-acc-soft:#fde8e0;--am-glow-rgb:240,112,70;--am-glow2-rgb:255,140,100;--am-shade-rgb:150,40,10;--am-shade2-rgb:120,30,5;--am-disc-hi:#F8774E;--am-disc-lo:#E04725;--am-m1:#F47A4E;--am-m2:#DE4623;--am-m3:#E2643A;--am-m4:#C9441F;--am-m5:#B23A1A;--am-m-on:#E2491F;--am-hover:#d9542e;--am-hover2:#dd5631;--am-acc-dk2:#d4532e;--am-m6:#ea7a3e;--am-plus-rgb:232,93,4;--am-sh-rgb:90,25,0;}</style>
 <script id="am-theme-js">/* AM-THEME · one accent colour for the whole app (screens, fields, buttons,
    dashboard, invoices, statements, receipts, quotations, print-outs).
    Runs first thing in <head> so the chosen colour is there before the first
@@ -38,7 +38,9 @@
     var a = usable(h), dk = shift(a, .05);
     return { 'acc':a, 'acc-rgb':rgb(a).join(','), 'brand':a, 'brand-rgb':rgb(a).join(','), 'acc-dk':dk, 'acc-dk-rgb':rgb(dk).join(','),
       'acc-deep':shift(a, -.1), 'acc-deep2':shift(a, -.03), 'acc-2':shift(a, .07), 'acc-3':shift(a, .1), 'acc-lt':mix(a, .45), 'acc-lt2':mix(a, .55), 'acc-soft':mix(a, .86),
-      'glow-rgb':rgb(shift(a, .06)).join(','), 'glow2-rgb':rgb(mix(shift(a, .12), .2)).join(','), 'shade-rgb':rgb(shift(a, -.25)).join(','), 'shade2-rgb':rgb(shift(a, -.32)).join(','), 'disc-hi':shift(a, .08), 'disc-lo':shift(a, -.05) };
+      'glow-rgb':rgb(shift(a, .06)).join(','), 'glow2-rgb':rgb(mix(shift(a, .12), .2)).join(','), 'shade-rgb':rgb(shift(a, -.25)).join(','), 'shade2-rgb':rgb(shift(a, -.32)).join(','), 'disc-hi':shift(a, .08), 'disc-lo':shift(a, -.05),
+      'm1':shift(a, .08), 'm2':shift(a, -.06), 'm3':shift(a, .02), 'm4':shift(a, -.08), 'm5':shift(a, -.14), 'm-on':shift(a, -.04), 'hover':shift(a, -.06), 'hover2':shift(a, -.05), 'acc-dk2':shift(a, -.06), 'm6':shift(a, .07),
+      'plus-rgb':rgb(shift(a, -.02)).join(','), 'sh-rgb':rgb(shift(a, -.35)).join(',') };
   }
   function css(h){ var v = vars(h); if(!v) return DEFAULT_CSS; return ':root{' + Object.keys(v).map(function(k){ return '--am-' + k + ':' + v[k]; }).join(';') + ';}'; }
   function paint(){
@@ -144,7 +146,7 @@ html:not(#_) body:not(#_), html:not(#_) body:not(#_).mode-sales, html:not(#_) bo
   --m8-scrim:rgba(20,20,22,.32);
   --blue:#121212 !important; --blue-lt:rgba(18,18,18,.06) !important; --zm-navy:#121212 !important; --zm-navy2:#121212 !important; --zm-active:#121212 !important; --zm-active2:#121212 !important;
   --hdr-bg:#141414 !important; --hdr-bg2:#141414 !important; --bnav-accent:var(--am-acc) !important;
-  --mode-accent:var(--k-acc) !important; --mode-accent-dk:#d4532e !important; --mobile-blue:var(--k-acc) !important; --mobile-ink:var(--k-ink) !important;
+  --mode-accent:var(--k-acc) !important; --mode-accent-dk:var(--am-acc-dk2) !important; --mobile-blue:var(--k-acc) !important; --mobile-ink:var(--k-ink) !important;
   --chip-ink:var(--k-ink) !important; --blue-ink:var(--k-ink) !important; --purple:var(--k-acc) !important; --drawer-bg2:var(--k-sheet) !important;
   --zm-hl-text:var(--k-acc) !important; --tint:var(--k-card) !important; --tint-2:var(--k-tile) !important;
   --zsb-blue:var(--k-acc) !important; --zsb-blue2:var(--k-acc) !important; --zsb-sel:var(--k-acc-soft) !important; --zsb-sel-tx:var(--k-acc) !important;
@@ -279,7 +281,7 @@ html:not(#_) body:not(#_) .btn svg.m8i, html:not(#_) body:not(#_) .m8-btn svg.m8
 html:not(#_) body:not(#_) .m8-btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 18px; border-radius:999px; border:1px solid transparent; font:600 14px/1 var(--k-font); cursor:pointer; white-space:nowrap; background:var(--k-tile); color:var(--k-ink); border-color:var(--k-line); }
 html:not(#_) body:not(#_) .m8-btn.sm{ height:36px; padding:0 14px; font-size:13px; }
 html:not(#_) body:not(#_) .m8-btn.acc{ background:var(--k-acc); color:#fff; border-color:transparent; box-shadow:var(--m8-glow); }
-html:not(#_) body:not(#_) .m8-btn.acc:hover{ background:#dd5631; }
+html:not(#_) body:not(#_) .m8-btn.acc:hover{ background:var(--am-hover2); }
 html:not(#_) body:not(#_) .m8-btn.dark{ background:var(--k-dark); color:var(--k-on-dark); border-color:transparent; }
 html:not(#_) body:not(#_) .m8-btn.ghost{ background:transparent; }
 html:not(#_) body:not(#_) .m8-btn kbd{ font:600 10.5px/1 var(--k-font); padding:4px 6px; border-radius:6px; background:rgba(255,255,255,.22); color:inherit; }
