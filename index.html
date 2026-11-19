@@ -12642,14 +12642,17 @@ async function amGate(app, db, getFn, refFn){
   try{ await getRedirectResult(auth); }catch(e){}
   const first = () => new Promise(r => { const u = onAuthStateChanged(auth, x => { u(); r(x); }); });
   let user = await first();
-  const out = () => signOut(auth).then(() => location.reload());
+  /* Signing out (or being refused) also wipes this device's saved copy of the
+     books, so the next person on the same phone or PC never sees old data. */
+  const wipeLocal = () => { try{ Object.keys(localStorage).filter(k => /^almadhi_cache_/.test(k)).forEach(k => localStorage.removeItem(k)); }catch(e){} };
+  const out = () => { wipeLocal(); return signOut(auth).then(() => location.reload()); };
   window.AMAuth = { user, signOut: out };
   const denied = e => /permission/i.test(String(e && (e.code || e.message || e)));
   const probe = () => Promise.race([ getFn(refFn(db, 'almadhi/settings/pinLen')).then(() => 'ok', e => denied(e) ? 'denied' : 'ok'),
                                      new Promise(r => setTimeout(() => r('ok'), 8000)) ]);
   if(user){
     /* signed in: check in the background that this account is allowed (no wait on start) */
-    probe().then(v => { if(v === 'denied') screen('noaccess'); });
+    probe().then(v => { if(v === 'denied'){ wipeLocal(); screen('noaccess'); } });
     return;
   }
   const open = (await probe()) === 'ok';
@@ -12687,7 +12690,7 @@ async function amGate(app, db, getFn, refFn){
         const b = ev.target.closest('[data-a]'); if(!b) return;
         const a = b.getAttribute('data-a');
         if(a === 'later'){ done(null); return; }
-        if(a === 'switch'){ try{ await signOut(auth); }catch(e){} location.reload(); return; }
+        if(a === 'switch'){ wipeLocal(); try{ await signOut(auth); }catch(e){} location.reload(); return; }
         if(a === 'google'){
           err.textContent = ''; b.disabled = true;
           const prov = new GoogleAuthProvider(); prov.setCustomParameters({ prompt:'select_account' });
@@ -12919,7 +12922,8 @@ function attachFirebaseListeners() {
       mod.records = data ? Object.values(data) : [];
       mod.records.sort((a,b) => (b.date||'').localeCompare(a.date||''));
       setSyncStatus('live');
-      if(DB.mode === moduleKey) { refreshCurrentPage(); populateAllDropdowns(); scheduleCashDateRepair(); }
+      if(DB.mode === moduleKey) { refreshCurrentPage(); populateAllDropdowns(); scheduleCashDateRepair();
+        try { const _ap = document.querySelector('.page.active'); if(_ap && _ap.id === 'page-entry') _entryAutoInvNo(); } catch(e) {} }
       // The dashboard is unified (reads DB.sales AND DB.purchase together), so
       // it must redraw when EITHER module's data changes — not just the one
       // matching the active sidebar mode, or the non-active side goes stale
@@ -13206,7 +13210,7 @@ function getMethods() { return [...new Set([...BUILTIN_METHODS, ...(AD().customM
 function getPaidBys() { return [...new Set([...BUILTIN_PAIDBY,  ...(AD().customPaidBy||[])])]; }
 
 function getPartyPurchased(party) {
-  return AD().records.filter(r=>r.party===party).reduce((s,r)=>s+r.amount,0);
+  return Math.round(AD().records.filter(r=>r.party===party).reduce((s,r)=>s+(+r.amount||0),0) * 100) / 100;
 }
 function getPartyPaid(party, from=null, to=null) {
   return AD().payments.filter(p=>{
@@ -13214,9 +13218,9 @@ function getPartyPaid(party, from=null, to=null) {
     if(from && p.date < from) return false;
     if(to && p.date > to) return false;
     return true;
-  }).reduce((s,p)=>s+p.amount,0);
+  }).reduce((s,p)=>s+(+p.amount||0),0);
 }
-function getPartyBalance(party) { return getPartyPurchased(party) - getPartyPaid(party); }
+function getPartyBalance(party) { return Math.round((getPartyPurchased(party) - getPartyPaid(party)) * 100) / 100; }
 
 // Next available ID — always computed from current data to avoid conflicts
 function getNextId() {
@@ -13372,6 +13376,10 @@ function populateAllDropdowns() {
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════
 function showPage(id) {
+  // The "keep the half-filled entry" flag only covers the very next return to
+  // Entry. Going anywhere else drops it, so a later new entry always starts clean
+  // (it used to linger after editing an invoice and reuse an old invoice number).
+  if(id !== 'entry') window._skipEntryInit = false;
   // Pages that span both modules stay mode-neutral (gold chrome) rather than
   // claiming a colour they don't own.
   try { document.body.classList.toggle('mode-neutral', id === 'dashboard'); } catch(e) {}
@@ -14647,11 +14655,18 @@ function syncEntryPoDisplay() {
   disp.textContent = po || '— PO No.';
 }
 
+function _entryAutoInvNo() {
+  const el = document.getElementById('e-invno'); if(!el) return;
+  const v = 'INV-' + String(getNextInv()).padStart(4,'0');
+  // Only replace a number the app filled in itself — never one typed by hand.
+  if(!el.value || el.value === el.dataset.auto) { el.value = v; el.dataset.auto = v; }
+}
 function initEntry() {
   document.getElementById('e-date').value = today();
 
-  const nextInv = getNextInv();
-  document.getElementById('e-invno').value = 'INV-' + String(nextInv).padStart(4,'0');
+  const _invEl = document.getElementById('e-invno');
+  if(_invEl) { _invEl.value = ''; _invEl.dataset.auto = ''; }
+  _entryAutoInvNo();
 
   // VAT only exists for Sales invoices — hidden entirely in Purchase mode
   const vatBlock = document.getElementById('e-vat-block');
@@ -14722,6 +14737,9 @@ async function saveEntry() {
   if(_entrySaveBusy) { toast('Still saving — please wait', 'error'); return; }
   const party  = document.getElementById('e-party').value;
   const date   = document.getElementById('e-date').value;
+  // An app-filled invoice number is re-checked at save time, so data that
+  // arrived late (or another device's save) can never cause a repeat number.
+  _entryAutoInvNo();
   const invno  = document.getElementById('e-invno').value;
 
   if(!party) { toast('Please select a Party Name', 'error'); return; }
@@ -14741,7 +14759,7 @@ async function saveEntry() {
   const invalidItems = items.filter(i => !i.desc || i.qty <= 0);
   if(invalidItems.length) { toast('Each item needs a description and quantity > 0', 'error'); return; }
 
-  const subtotalAmount = items.reduce((s,i) => s+i.amount, 0);
+  const subtotalAmount = Math.round(items.reduce((s,i) => s+i.amount, 0) * 100) / 100;
   if(subtotalAmount <= 0) { toast('Invoice total must be greater than 0', 'error'); return; }
 
   // ── Cash-in-hand "Paid By" is validated BEFORE anything is written. ──
@@ -14759,7 +14777,7 @@ async function saveEntry() {
   // treatment where only the seller's invoice shows Tax Invoice/VAT/TRN.
   const vatApplied = entryVatEnabled();
   const vatAmount  = entryVatAmount(subtotalAmount);
-  const totalAmount = subtotalAmount + vatAmount;
+  const totalAmount = Math.round((subtotalAmount + vatAmount) * 100) / 100;
 
   // ── Identical-entry guard (same party + date + total + PO already on file) ──
   const _poNow = (document.getElementById('e-vehicle').value || '').trim();
@@ -14784,7 +14802,9 @@ async function saveEntry() {
   const newId  = _ids[0];
   const newInv = getNextInv();
   AD().nextId    = Math.max(AD().nextId, _ids[_ids.length-1] + 1);
-  AD().nextInv   = newInv + 1;
+  // getNextInv() = highest number in use + 1, so the counter keeps the number
+  // just used (storing +1 here made every second number get skipped).
+  AD().nextInv   = Math.max(AD().nextInv || 0, newInv);
 
   // Build record — items array for multi-line, amount = sum (incl. VAT if applied)
   const rec = {
@@ -14901,8 +14921,9 @@ function clearEntry() {
   if(balEl) { balEl.innerHTML = '<span style="color:var(--t3);font-weight:400">—</span>'; balEl.dataset.raw = '0'; balEl.className = 'balance-field'; }
   document.getElementById('e-date').value = today();
 
-  const nextInv = getNextInv();
-  document.getElementById('e-invno').value = 'INV-' + String(nextInv).padStart(4,'0');
+  const _invEl = document.getElementById('e-invno');
+  if(_invEl) { _invEl.value = ''; _invEl.dataset.auto = ''; }
+  _entryAutoInvNo();
   syncEntryPoDisplay();
   document.getElementById('invoice-grand-total').innerHTML = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><use href="#aed-glyph"/></svg> 0.00';
   // Clear line items and add fresh row
@@ -17627,10 +17648,10 @@ function renderManageLists() {
     if(cEl) cEl.innerHTML = !custom.length
       ? '<div class="manage-empty">No custom items yet</div>'
       : custom.map(x=>`<div class="manage-item" id="row-${type}-${CSS.escape(x)}">
-          <span class="manage-item-name" id="label-${type}-${CSS.escape(x)}">${x}</span>
+          <span class="manage-item-name" id="label-${type}-${CSS.escape(x)}">${_dashEsc(x)}</span>
           <div style="display:flex;gap:6px;align-items:center">
-            <button class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:11px" onclick="startEditSimple('${type}','${x}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>
-            <button class="manage-item-del" onclick="delManageItem('${type}','${x}')">×</button>
+            <button class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:11px" onclick="startEditSimple('${type}','${jsAttr(x)}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>
+            <button class="manage-item-del" onclick="delManageItem('${type}','${jsAttr(x)}')">×</button>
           </div>
         </div>`).join('');
     const bEl = document.getElementById('ml-'+type+'-builtin');
@@ -17722,9 +17743,9 @@ function startEditSimple(type, oldVal) {
   if(!row) return;
   // Replace name span with input + save/cancel
   row.innerHTML = `
-    <input type="text" id="edit-simple-input" value="${oldVal}" style="flex:1;padding:0 10px;height:34px;background:var(--field-bg);border:1px solid var(--field-focus);border-radius:var(--field-radius);font-family:inherit;font-size:13px;color:var(--t1);outline:none" onkeydown="if(event.key==='Enter')saveEditSimple('${type}','${oldVal}');if(event.key==='Escape')renderManageLists()">
+    <input type="text" id="edit-simple-input" value="${_dashEsc(oldVal)}" style="flex:1;padding:0 10px;height:34px;background:var(--field-bg);border:1px solid var(--field-focus);border-radius:var(--field-radius);font-family:inherit;font-size:13px;color:var(--t1);outline:none" onkeydown="if(event.key==='Enter')saveEditSimple('${type}','${jsAttr(oldVal)}');if(event.key==='Escape')renderManageLists()">
     <div style="display:flex;gap:6px;align-items:center">
-      <button class="btn btn-success btn-sm" style="padding:3px 9px;font-size:11px" onclick="saveEditSimple('${type}','${oldVal}')">Save</button>
+      <button class="btn btn-success btn-sm" style="padding:3px 9px;font-size:11px" onclick="saveEditSimple('${type}','${jsAttr(oldVal)}')">Save</button>
       <button class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:11px" onclick="renderManageLists()" aria-label="Close"><svg class="m9i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>`;
   const inp = document.getElementById('edit-simple-input');
@@ -18238,7 +18259,7 @@ async function saveEditInvoice() {
   if(!items.length)                        { toast('Add at least one line item', 'error'); return; }
   if(items.some(i => !i.desc || i.qty<=0)){ toast('Each item needs a description and qty > 0', 'error'); return; }
 
-  const total = items.reduce((s,i) => s + i.amount, 0);
+  const total = Math.round(items.reduce((s,i) => s + i.amount, 0) * 100) / 100;
   if(total <= 0) { toast('Invoice total must be > 0', 'error'); return; }
 
   // ── Duplicate PO number protection (per supplier), excluding this invoice itself ──
