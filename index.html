@@ -32255,7 +32255,8 @@ AMCViewport.onSettle(function(){
      behind them, so the corners turn round / square where nothing can see it (the page behind the card
      is the same colour as the card) */
   var SB = null, CUT = 0.15;
-  function sbo(q){ return Math.max(0, Math.min(1, q / CUT)); }
+  /* the menu is fully shown the whole time the card moves (no fade-in / fade-out of the menu) */
+  function sbo(q){ return 1; }
   function sbKF(from, to){
     var k = [{ offset:0, opacity:sbo(from) }];
     if((from - CUT) * (to - CUT) < 0) k.push({ offset:Math.abs((CUT - from) / (to - from)), opacity:1 });
@@ -32280,7 +32281,7 @@ AMCViewport.onSettle(function(){
       try{
         var o = { duration:1000, fill:'both' };
         HOLD = [ SCREEN.animate([{ transform:tf(0) }, { transform:tf(1) }], o),
-                 SB.animate([{ opacity:0 }, { offset:CUT, opacity:1 }, { opacity:1 }], o),
+                 SB.animate([{ opacity:1 }, { opacity:1 }], o),
                  SHADE.animate([{ transform:tf(0), opacity:0 }, { offset:1 / 3, opacity:1 }, { transform:tf(1), opacity:1 }], o) ];
         HOLD.forEach(function(a){ a.pause(); });
       }catch(e){ HOLD = []; }
@@ -32480,8 +32481,7 @@ AMCViewport.onSettle(function(){
       /* the menu's bottom button already says "Close menu" while it slides open (it changed at the end before) */
       try{ var cb = D.querySelector('#sb-collapse-btn > span'); if(cb && cb.textContent !== 'Close menu') cb.textContent = 'Close menu'; }catch(e){}
       glide(1, T, function(){ OPENING = false; if(!isOpen()) od.apply(self, args); });
-      var nav = D.querySelector('#sidebar .sb-nav');
-      try{ if(nav && q0 < 0.5) nav.animate([{ transform:'translate3d(-24px,0,0)', opacity:.6 }, { transform:'translate3d(0,0,0)', opacity:1 }], { duration:560, easing:EASE_M }); }catch(e){}
+      /* the menu itself does not move or fade: it sits still behind, only the card slides */
     };
     window.openDrawer.__m24 = 1;
   }
