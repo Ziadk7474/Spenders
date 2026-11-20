@@ -32297,16 +32297,25 @@ AMCViewport.onSettle(function(){
      slide started from its own curve: 3–6 times faster than a normal drag, and it sped up even more
      in its first frames, then slowed — it felt like a hitch right when the finger lifted.) */
   var FLING = null;
+  /* After the finger lets go the card moves like a spring (the way iPhone menus do): it starts at
+     exactly the finger's speed and is pulled smoothly to open / closed — no stop, no jump, no slow
+     restart. If the finger had slowed down or stopped before lifting, the spring picks the speed up
+     again smoothly instead of crawling (that was the "hesitation" in the middle of a swipe).
+     The curve is handed to the graphics chip as one smooth path (CSS linear()), so it runs even when
+     the app is busy. Taps on the menu button keep their own curve. */
+  var LIN = false; try{ LIN = !!(window.CSS && CSS.supports && CSS.supports('animation-timing-function', 'linear(0, 0.5, 1)')); }catch(e){}
   function curveFor(to, from, T){
     var v = FLING; FLING = null;
-    if(v == null) return { T:T, e:EASE_M };
-    var D = Math.abs(to - from) * (X0 || openX()), u = v * (to > from ? 1 : -1);
-    if(D < 2) return { T:Math.min(T, 160), e:'cubic-bezier(.25,.8,.25,1)' };
-    if(u < 0.08) return { T:Math.max(200, Math.min(T, 420)), e:'cubic-bezier(.35,0,.2,1)' };   /* finger was still: start gently */
-    var TT = Math.max(170, Math.min(to ? 560 : 500, 2.4 * D / u));
-    var k = Math.max(1, Math.min(5, u * TT / D));                                              /* start speed, in the curve's units */
-    var x1 = Math.min(0.3, 0.9 / k), y1 = Math.min(1, x1 * k), x2 = Math.max(x1 + 0.05, Math.min(0.9, 1 / k + 0.05));
-    return { T:Math.round(TT), e:'cubic-bezier(' + x1.toFixed(3) + ',' + y1.toFixed(3) + ',' + x2.toFixed(3) + ',1)' };
+    if(v == null || !LIN) return { T:T, e:EASE_M };
+    var D = Math.abs(to - from) * (X0 || openX());
+    if(D < 1.5) return { T:120, e:'cubic-bezier(.25,.8,.25,1)' };
+    var u = Math.max(0, v * (to > from ? 1 : -1)) / D;      /* finger speed toward the end, in "whole slides" per ms */
+    var w = Math.max(0.021, Math.min(0.06, u));              /* spring strength; a fast flick only makes it quicker, never overshoot */
+    var y = function(t){ return (1 + (w - u) * t) * Math.exp(-w * t); };   /* critically damped: distance still to go */
+    var TT = 60; while(TT < 900 && y(TT) > 0.0015) TT += 10;
+    var n = 40, pts = [];
+    for(var i = 0; i <= n; i++){ var p = i === n ? 1 : 1 - y(TT * i / n); pts.push(Math.max(0, Math.min(1, p)).toFixed(4)); }
+    return { T:TT, e:'linear(' + pts.join(', ') + ')' };
   }
   function glide(to, T, done){
     var from = Q; Q = to; GL = { from:from, to:to };
