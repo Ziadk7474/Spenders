@@ -116,6 +116,12 @@
 #am-guard .amg-msg span{opacity:.72}
 #am-guard .amg-msg button{display:block;margin:14px auto 0;height:44px;padding:0 22px;border:0;border-radius:999px;background:var(--am-brand,#ED532D);color:#fff;font:600 14px/44px Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer}
 @media print{#am-guard{display:none!important}}</style>
+<style id="m24-ready-css">/* phone / tablet side menu kept ready behind the card (see readyMenu in the m24 script):
+   always "shown" but fully see-through while closed, so starting a drag changes nothing heavy */
+@media screen and (max-width:900px){
+html.m24-ready:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar{ visibility:visible; will-change:opacity; }
+html.m24-ready:not(#_#_#_#_) body:not(#_#_#_#_):not(.mobile-sidebar-open):not(.m24-peek) #sidebar{ opacity:0; }
+}</style>
 <script id="amx-pre-js">(function(){try{var m=document.querySelectorAll('meta[name="theme-color"]');window.__amxTC=m[0]?m[0].getAttribute("content"):"#EFEFEF";for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amBrand||"#ED532D");document.documentElement.classList.add("amx-on");setTimeout(function(){var p=document.getElementById("amx-pre");if(p&&!document.getElementById("amx-intro")){p.remove();for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amxTC)}},20000)}catch(e){}})();</script>
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="am. nexus">
@@ -32285,15 +32291,36 @@ AMCViewport.onSettle(function(){
   }
   function unhold(){ if(HOLD){ HOLD.forEach(function(a){ try{ a.cancel(); }catch(e){} }); HOLD = null; } }
   /* glide from wherever the card is to open (1) or closed (0), then hand over to the plain CSS state */
+  /* The speed of the finger when it lets go (px per ms, + = to the right), set by the drags just
+     before they call open / close. The slide then starts at exactly that speed and only slows down,
+     so the card carries on from the finger with no pause and no sudden jump in speed. (Before, every
+     slide started from its own curve: 3–6 times faster than a normal drag, and it sped up even more
+     in its first frames, then slowed — it felt like a hitch right when the finger lifted.) */
+  var FLING = null;
+  function curveFor(to, from, T){
+    var v = FLING; FLING = null;
+    if(v == null) return { T:T, e:EASE_M };
+    var D = Math.abs(to - from) * (X0 || openX()), u = v * (to > from ? 1 : -1);
+    if(D < 2) return { T:Math.min(T, 160), e:'cubic-bezier(.25,.8,.25,1)' };
+    if(u < 0.08) return { T:Math.max(200, Math.min(T, 420)), e:'cubic-bezier(.35,0,.2,1)' };   /* finger was still: start gently */
+    var TT = Math.max(170, Math.min(to ? 560 : 500, 2.4 * D / u));
+    var k = Math.max(1, Math.min(5, u * TT / D));                                              /* start speed, in the curve's units */
+    var x1 = Math.min(0.3, 0.9 / k), y1 = Math.min(1, x1 * k), x2 = Math.max(x1 + 0.05, Math.min(0.9, 1 / k + 0.05));
+    return { T:Math.round(TT), e:'cubic-bezier(' + x1.toFixed(3) + ',' + y1.toFixed(3) + ',' + x2.toFixed(3) + ',1)' };
+  }
   function glide(to, T, done){
     var from = Q; Q = to; GL = { from:from, to:to };
-    var id = ++RUNID, o = { duration:T, easing:EASE_M, fill:'forwards' };
+    var cv = curveFor(to, from, T); T = cv.T;
+    var id = ++RUNID, o = { duration:T, easing:cv.e, fill:'forwards' };
     var next = [];
     try{
       next = [ SCREEN.animate([{ transform:tf(from) }, { transform:tf(to) }], o),
                SB.animate(sbKF(from, to), o),
                SHADE.animate([{ transform:tf(from), opacity:so(from) }, { transform:tf(to), opacity:so(to) }], o) ];
     }catch(e){ next = []; }
+    /* start one frame in: the very next frame already moves (a new slide used to show its first
+       position twice, which read as a short stop) */
+    next.forEach(function(a){ try{ a.currentTime = Math.min(8, T - 1); }catch(e){} });
     unhold(); stopRun(); RUN = next;
     var fin = function(){ if(id !== RUNID) return; if(done) done(); stopRun(); if(!to) peek(false); };
     if(next[0]) next[0].finished.then(fin, function(){}); else fin();
@@ -32313,7 +32340,13 @@ AMCViewport.onSettle(function(){
       var d = D.getElementById('m10-dock'); if(d && d.parentNode === D.body) SCREEN.appendChild(d);
     }).observe(D.body, { childList:true });
     /* a tap on the card closes the menu; a swipe to the left follows the finger */
-    var sx = 0, sy = 0, dx = 0, drag = false, id = null, lastX = 0, lastT = 0, vel = 0;
+    var sx = 0, sy = 0, dx = 0, drag = false, id = null, vel = 0;
+    /* finger speed from the last ~100 ms of movement (one sample alone is too jumpy); 0 if the finger stopped */
+    function tracker(){ var S = []; return {
+      reset:function(){ S = []; },
+      add:function(x){ var t = performance.now(); S.push([t, x]); while(S.length > 2 && t - S[0][0] > 100) S.shift(); },
+      v:function(){ if(S.length < 2) return 0; var a = S[0], b = S[S.length - 1]; if(performance.now() - b[0] > 80) return 0; var dt = b[0] - a[0]; return dt > 0 ? (b[1] - a[1]) / dt : 0; } }; }
+    var trk = tracker();
     SCREEN.addEventListener('pointerdown', function(e){
       if(CLOSING || !(isOpen() || OPENING) || e.target !== SCREEN) return;
       id = e.pointerId; sx = e.clientX; sy = e.clientY; dx = 0; drag = false; vel = 0;
@@ -32323,12 +32356,12 @@ AMCViewport.onSettle(function(){
       if(id !== e.pointerId) return;
       var x = e.clientX - sx, now = performance.now();
       if(!drag && Math.abs(x) > 6 && Math.abs(x) > Math.abs(e.clientY - sy)){
-        drag = true; X0 = openX(); sx += x > 0 ? 6 : -6; x = e.clientX - sx; lastX = e.clientX; lastT = now;
+        drag = true; X0 = openX(); sx += x > 0 ? 6 : -6; x = e.clientX - sx; trk.reset(); trk.add(e.clientX);
       }
       if(drag){
         dx = Math.min(0, x);
         hold(Math.max(0, Math.min(1, 1 + dx / X0)));
-        if(now > lastT){ vel = (e.clientX - lastX) / (now - lastT) * 1000; lastX = e.clientX; lastT = now; }
+        trk.add(e.clientX);
       }
     });
     function up(e){
@@ -32336,7 +32369,10 @@ AMCViewport.onSettle(function(){
       id = null;
       var wasDrag = drag; drag = false;
       if(!wasDrag){ closeDrawer(); return; }
+      var v = trk.v(); vel = v * 1000;
+      FLING = v;
       if(dx < -X0 * 0.3 || vel < -350) closeDrawer(); else window.openDrawer();
+      FLING = null;
     }
     SCREEN.addEventListener('pointerup', up);
     SCREEN.addEventListener('pointercancel', up);
@@ -32368,7 +32404,7 @@ AMCViewport.onSettle(function(){
       if(!WIDE.matches || isOpen() || OPENING || CLOSING || drag || e.touches.length !== 1) return;
       var t = e.touches[0]; if(t.clientX > innerWidth / 2) return;
       if(!SCREEN.contains(e.target) || blocked(e.target)) return;
-      odr = { x0:t.clientX, y0:t.clientY, live:false, lx:t.clientX, lt:performance.now(), v:0 };
+      odr = { x0:t.clientX, y0:t.clientY, live:false, k:tracker() };
     }, { capture:true, passive:true });
     D.addEventListener('touchmove', function(e){
       if(!odr) return;
@@ -32387,13 +32423,16 @@ AMCViewport.onSettle(function(){
       e.preventDefault();
       var q = ddx / X0; q = q > 1 ? 1 + (1 - 1 / (1 + (q - 1) * 2)) * 0.06 : Math.max(0, q);   /* a little give past fully open */
       hold(q);
-      var now = performance.now(); if(now > odr.lt){ odr.v = (t.clientX - odr.lx) / (now - odr.lt) * 1000; odr.lx = t.clientX; odr.lt = now; }
+      odr.k.add(t.clientX);
     }, { capture:true, passive:false });
     function odEnd(){
       var st = odr; odr = null; if(!st || !st.live) return;
       Q = Math.min(Q, 1);
-      if(st.v > 250 || (Q > 0.4 && st.v > -250)) openDrawer();
+      var v = st.k.v(), vs = v * 1000;
+      FLING = v;
+      if(vs > 250 || (Q > 0.4 && vs > -250)) openDrawer();
       else glide(0, Math.max(220, Math.round(500 * Q)), function(){ if(isOpen() && cd) cd.call(window); });
+      FLING = null;
     }
     D.addEventListener('touchend', odEnd, true);
     D.addEventListener('touchcancel', odEnd, true);
@@ -32470,6 +32509,36 @@ AMCViewport.onSettle(function(){
     };
     window.closeDrawer.__m24 = 1;
   }
+  /* ── the menu kept ready behind the card ──
+     Two things made the card stop for a moment when a drag started or in the middle of opening:
+       · the menu went from hidden to shown when the finger started to move (the browser then works
+         out the look of every item in the menu — about 30 ms on a phone, the card stood still), and
+       · the menu went from "not usable" to "usable" (inert) 280 ms into the slide, which does the same
+         work again right in the middle of the slide.
+     Now, once the app has opened, the menu stays shown but fully see-through behind the card while
+     it is closed, and stays usable (the card covers it, so nothing can be tapped by mistake; it is
+     still hidden from screen readers and from the keyboard). So starting a drag or a slide changes
+     nothing heavy — only the slide itself moves. */
+  function readyMenu(){
+    if(!SB || SB.__m24r || !cardOn()) return; SB.__m24r = 1;
+    try{
+      var own = Object.getOwnPropertyDescriptor(SB, 'inert'), base = own || Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'inert');
+      if(base && base.set && base.get){
+        Object.defineProperty(SB, 'inert', { configurable:true,
+          get:function(){ return base.get.call(SB); },
+          set:function(v){ if(cardOn()){ try{ SB.setAttribute('aria-hidden', v ? 'true' : 'false'); }catch(e){} v = false; } else { try{ SB.removeAttribute('aria-hidden'); }catch(e){} } base.set.call(SB, v); } });
+        SB.inert = !(isOpen() || OPENING);
+      }
+    }catch(e){}
+    SB.addEventListener('focusin', function(e){ if(cardOn() && !isOpen() && !OPENING){ try{ e.target.blur(); }catch(err){} } });
+    D.documentElement.classList.add('m24-ready');
+    /* get the browser ready for the slide once, now while nothing moves (one step: nothing is drawn in between) */
+    try{ if(!isOpen() && !OPENING && !CLOSING && !RUN.length && !HOLD){ peek(true); void D.body.offsetHeight; peek(false); void D.body.offsetHeight; } }catch(e){}
+  }
+  (function(){
+    var go = function(){ setTimeout(function(){ if(window.requestIdleCallback) window.requestIdleCallback(readyMenu, { timeout:1500 }); else readyMenu(); }, 1200); };
+    if(window.AMGuard && AMGuard.onOpen) AMGuard.onOpen(go); else setTimeout(go, 1500);
+  })();
   /* the menu button while the card is still moving: turn it around */
   if(typeof window.toggleDrawer === 'function' && !window.toggleDrawer.__m24){
     var tg = window.toggleDrawer;
