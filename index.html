@@ -9644,6 +9644,27 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m8-cq .m8-cq-m b, html:not(#_#_#_#_#_
     })();
   }
   if(window._firebaseReady) started(); else window.addEventListener('firebaseReady', started, { once:true });
+  /* No internet (or internet too slow to answer): Google's sign-in check can't finish, so the app would
+     wait. A phone whose account was already confirmed here (am_ok_uid) and that has the saved copy of
+     the books opens straight from that copy, with the password screen first if a password is set.
+     A phone that was never confirmed (a stranger's phone) still sees nothing. If the sign-in check
+     later finds nobody signed in, the sign-in screen covers the app and the saved copy is removed. */
+  function trusted(){
+    try{
+      if(!localStorage.getItem('am_ok_uid')) return false;
+      for(var i = 0; i < localStorage.length; i++){ if(/^almadhi_cache_/.test(localStorage.key(i) || '')) return true; }
+    }catch(e){}
+    return false;
+  }
+  function offlineOpen(){
+    if(open || D.getElementById('am-signin') || !trusted()) return;
+    if(D.readyState === 'loading'){ D.addEventListener('DOMContentLoaded', offlineOpen, { once:true }); return; }
+    wait = { app:1 };
+    try{ if(typeof LOCK !== 'undefined' && LOCK.hasPin() && !LOCK.isUnlocked() && typeof showLockScreen === 'function') showLockScreen(); }catch(e){}
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ window.AMGuard.done('app'); }); });
+  }
+  if(navigator.onLine === false) offlineOpen(); else setTimeout(offlineOpen, 4000);
+  window.addEventListener('offline', offlineOpen);
   /* still nothing after 15 s (no internet on a phone that never opened the app, or Firebase down) */
   setTimeout(function(){
     if(open || D.getElementById('am-signin')) return;
@@ -9739,7 +9760,7 @@ function target(){
   return null}
 /* the app may only show once the cover (am-guard) has lifted: sign-in checked and the app drawn */
 function guardUp(){return !!(window.AMGuard&&!AMGuard.isOpen())}
-function ready(){return !!(document.getElementById('am-signin')||target()||(window._firebaseReady&&!guardUp()))}
+function ready(){return !!(document.getElementById('am-signin')||target()||(window.AMGuard?AMGuard.isOpen():window._firebaseReady))}
 const E='cubic-bezier(.65,0,.2,1)';
 function glide(el,w,h,r,T){                                 /* move a piece from where it is to a box on the page */
   const cur=new DOMMatrix(getComputedStyle(el).transform);  /* (the stage may sit lower or higher by dy: see "lock" below) */
@@ -13178,7 +13199,7 @@ async function amGate(app, db, getFn, refFn){
   const wipeLocal = () => { try{ Object.keys(localStorage).filter(k => /^almadhi_cache_/.test(k)).forEach(k => localStorage.removeItem(k)); }catch(e){} };
   /* everything with business data that this device keeps (books, quotations, drafts, company and bank details) */
   const wipeAll = () => { wipeLocal(); try{ Object.keys(localStorage).filter(k => /^(amq_saved_v1|amq_draft|am_co_v1|am_inv_v1|am_m12_|am_ok_uid|am_set_seen)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch(e){} };
-  const out = () => { wipeLocal(); return signOut(auth).then(() => location.reload()); };
+  const out = () => { wipeLocal(); try{ localStorage.removeItem('am_ok_uid'); }catch(e){} return signOut(auth).then(() => location.reload()); };
   window.AMAuth = { user, signOut: out };
   /* the cover over the app (am-guard-js) lifts only when sign-in is checked */
   const G = window.AMGuard || { done(){} };
@@ -13206,7 +13227,7 @@ async function amGate(app, db, getFn, refFn){
   /* nobody signed in on this phone: the saved copy of the books is cleared and the
      sign-in screen comes at once (it used to wait up to 8 s for the check, while the
      app and its saved data were already showing) */
-  wipeLocal();
+  wipeLocal(); try{ localStorage.removeItem('am_ok_uid'); }catch(e){}
   const signing = screen('must');
   probe().then(v => {
     if(v === 'denied'){ wipeAll(); return; }
@@ -13252,7 +13273,7 @@ async function amGate(app, db, getFn, refFn){
         const b = ev.target.closest('[data-a]'); if(!b) return;
         const a = b.getAttribute('data-a');
         if(a === 'later'){ done(null); return; }
-        if(a === 'switch'){ wipeLocal(); try{ await signOut(auth); }catch(e){} location.reload(); return; }
+        if(a === 'switch'){ wipeLocal(); try{ localStorage.removeItem('am_ok_uid'); }catch(e){} try{ await signOut(auth); }catch(e){} location.reload(); return; }
         if(a === 'google'){
           err.textContent = ''; b.disabled = true;
           const prov = new GoogleAuthProvider(); prov.setCustomParameters({ prompt:'select_account' });
