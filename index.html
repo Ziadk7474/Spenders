@@ -154,6 +154,23 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m10-dock .m10-plus{ background:rgba(255,2
 html:not(#_#_#_#_) body:not(#_#_#_#_).dark-mode #m10-dock .m10-plus{ background:rgba(44,44,48,.5) !important; color:var(--k-acc) !important;
   box-shadow:0 8px 24px -8px rgba(0,0,0,.55), inset 0 0 0 .5px rgba(255,255,255,.14) !important; }
 </style>
+<style id="m23-appstore-css">/* ── tab bar like the App Store (iOS 26), Nov 22 ──
+   the bar: clear frosted glass that lets the colours behind it through (not a white bar);
+   while the drop is held, the tabs stay their normal colour and only the part under the drop
+   turns orange (a copy of the tabs in the theme colour, shown only inside the drop) */
+@media screen and (max-width:900px){
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m10-dock .m10-bar{ background-color:rgba(255,255,255,.34) !important;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.05), 0 12px 32px -12px rgba(20,22,35,.24), 0 2px 6px -2px rgba(20,22,35,.08) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_).dark-mode #m10-dock .m10-bar{ background-color:rgba(36,36,40,.46) !important;
+  box-shadow:0 0 0 .5px rgba(255,255,255,.07), 0 12px 32px -10px rgba(0,0,0,.7) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m10-dock .m10-plus{ background:rgba(255,255,255,.34) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_).dark-mode #m10-dock .m10-plus{ background:rgba(36,36,40,.46) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m10-dock .m10-bar.m23-live .m10-t{ color:var(--k-ink) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m23-tint{ position:absolute; left:0; top:0; right:0; bottom:0; z-index:4; pointer-events:none; contain:layout style; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m23-tint > .m23-tt{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-sizing:border-box; border-radius:28px; color:var(--k-acc) !important; pointer-events:none !important; background:transparent !important; box-shadow:none !important; border:0 !important; outline:0 !important; -webkit-appearance:none; appearance:none; font:inherit; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m23-tint > .m23-tt svg{ width:22px; height:22px; flex:none; }
+}
+</style>
 <script id="amx-pre-js">(function(){try{var m=document.querySelectorAll('meta[name="theme-color"]');window.__amxTC=m[0]?m[0].getAttribute("content"):"#EFEFEF";for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amBrand||"#ED532D");document.documentElement.classList.add("amx-on");setTimeout(function(){var p=document.getElementById("amx-pre");if(p&&!document.getElementById("amx-intro")){p.remove();for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amxTC)}},20000)}catch(e){}})();</script>
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="am. nexus">
@@ -31116,6 +31133,20 @@ AMCViewport.onSettle(function(){
       sp[q * 4] = 255; sp[q * 4 + 1] = 255; sp[q * 4 + 2] = 255; sp[q * 4 + 3] = Math.round(a * 255);
     }
     sg.putImageData(sd, 0, 0);
+    /* soft rim (Apple): a mask that is strong at the edge and fades out towards the middle;
+       the bent picture is blurred under it, so the rim's bending and its rainbow melt smoothly
+       into the clear middle instead of ending in a hard line */
+    var emask = null;
+    if(o.eb){
+      var ec = document.createElement('canvas'); ec.width = cw; ec.height = ch;
+      var eg = ec.getContext('2d'), ed = eg.createImageData(cw, ch), ep = ed.data, EZ = Math.max(2, B * (o.ez || 1.1));
+      for(var j2 = 0; j2 < ch; j2++) for(var i2 = 0; i2 < cw; i2++){
+        var px2 = (i2 + 0.5) / res - TW / 2, py2 = (j2 + 0.5) / res - TH / 2, d2 = sdf(px2, py2, hx, hy, rr), q2 = (j2 * cw + i2) * 4;
+        var a2 = d2 >= 0 ? 1 : Math.pow(Math.max(0, 1 - (-d2) / EZ), 1.25);
+        ep[q2] = 255; ep[q2 + 1] = 255; ep[q2 + 2] = 255; ep[q2 + 3] = Math.round(a2 * 255);
+      }
+      eg.putImageData(ed, 0, 0); emask = ec.toDataURL();
+    }
     function enc(a, mx){
       var c = document.createElement('canvas'); c.width = cw; c.height = ch;
       var g = c.getContext('2d'), id = g.createImageData(cw, ch), dd = id.data, S = mx * 2 + 2;
@@ -31126,12 +31157,12 @@ AMCViewport.onSettle(function(){
       g.putImageData(id, 0, 0); return { url:c.toDataURL(), S:S };
     }
     var rim = enc(off, mx), mg = m > 0 ? enc(mag, mm) : null;
-    return { map:rim.url, scale:rim.S, magMap:mg && mg.url, magScale:mg && mg.S, spec:'url(' + sc.toDataURL() + ')', TW:TW, TH:TH };
+    return { map:rim.url, scale:rim.S, magMap:mg && mg.url, magScale:mg && mg.S, spec:'url(' + sc.toDataURL() + ')', TW:TW, TH:TH, emask:emask };
   }
   function glass(w, h, r, o){
     w = Math.max(6, Math.round(w)); h = Math.max(6, Math.round(h)); r = Math.round(r);
     o = Object.assign({ M:0, out:false, mag:1, A:8, B:12, k:2.4, chroma:0.08, res:1, light:1, blur:0, sat:1.5, bright:1.03 }, o || {});
-    var key = [w, h, r, o.M, o.out, o.mag, o.A, o.B, o.k, o.chroma, o.res, o.light, o.blur, o.sat, o.bright, o.soft].join('_');
+    var key = [w, h, r, o.M, o.out, o.mag, o.A, o.B, o.k, o.chroma, o.res, o.light, o.blur, o.sat, o.bright, o.soft, o.eb, o.ez].join('_');
     if(cache[key]) return cache[key];
     var g = build(w, h, r, o), f = null, id = 'm23g' + (++n);
     if(ok){
@@ -31152,7 +31183,13 @@ AMCViewport.onSettle(function(){
       f.appendChild(el('feBlend', { 'in':'c0', in2:'c1', mode:'screen', result:'c01' }));
       f.appendChild(el('feBlend', { 'in':'c01', in2:'c2', mode:'screen', result:'rgb' }));
       /* displacement samples without smoothing; a hair of blur makes the bent image clean */
-      f.appendChild(el('feGaussianBlur', { 'in':'rgb', stdDeviation:String(o.soft == null ? 0.35 : o.soft) }));
+      f.appendChild(el('feGaussianBlur', { 'in':'rgb', stdDeviation:String(o.soft == null ? 0.35 : o.soft), result:'sh' }));
+      if(g.emask){
+        f.appendChild(el('feGaussianBlur', { 'in':'rgb', stdDeviation:String(o.eb), result:'bl' }));
+        f.appendChild(el('feImage', { href:g.emask, x:'0', y:'0', width:String(g.TW), height:String(g.TH), preserveAspectRatio:'none', result:'em' }));
+        f.appendChild(el('feComposite', { 'in':'bl', in2:'em', operator:'in', result:'edge' }));
+        f.appendChild(el('feComposite', { 'in':'edge', in2:'sh', operator:'over' }));
+      }
       host().appendChild(f);
     }
     var bf = ok ? 'url(#' + id + ')' + (o.blur ? ' blur(' + o.blur + 'px)' : '') + ' saturate(' + o.sat + ') brightness(' + o.bright + ')'
@@ -31238,11 +31275,28 @@ AMCViewport.onSettle(function(){
     });
     lrow.style.width = bar.offsetWidth + 'px'; lrow.style.height = bar.offsetHeight + 'px';
   }
+  var tint = null;
+  function buildTint(){
+    if(!tint || !bar) return;
+    tint.textContent = '';
+    var list = tabs(); if(!list.length) return;
+    list.forEach(function(t){
+      var c = t.cloneNode(true); c.removeAttribute('id'); c.removeAttribute('data-tab'); c.removeAttribute('onclick'); c.className = 'm23-tt'; c.setAttribute('tabindex', '-1'); c.setAttribute('aria-hidden', 'true');
+      c.style.cssText = 'position:absolute;left:' + t.offsetLeft + 'px;top:' + t.offsetTop + 'px;width:' + t.offsetWidth + 'px;height:' + t.offsetHeight + 'px;margin:0;padding:' + getComputedStyle(t).padding + ';';
+      tint.appendChild(c);
+    });
+    tint.__b = 1;
+  }
   function buildLens(){
     var t = tabs()[0]; if(!t) return;
     var tw = t.offsetWidth; if(G && TW0 === tw && cl.length) return; TW0 = tw;
     /* only the rim light is taken from the glass engine (drawn once per size) */
-    G = LG.glass(tw + HOLD_W, H0, H0 / 2, { M:22, out:true, mag:1.18, A:16, B:15, k:2.4, chroma:0.14, soft:0.3, sat:1.25, bright:1.02, light:1 });
+    /* App Store (iOS 26), from the video frame by frame: calm, the rim bends softly with a light
+       rainbow; moving, the rim smears what it passes into stronger rainbow colours. Both are soft
+       at the edge (blurred into the clear middle), never a hard line. */
+    G = LG.glass(tw + HOLD_W, H0, H0 / 2, { M:22, out:true, mag:1.18, A:15, B:16, k:2.2, chroma:0.2, soft:0.35, eb:1.6, ez:1.15, sat:1.3, bright:1.03, light:0.9 });
+    G.fast = LG.glass(tw + HOLD_W, H0, H0 / 2, { M:22, out:true, mag:1.18, A:15, B:18, k:2.0, chroma:0.34, soft:0.45, eb:2.4, ez:1.3, sat:1.45, bright:1.03, light:0.9 }).filter;
+    G.calm = G.filter; G.now = G.filter;
     G.w0 = tw + HOLD_W; G.h0 = H0;
     lens.style.width = G.TW + 'px'; lens.style.height = G.TH + 'px';
     /* real bending glass (as on 4 Nov) where the browser can draw it; the copied tabs only as a fallback */
@@ -31308,9 +31362,20 @@ AMCViewport.onSettle(function(){
       var kx = mg * s / sx, ky = mg * s / sy, tx = mg * (bl - cx) / sx - G.M + G.TW / 2, ty = mg * (bt - cy) / sy - G.M + G.TH / 2;
       lrow.style.transform = 'translate3d(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px,0) scale(' + kx.toFixed(4) + ',' + ky.toFixed(4) + ')';
       lg.style.opacity = o; lsp.style.opacity = o; lsh.style.opacity = o; lens.style.setProperty('--o', o);
+      /* speed → stronger rainbow (switches between two ready-made glasses; nothing is redrawn) */
+      if(LG.ok && G.fast){ var want = e > 0.3 ? G.fast : G.calm; if(want !== G.now){ G.now = want; LG.setBF(lg, want); } }
     }
     var live = p > 0.25;
     bar.classList.toggle('m23-live', live);
+    /* the part of the tabs under the drop turns orange — only the part it covers (App Store) */
+    if(tint){
+      if(live){
+        if(!tint.__b){ buildTint(); }
+        var L0 = X.x - w / 2, R0 = GM.ow - (X.x + w / 2) - 2 * GM.cl;
+        tint.style.clipPath = 'inset(-30px ' + R0.toFixed(1) + 'px -30px ' + L0.toFixed(1) + 'px round ' + (h / 2).toFixed(1) + 'px)';
+        if(tint.style.visibility !== 'visible') tint.style.visibility = 'visible';
+      } else if(tint.style.visibility !== 'hidden') tint.style.visibility = 'hidden';
+    }
     GM.list.forEach(function(t, i){ var u = live && Math.abs(GM.mids[i] - X.x) < w * 0.32; t.classList.toggle('m23-under', u); if(cl[i]) cl[i].classList.toggle('m23-under', u); });
   }
   function lift(to){ measure(); clearTimeout(sinkT); P.k = 400; P.c = 25; P.to = to == null ? 1 : to; Bs.to = P.to; sys.kick(); }
@@ -31328,6 +31393,10 @@ AMCViewport.onSettle(function(){
     bar.__m23 = 1;
     sel = document.createElement('span'); sel.id = 'm23-sel'; sel.setAttribute('aria-hidden', 'true');
     bar.insertBefore(sel, bar.firstChild);
+    tint = document.createElement('span'); tint.id = 'm23-tint'; tint.setAttribute('aria-hidden', 'true'); tint.style.visibility = 'hidden';
+    bar.appendChild(tint);
+    /* the copy is made again when the tabs change size (rotate, resize) */
+    if(window.ResizeObserver) new ResizeObserver(function(){ if(tint) tint.__b = 0; GM = null; }).observe(bar);
     lens = $('m23-lens') || document.createElement('div'); lens.id = 'm23-lens'; lens.setAttribute('aria-hidden', 'true'); lens.style.visibility = 'hidden';
     lens.innerHTML = '<i class="m23-lsh"></i><i class="m23-lgl"><span class="m23-lrow"></span></i><i class="m23-lsp"></i>';
     document.body.appendChild(lens);
@@ -31460,11 +31529,11 @@ AMCViewport.onSettle(function(){
     var k = knobFor(g); if(!k) return;
     var f = floatFor(g);
     if(g.classList.contains('m22-sw') || g.classList.contains('ios-tgl-track')){
-      f.show(k, 52, 36, 18, { M:12, out:true, mag:1.16, A:10, B:12, k:2.5, chroma:0.12, soft:0.35, sat:1.5, bright:1.05 });
+      f.show(k, 52, 36, 18, { M:12, out:true, mag:1.16, A:10, B:13, k:2.3, chroma:0.2, soft:0.35, eb:1.3, ez:1.15, sat:1.5, bright:1.05, light:0.9 });
     } else {
       var w = k.offsetWidth, h = k.offsetHeight; if(!w || !h) return;
       var r = Math.min(h / 2, parseFloat(getComputedStyle(k).borderTopLeftRadius) || h / 2);
-      f.show(k, w, h, r, { M:14, out:true, mag:1.14, A:11, B:11, k:2.4, chroma:0.14, soft:0.3, sat:1.4, bright:1.03 });
+      f.show(k, w, h, r, { M:14, out:true, mag:1.14, A:11, B:13, k:2.2, chroma:0.2, soft:0.35, eb:1.4, ez:1.15, sat:1.4, bright:1.03, light:0.9 });
     }
   }
   function lensOff(g, wait){
@@ -31503,7 +31572,8 @@ AMCViewport.onSettle(function(){
     var W0 = Math.round(bw + 14), H0 = Math.round(bh + 14), key = W0 + 'x' + H0;
     if(key === gsKey) return; gsKey = key;
     var A = Math.max(6, Math.min(14, H0 * 0.3)), B = Math.max(7, Math.min(14, H0 * 0.32));
-    gsG = LG.glass(W0, H0, H0 / 2, { M:18, out:true, mag:1.16, A:A, B:B, k:2.4, chroma:0.14, soft:0.3, sat:1.3, bright:1.02, light:1 });
+    /* soft rim with a smooth rainbow, like the tab bar's drop (App Store) */
+    gsG = LG.glass(W0, H0, H0 / 2, { M:18, out:true, mag:1.16, A:A, B:B + 2, k:2.2, chroma:0.2, soft:0.35, eb:1.5, ez:1.15, sat:1.3, bright:1.03, light:0.9 });
     gsG.w0 = W0; gsG.h0 = H0;
     var c = gsLens.children;
     gsLens.style.width = gsG.TW + 'px'; gsLens.style.height = gsG.TH + 'px';
