@@ -122,6 +122,38 @@
 html.m24-ready:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar{ visibility:visible; will-change:opacity; }
 html.m24-ready:not(#_#_#_#_) body:not(#_#_#_#_):not(.mobile-sidebar-open):not(.m24-peek) #sidebar{ opacity:0; }
 }</style>
+<style id="m23-ios26-css">/* ── Apple iOS 26 controls (Nov 22) ──
+   on / off switches: the iOS 26 shape — a wider track with a white capsule knob; touching it
+   swells the knob into a bigger clear glass capsule (the lens in the m23 script).
+   + button: the same glass as the tab bar next to it, its + in the theme colour. */
+html:not(#_#_) body:not(#_#_) .m22-sw,
+html:not(#_#_) body:not(#_#_) .ios-tgl-track:not(:is(#page-search, #page-urdu-stmt, .m15-stmt) .ios-tgl-track),
+html:not(#_#_) body:not(#_#_) .m10-sw{ flex:0 0 63px !important; width:63px !important; height:28px !important; border-radius:14px !important; background:rgba(120,120,128,.16) !important; }
+html:not(#_#_) body:not(#_#_).dark-mode .m22-sw,
+html:not(#_#_) body:not(#_#_).dark-mode .ios-tgl-track:not(:is(#page-search, #page-urdu-stmt, .m15-stmt) .ios-tgl-track),
+html:not(#_#_) body:not(#_#_).dark-mode .m10-sw{ background:rgba(120,120,128,.36) !important; }
+html:not(#_#_) body:not(#_#_) .m22-sw.on,
+html:not(#_#_) body:not(#_#_) .ios-tgl input:checked ~ .ios-tgl-track:not(:is(#page-search, #page-urdu-stmt, .m15-stmt) .ios-tgl-track),
+html:not(#_#_) body:not(#_#_) .m10-sw[aria-checked="true"]{ background:var(--k-acc) !important; }
+html:not(#_#_) body:not(#_#_) .m22-sw > i,
+html:not(#_#_) body:not(#_#_) .ios-tgl-track:not(:is(#page-search, #page-urdu-stmt, .m15-stmt) .ios-tgl-track) .ios-tgl-knob,
+html:not(#_#_) body:not(#_#_) .m10-sw::after{ top:2px !important; left:2px !important; width:37px !important; height:24px !important; border-radius:12px !important; background-color:#fff !important;
+  box-shadow:0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.06), 0 0 0 .5px rgba(0,0,0,.04) !important; }
+html:not(#_#_) body:not(#_#_) .m22-sw.on > i,
+html:not(#_#_) body:not(#_#_) .ios-tgl input:checked ~ .ios-tgl-track:not(:is(#page-search, #page-urdu-stmt, .m15-stmt) .ios-tgl-track) .ios-tgl-knob,
+html:not(#_#_) body:not(#_#_) .m10-sw[aria-checked="true"]::after{ transform:translateX(22px); }
+html:not(#_#_) body:not(#_#_) .m22-row:active .m22-sw > i, html:not(#_#_) body:not(#_#_) .ios-tgl:active .ios-tgl-knob{ width:37px !important; }
+html:not(#_#_) body:not(#_#_) .m22-row:active .m22-sw.on > i{ transform:translateX(22px); }
+/* touched: the knob swells into a clear glass capsule (52 x 36), centred on where it was */
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m22-sw.m23-lens > i,
+html:not(#_#_#_#_) body:not(#_#_#_#_) .ios-tgl-track.m23-lens:not(:is(#page-search, #page-urdu-stmt, .m15-stmt) .ios-tgl-track) .ios-tgl-knob{ width:52px !important; height:36px !important; border-radius:18px !important; margin:-6px 0 0 -7.5px !important; scale:1 !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m10-sw.m23-lens::after{ scale:1.4 1.5 !important; border-radius:12px !important; }
+/* + button: tab-bar glass */
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m10-dock .m10-plus{ background:rgba(255,255,255,.42) !important; color:var(--k-acc) !important;
+  box-shadow:0 8px 24px -8px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(255,255,255,.7) !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_).dark-mode #m10-dock .m10-plus{ background:rgba(44,44,48,.5) !important; color:var(--k-acc) !important;
+  box-shadow:0 8px 24px -8px rgba(0,0,0,.55), inset 0 0 0 .5px rgba(255,255,255,.14) !important; }
+</style>
 <script id="amx-pre-js">(function(){try{var m=document.querySelectorAll('meta[name="theme-color"]');window.__amxTC=m[0]?m[0].getAttribute("content"):"#EFEFEF";for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amBrand||"#ED532D");document.documentElement.classList.add("amx-on");setTimeout(function(){var p=document.getElementById("amx-pre");if(p&&!document.getElementById("amx-intro")){p.remove();for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amxTC)}},20000)}catch(e){}})();</script>
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="am. nexus">
@@ -31428,7 +31460,7 @@ AMCViewport.onSettle(function(){
     var k = knobFor(g); if(!k) return;
     var f = floatFor(g);
     if(g.classList.contains('m22-sw') || g.classList.contains('ios-tgl-track')){
-      f.show(k, 40, 30, 15, { M:12, out:true, mag:1.12, A:9, B:9, k:2.4, chroma:0.14, soft:0.3, sat:1.5, bright:1.04 });
+      f.show(k, 52, 36, 18, { M:12, out:true, mag:1.16, A:10, B:12, k:2.5, chroma:0.12, soft:0.35, sat:1.5, bright:1.05 });
     } else {
       var w = k.offsetWidth, h = k.offsetHeight; if(!w || !h) return;
       var r = Math.min(h / 2, parseFloat(getComputedStyle(k).borderTopLeftRadius) || h / 2);
@@ -31593,7 +31625,8 @@ AMCViewport.onSettle(function(){
   function glassPlus(){
     var b = document.querySelector('#m10-dock .m10-plus'); if(!b || b.__m23 || !b.offsetWidth) return;
     b.__m23 = 1;
-    var w = b.offsetWidth, g = LG.glass(w, w, w / 2, { M:0, out:false, mag:1, A:7, B:11, k:2.2, chroma:0.08, blur:4, sat:1.6, bright:1.05, light:1, soft:0 });
+    /* the same glass as the tab bar beside it (iOS 26): frosted, bright, the page's colours through it */
+    var w = b.offsetWidth, g = LG.glass(w, w, w / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:12, sat:2.2, bright:1.08, light:0.95, soft:0 });
     LG.setBF(b, g.filter);
     var sp = document.createElement('i'); sp.className = 'm23-pspec'; sp.setAttribute('aria-hidden', 'true'); sp.style.backgroundImage = g.spec; b.appendChild(sp);
   }
@@ -31649,7 +31682,8 @@ AMCViewport.onSettle(function(){
       D.b.forEach(function(q){ var d = Math.abs(q.offsetLeft + q.offsetWidth / 2 - mid); if(d < bd){ bd = d; best = q; } });
       if(best !== D.near){ D.near = best; if(D.k.classList.contains('m22-k')) D.k.style.width = best.offsetWidth + 'px'; }
     } else {
-      D.p = rubber((D.on ? 20 : 0) + dx, 0, 20);
+      if(!D.T){ var tw = D.g.clientWidth || 51, th = D.g.clientHeight || 31; D.T = Math.max(8, tw - 4 - (tw >= 60 ? 37 : th - 4)); }
+      D.p = rubber((D.on ? D.T : 0) + dx, 0, D.T);
       D.g.style.setProperty('--m23-kx', D.p.toFixed(2) + 'px');
     }
   }, true);
@@ -31670,7 +31704,7 @@ AMCViewport.onSettle(function(){
         if(t && !isOn(t)) press(t);
       }
     } else {
-      var want = d.p > 10;
+      var want = d.p > (d.T || 20) / 2;
       d.g.style.removeProperty('--m23-kx');
       if(want !== d.on){ var inp = d.g.classList.contains('ios-tgl-track') && d.g.parentNode.querySelector('input'); press(inp || d.g); }
     }
