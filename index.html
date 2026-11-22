@@ -122,36 +122,6 @@
 html.m24-ready:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar{ visibility:visible; will-change:opacity; }
 html.m24-ready:not(#_#_#_#_) body:not(#_#_#_#_):not(.mobile-sidebar-open):not(.m24-peek) #sidebar{ opacity:0; }
 }</style>
-<style id="m23-always-css">/* ── always glass (see "1e · ALWAYS GLASS" in the m23 script) ──
-   clear glass: what is behind shows through, bent at the rim; a bright rim, a soft highlight
-   on top and a little shade underneath give it its body, so it still stands out on a flat colour */
-html:not(#_#_#_#_#_) body.m23-always:not(#_#_#_#_#_) :is(.m22-sw > i, .ios-tgl-knob, .m22-glide > .m22-k, .m8-switch > .m8-switch-thumb, #m23-sel).m23-rg,
-html:not(#_#_#_#_#_) body.m23-always:not(#_#_#_#_#_) .m10-sw.m23-rg::after{
-  background-color:rgba(255,255,255,.16) !important;
-  background-image:radial-gradient(120% 70% at 50% 0%, rgba(255,255,255,.62) 0%, rgba(255,255,255,.16) 46%, rgba(255,255,255,0) 64%), var(--m23-rsp) !important;
-  background-size:100% 100%, 100% 100% !important; background-repeat:no-repeat !important;
-  box-shadow:0 3px 9px -2px rgba(15,18,35,.28), 0 .5px 1.5px rgba(15,18,35,.14),
-    inset 0 1px .5px rgba(255,255,255,.95), inset 0 -1.5px 2px rgba(15,18,35,.10), inset 0 0 0 .75px rgba(255,255,255,.75) !important; }
-html:not(#_#_#_#_#_) body.m23-always.dark-mode:not(#_#_#_#_#_) :is(.m22-sw > i, .ios-tgl-knob, .m22-glide > .m22-k, .m8-switch > .m8-switch-thumb, #m23-sel).m23-rg,
-html:not(#_#_#_#_#_) body.m23-always.dark-mode:not(#_#_#_#_#_) .m10-sw.m23-rg::after{
-  background-color:rgba(255,255,255,.08) !important;
-  background-image:radial-gradient(120% 70% at 50% 0%, rgba(255,255,255,.34) 0%, rgba(255,255,255,.08) 46%, rgba(255,255,255,0) 64%), var(--m23-rsp) !important;
-  box-shadow:0 4px 12px -3px rgba(0,0,0,.6), inset 0 1px .5px rgba(255,255,255,.5), inset 0 -1.5px 2px rgba(0,0,0,.25), inset 0 0 0 .75px rgba(255,255,255,.3) !important; }
-html:not(#_#_#_#_#_) body.m23-always:not(#_#_#_#_#_) .m10-sw.m23-rg::after{ -webkit-backdrop-filter:var(--m23-rbf) !important; backdrop-filter:var(--m23-rbf) !important; }
-/* the tab bar's pill sits inside the bar's own glass: light glass edge, no second bending */
-html:not(#_#_#_#_#_) body.m23-always:not(#_#_#_#_#_) #m23-sel.m23-rg{ background-color:rgba(255,255,255,.22) !important; box-shadow:0 2px 8px -3px rgba(15,18,35,.18), inset 0 1px .5px rgba(255,255,255,.95), inset 0 -1.5px 2px rgba(15,18,35,.06), inset 0 0 0 .75px rgba(255,255,255,.8) !important; }
-html:not(#_#_#_#_#_) body.m23-always.dark-mode:not(#_#_#_#_#_) #m23-sel.m23-rg{ background-color:rgba(255,255,255,.10) !important; }
-/* while a part is touched, the big glass drop takes over: the resting glass steps aside */
-html:not(#_#_#_#_#_) body.m23-always:not(#_#_#_#_#_) :is(.m23-lens > i, .m23-lens .ios-tgl-knob, .m23-lens > .m22-k, .m23-lens > .m8-switch-thumb).m23-rg{
-  -webkit-backdrop-filter:none !important; backdrop-filter:none !important; background-color:transparent !important; background-image:none !important; box-shadow:none !important; }
-html:not(#_#_#_#_#_) body.m23-always:not(#_#_#_#_#_) .m10-sw.m23-lens.m23-rg::after{ background-image:none !important; }
-/* the + button: clear glass, its + in the theme colour */
-html:not(#_#_#_#_#_) body.m23-always.m23-lg:not(#_#_#_#_#_) #m10-dock .m10-plus{ background:rgba(255,255,255,.14) !important; color:var(--k-acc) !important;
-  box-shadow:0 10px 26px -10px rgba(15,18,35,.35), 0 1px 3px rgba(15,18,35,.10), inset 0 1.5px .5px rgba(255,255,255,.95), inset 0 -2px 4px rgba(15,18,35,.08), inset 0 0 0 .75px rgba(255,255,255,.75) !important; }
-html:not(#_#_#_#_#_) body.m23-always.m23-lg.dark-mode:not(#_#_#_#_#_) #m10-dock .m10-plus{ background:rgba(255,255,255,.06) !important;
-  box-shadow:0 10px 26px -10px rgba(0,0,0,.6), inset 0 1.5px .5px rgba(255,255,255,.45), inset 0 -2px 4px rgba(0,0,0,.25), inset 0 0 0 .75px rgba(255,255,255,.28) !important; }
-@media (prefers-reduced-motion:reduce){ html:not(#_#_#_#_#_) body.m23-always:not(#_#_#_#_#_) .m23-rg{ -webkit-backdrop-filter:none !important; backdrop-filter:none !important; } }
-</style>
 <script id="amx-pre-js">(function(){try{var m=document.querySelectorAll('meta[name="theme-color"]');window.__amxTC=m[0]?m[0].getAttribute("content"):"#EFEFEF";for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amBrand||"#ED532D");document.documentElement.classList.add("amx-on");setTimeout(function(){var p=document.getElementById("amx-pre");if(p&&!document.getElementById("amx-intro")){p.remove();for(var i=0;i<m.length;i++)m[i].setAttribute("content",window.__amxTC)}},20000)}catch(e){}})();</script>
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="am. nexus">
@@ -31623,72 +31593,9 @@ AMCViewport.onSettle(function(){
   function glassPlus(){
     var b = document.querySelector('#m10-dock .m10-plus'); if(!b || b.__m23 || !b.offsetWidth) return;
     b.__m23 = 1;
-    /* clear glass (Nov 21): no frost, the page domes and bends through it with a thin rainbow at the rim */
-    var w = b.offsetWidth, g = LG.glass(w, w, w / 2, { M:0, out:false, mag:1.14, A:9, B:13, k:2.4, chroma:0.22, sat:1.45, bright:1.05, light:1, soft:0.3 });
+    var w = b.offsetWidth, g = LG.glass(w, w, w / 2, { M:0, out:false, mag:1, A:7, B:11, k:2.2, chroma:0.08, blur:4, sat:1.6, bright:1.05, light:1, soft:0 });
     LG.setBF(b, g.filter);
     var sp = document.createElement('i'); sp.className = 'm23-pspec'; sp.setAttribute('aria-hidden', 'true'); sp.style.backgroundImage = g.spec; b.appendChild(sp);
-  }
-
-
-  /* ══ 1e · ALWAYS GLASS (Nov 21, like zerowing.in/glass) ═══════════════════════════════
-     The parts that already turn into glass when touched now stay clear glass all the time:
-     the knob of every on/off switch, the pill of every slider tab (Purchase / Sales …), the
-     tab bar's pill and the + button. Same optics as the drops: the middle domes and magnifies
-     what is behind, the rim bends it and splits it into a thin rainbow, light runs round the
-     edge. Drawn once per size by the graphics chip (no work while you scroll). Touching them
-     still lifts the big glass drop exactly as before; the resting glass steps aside meanwhile. */
-  var RGSEL = '.m22-sw > i, .ios-tgl-knob, .m22-glide > .m22-k, .m8-switch > .m8-switch-thumb, #m23-sel, .m10-sw';
-  function rgOpts(h){
-    return { M:0, out:false, mag:1.12, A:Math.max(4, Math.min(9, h * 0.28)), B:Math.max(5, Math.min(12, h * 0.4)), k:2.4, chroma:0.22, soft:0.3, sat:1.45, bright:1.05, light:1 };
-  }
-  function rgOne(el){
-    var pseudo = el.classList.contains('m10-sw'), box = el, w, h, r;
-    if(pseudo){
-      var cs = getComputedStyle(el, '::after');
-      w = parseFloat(cs.width); h = parseFloat(cs.height); r = parseFloat(cs.borderTopLeftRadius) || h / 2;
-    } else {
-      w = el.offsetWidth; h = el.offsetHeight;
-      r = parseFloat(getComputedStyle(el).borderTopLeftRadius) || h / 2;
-    }
-    if(!(w > 4 && h > 4)) return;
-    w = Math.round(w); h = Math.round(h); r = Math.min(Math.round(r), Math.floor(Math.min(w, h) / 2));
-    var key = w + 'x' + h + 'r' + r;
-    if(el.__rg === key) return;
-    el.__rg = key;
-    var g = LG.glass(w, h, r, rgOpts(h));
-    if(pseudo){
-      el.style.setProperty('--m23-rbf', g.filter);
-      el.style.setProperty('--m23-rsp', g.spec);
-    } else if(el.id === 'm23-sel'){
-      box.style.setProperty('--m23-rsp', g.spec);
-    } else {
-      LG.setBF(box, g.filter);
-      box.style.setProperty('--m23-rsp', g.spec);
-    }
-    el.classList.add('m23-rg');
-  }
-  var rgT = 0, rgRO = null;
-  function rgScan(){
-    rgT = 0;
-    if(reduce.matches) return;
-    var list = document.querySelectorAll(RGSEL);
-    for(var i = 0; i < list.length; i++){
-      var el = list[i];
-      if(!el.offsetParent && !el.classList.contains('m10-sw')) continue;   /* not on screen now */
-      if(el.classList.contains('m10-sw') && !el.offsetWidth) continue;
-      try{ rgOne(el); }catch(e){}
-      if(rgRO && !el.__rgo){ el.__rgo = 1; try{ rgRO.observe(el); }catch(e){} }
-    }
-  }
-  function rgSoon(){ if(!rgT) rgT = setTimeout(function(){ (window.requestIdleCallback ? requestIdleCallback(rgScan, { timeout:300 }) : rgScan()); }, 120); }
-  function alwaysGlass(){
-    if(alwaysGlass.on) return; alwaysGlass.on = 1;
-    document.body.classList.add('m23-always');
-    /* a pill that changes width (moving to a longer word) gets glass of its new size once it settles */
-    if(window.ResizeObserver) rgRO = new ResizeObserver(function(es){ es.forEach(function(e){ e.target.__rg = ''; }); rgSoon(); });
-    new MutationObserver(rgSoon).observe(document.body, { childList:true, subtree:true });
-    document.addEventListener('click', rgSoon, true);
-    rgScan();
   }
 
   /* ══ 1c · EVERY SWITCH CAN BE DRAGGED ═════════════════════════════════════════════════
@@ -32132,10 +32039,10 @@ AMCViewport.onSettle(function(){
   }
   function boot(){
     lightSidebar();
-    setupBar(); glassPlus(); alwaysGlass(); wrapShowPage(); watchClose(); addGrabs();
+    setupBar(); glassPlus(); wrapShowPage(); watchClose(); addGrabs();
     new MutationObserver(function(){ addGrabs(); }).observe(document.body, { childList:true });
     document.addEventListener('pointerdown', addGrabs, true);
-    M8.after('showPage', function(id){ setupBar(); glassPlus(); rgSoon(); arrive(id); });
+    M8.after('showPage', function(id){ setupBar(); glassPlus(); arrive(id); });
     new MutationObserver(function(){ if(!$('m10-bar') || !$('m10-bar').__m23) setupBar(); }).observe(document.body, { childList:true });
     last = M8.page ? M8.page() : null;
   }
