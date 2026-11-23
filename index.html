@@ -8717,9 +8717,9 @@ html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > .m22-k, html:not(#_#_#_)
 html:not(#_#_#_) body:not(#_#_#_).m23-nolg .m22-glide.m23-lens > .m22-k, html:not(#_#_#_) body:not(#_#_#_).m23-nolg .m8-switch.m23-lens > .m8-switch-thumb{ background-color:rgba(255,255,255,.3) !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > button:not(._), html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > [role="tab"], html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > [role="radio"], html:not(#_#_#_) body:not(#_#_#_) .m8-switch.m23-lens button{ color:var(--k-ink) !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m8-switch-thumb{ transition-property:transform, background-color, scale, box-shadow !important; transition-duration:.46s, .25s, .5s, .25s !important; transition-timing-function:var(--m23-ios), ease, var(--m23-spring), ease !important; }
-html:not(#_#_#_) body:not(#_#_#_) .m23-p{ transition:scale .5s var(--m23-spring), background-color .25s ease, color .25s ease, box-shadow .25s ease, border-color .25s ease, opacity .25s ease !important;
+html:not(#_#_#_) body:not(#_#_#_) .m23-p{ transition:scale .3s cubic-bezier(.32,.72,0,1), background-color .25s ease, color .25s ease, box-shadow .25s ease, border-color .25s ease, opacity .25s ease !important;
   transition-property:scale, background-color, color, box-shadow, border-color, opacity !important; }
-html:not(#_#_#_) body:not(#_#_#_) .m23-p.m23-down{ scale:var(--m23-k, .96); transition:scale .12s ease-out, background-color .15s ease, color .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease !important;
+html:not(#_#_#_) body:not(#_#_#_) .m23-p.m23-down{ scale:var(--m23-k, .965); transition:scale .18s cubic-bezier(.32,.72,0,1), background-color .15s ease, color .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease !important;
   transition-property:scale, background-color, color, box-shadow, border-color, opacity !important; }
 @media (hover:hover) and (pointer:fine){html:not(#_#_#_) body:not(#_#_#_) .m5-card, html:not(#_#_#_) body:not(#_#_#_) .m16-ch, html:not(#_#_#_) body:not(#_#_#_) .m16-kp, html:not(#_#_#_) body:not(#_#_#_) .m22-card, html:not(#_#_#_) body:not(#_#_#_) .m13-kpi, html:not(#_#_#_) body:not(#_#_#_) .m16-total{ transition:translate .35s var(--m23-out), box-shadow .35s var(--m23-out) !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m5-card:hover, html:not(#_#_#_) body:not(#_#_#_) .m16-ch:hover, html:not(#_#_#_) body:not(#_#_#_) .m16-kp:hover, html:not(#_#_#_) body:not(#_#_#_) .m13-kpi:hover{ translate:0 -2px; box-shadow:0 14px 30px -18px rgba(20,20,30,.28) !important; }
@@ -23361,6 +23361,9 @@ AMCViewport.onSettle(function(){
         '<div class="m5-wstats"><div><small>Best · '+months[bestI].lbl+'</small><b>'+short(mVals[bestI])+'</b></div><div><small>Avg / month</small><b>'+short(avgM)+'</b></div><div><small>'+months[11].lbl+' so far</small><b>'+short(thisM)+'</b></div></div>'+
       '</div>'+
 
+      /* the last 30 days as pixel dots (M32) */
+      (window.M32 ? M32.homeCard() : '')+
+
       /* cheque register */
       '<div class="m5-card m5-chq">'+
         '<div class="m5-row m5-chq-h"><div><b class="m5-h3">Cheque register</b><small class="m5-sub">'+pending.length+' pending · '+fmt(pendTotal)+' AED</small></div>'+
@@ -25025,7 +25028,7 @@ AMCViewport.onSettle(function(){
         '<div class="m21-acts" role="group" aria-label="Actions">'+ACTS.map(function(a, i){ return '<button type="button" class="m21-act'+(i?'':' main')+'" data-p="'+a[2]+'">'+icon(a[0])+'<span>'+a[1]+'</span></button>'; }).join('')+'</div>'+
         '<div class="m16-hero m16-hero5">'+
           '<div class="m16-total"><span>'+balLbl+'</span><b>'+AEDsvg()+' '+money(Math.abs(bal))+'</b>'+
-            '<small>'+(sales?'Sold ':'Billed ')+money(billed)+' · '+(sales?'received ':'paid ')+money(paid)+' ('+pct+'%)</small></div>'+
+            '<small>'+(sales?'Sold ':'Billed ')+money(billed)+' · '+(sales?'received ':'paid ')+money(paid)+' ('+pct+'%)'+(window.M32 ? M32.balChange(S.name) : '')+'</small></div>'+
           tile('', sales?'Invoices':'Bills', recs.length, 'avg '+money(avg))+
           tile(unpaid.length?'unpaid':'', 'Unpaid', unpaid.length, lateCount ? lateCount+' past '+creditDays+' days credit' : oldest ? 'oldest '+Math.max(0,days(oldest.date))+' days' : 'nothing due')+
           tile('', 'Last '+(sales?'receipt':'payment'), lastPay ? ago(lastPay.date) : 'Never', lastPay ? money(lastPay.amount)+' · '+new Date(lastPay.date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : 'no '+(sales?'receipts':'payments')+' yet')+
@@ -25033,7 +25036,9 @@ AMCViewport.onSettle(function(){
             ? tile('', 'Credit limit', Math.round(Math.max(0,bal)/creditLimit*100)+'% used', 'limit AED '+money(creditLimit))
             : tile('', 'Pending cheques', chqPend.length, chqPend.length ? 'AED '+money(chqPendAmt) : 'none'))+
         '</div>'+
+        (window.M32 ? M32.note(S.name) : '')+
         charts+
+        (window.M32 ? M32.partyCards(S.name) : '')+
         '<section class="m21-ledger" id="m21-ledger">'+
           '<div class="m21-lh"><div><b>Ledger</b><small>'+lg.ev.length+' entries</small></div>'+
             '<div class="m21-filt"><div class="m16-seg" role="group" aria-label="Show">'+[['all','All'],['inv',sales?'Invoices':'Bills'],['pay',sales?'Receipts':'Payments'],['unpaid','Unpaid'],['chq','Cheques']].map(function(f){
@@ -31794,11 +31799,13 @@ AMCViewport.onSettle(function(){
   document.addEventListener('pointerdown', function(e){
     if(e.button > 0) return;
     var t = e.target.closest && e.target.closest(PRESS); if(!t || t.disabled) return;
-    if(t.closest('#m10-bar') || glassOf(t)) return;   /* glass controls have their own lens */
+    if(t.closest('#m10-bar')) return;   /* the tab bar has its own glass drop */
+    /* a toggle: the whole row it sits in pushes in, like any other button (Nov 23); its glass knob still swells */
+    if(glassOf(t)){ var row = t.closest('.m22-row, .ios-tgl, label'); if(row) t = row; }
     t.classList.add('m23-p');
-    /* big things squeeze less than small ones */
+    /* every button, tab, toggle row and card pushes in a little and comes back (as in the Frost demo) */
     var r = t.getBoundingClientRect(), a = r.width * r.height;
-    t.style.setProperty('--m23-k', a > 60000 ? '.985' : a > 12000 ? '.975' : '.94');
+    t.style.setProperty('--m23-k', a > 60000 ? '.98' : a > 4000 ? '.965' : '.95');
     release(); down = t; t.classList.add('m23-down');
   }, true);
   ['pointerup', 'pointercancel', 'pointerleave', 'dragstart'].forEach(function(ev){ document.addEventListener(ev, function(){ setTimeout(release, 40); }, true); });
@@ -33786,6 +33793,365 @@ AMCViewport.onSettle(function(){
   document.addEventListener('mousedown', function(e){
     if(e.target && e.target.closest && e.target.closest('#lock-bio-btn')) e.preventDefault();
   }, true);
+})();
+</script>
+<style id="m32-css">/* ══ M32 · pixel dot graphs, payment habit, last 24 bills (Nov 2026) ═════════════════════════════
+   Paid = ink dots · open = soft grey · late = red · cheques due = orange rings (ahead of today) */
+html:not(#_#_) body:not(#_#_) .m32-plot{ position:relative; flex:1; min-height:0; color:var(--k-ink); }
+html:not(#_#_) body:not(#_#_) .m32-plot svg{ display:block; width:100%; height:100%; overflow:visible; }
+html:not(#_#_) body:not(#_#_) .m32-plot g.m32-b{ cursor:pointer; }
+html:not(#_#_) body:not(#_#_) .m32-plot g.m32-b .m32-hl{ fill:var(--k-acc); fill-opacity:0; transition:fill-opacity .15s ease; }
+html:not(#_#_) body:not(#_#_) .m32-plot g.m32-b.on .m32-hl{ fill-opacity:.1; }
+html:not(#_#_) body:not(#_#_) .m32-plot text{ font:500 9.5px var(--k-font); fill:var(--k-ink3); }
+html:not(#_#_) body:not(#_#_) .m32-plot text.now{ fill:var(--k-ink); font-weight:700; }
+html:not(#_#_) body:not(#_#_) .m32-leg{ display:flex; flex-wrap:wrap; gap:4px 12px; font-size:11px; color:var(--k-ink3); }
+html:not(#_#_) body:not(#_#_) .m32-leg span{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+html:not(#_#_) body:not(#_#_) .m32-leg i{ width:8px; height:8px; border-radius:50%; background:var(--k-ink); display:inline-block; }
+html:not(#_#_) body:not(#_#_) .m32-leg i.o{ background:var(--k-ink3); opacity:.6; }
+html:not(#_#_) body:not(#_#_) .m32-leg i.l{ background:var(--k-neg); }
+html:not(#_#_) body:not(#_#_) .m32-leg i.c{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m32-leg i.h{ border-radius:2px; background:repeating-linear-gradient(135deg, var(--k-ink3) 0 1px, transparent 1px 3.5px); box-shadow:inset 0 0 0 1px var(--k-ink3); }
+
+/* party page: a second row of three cards, same size and look as the graphs above */
+html:not(#_#_) body:not(#_#_) .m32-row{ margin-top:12px; }
+html:not(#_#_) body:not(#_#_) .m32-row .m16-ch-h b .u{ font-size:.62em; font-weight:600; color:var(--k-ink3); margin-left:3px; }
+/* last 24 bills */
+html:not(#_#_) body:not(#_#_) .m32-run{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(24, minmax(0, 1fr)); gap:3px; align-items:end; padding-bottom:2px; border-bottom:1px solid var(--k-line); }
+html:not(#_#_) body:not(#_#_) .m32-run button{ height:var(--h, 30%); min-height:6px; padding:0; border:0; border-radius:3px; background:var(--k-ink); cursor:pointer; opacity:.9; transition:opacity .15s ease; -webkit-tap-highlight-color:transparent; }
+html:not(#_#_) body:not(#_#_) .m32-run button.u{ background:repeating-linear-gradient(135deg, var(--k-ink3) 0 1.2px, transparent 1.2px 4px); box-shadow:inset 0 0 0 1px var(--k-ink3); opacity:1; }
+html:not(#_#_) body:not(#_#_) .m32-run button.l{ background:var(--k-neg); opacity:1; }
+html:not(#_#_) body:not(#_#_) .m32-run i{ display:block; height:30%; border-radius:3px; box-shadow:inset 0 0 0 1px var(--k-line2); }
+html:not(#_#_) body:not(#_#_) .m32-run button.on{ opacity:1; box-shadow:0 0 0 2px var(--k-card), 0 0 0 3.5px var(--k-acc); }
+/* payment habit */
+html:not(#_#_) body:not(#_#_) .m32-hab{ flex:1; min-height:0; display:flex; flex-direction:column; justify-content:space-between; gap:10px; }
+html:not(#_#_) body:not(#_#_) .m32-hd{ display:grid; grid-template-columns:repeat(10, 1fr); gap:6px; align-content:start; }
+html:not(#_#_) body:not(#_#_) .m32-hd button{ aspect-ratio:1; max-width:18px; width:100%; padding:0; border:0; border-radius:50%; background:var(--k-ink); cursor:pointer; justify-self:center; transition:transform .15s ease; -webkit-tap-highlight-color:transparent; }
+html:not(#_#_) body:not(#_#_) .m32-hd button.l{ background:var(--k-neg); }
+html:not(#_#_) body:not(#_#_) .m32-hd button.o{ background:transparent; box-shadow:inset 0 0 0 1.6px var(--k-ink3); }
+html:not(#_#_) body:not(#_#_) .m32-hd button.ol{ background:transparent; box-shadow:inset 0 0 0 1.8px var(--k-neg); }
+html:not(#_#_) body:not(#_#_) .m32-hd button.on{ transform:scale(1.3); }
+html:not(#_#_) body:not(#_#_) .m32-hbar{ display:flex; height:8px; border-radius:4px; overflow:hidden; background:var(--k-tile); }
+html:not(#_#_) body:not(#_#_) .m32-hbar i{ display:block; height:100%; background:var(--k-ink); }
+html:not(#_#_) body:not(#_#_) .m32-hbar i.l{ background:var(--k-neg); }
+html:not(#_#_) body:not(#_#_) .m32-empty{ flex:1; display:flex; align-items:center; justify-content:center; text-align:center; font-size:13px; color:var(--k-ink3); border-radius:14px; background:var(--k-tile); padding:10px; }
+
+/* one-line note under the balance */
+html:not(#_#_) body:not(#_#_) .m32-note{ display:flex; align-items:center; gap:12px; margin-top:12px; padding:12px 12px 12px 14px; border-radius:20px; background:var(--k-card); }
+html:not(#_#_) body:not(#_#_) .m32-note .ic{ flex:0 0 32px; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--k-acc-soft); color:var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m32-note .ic svg{ width:16px; height:16px; }
+html:not(#_#_) body:not(#_#_) .m32-note p{ flex:1; min-width:0; margin:0; font-size:13.5px; line-height:1.45; color:var(--k-ink2); }
+html:not(#_#_) body:not(#_#_) .m32-note p b{ color:var(--k-ink); font-weight:600; }
+html:not(#_#_) body:not(#_#_) .m32-note .go{ flex:none; height:36px; padding:0 16px; border:0; border-radius:999px; background:var(--k-acc); color:#fff; font:600 13px var(--k-font); cursor:pointer; white-space:nowrap; }
+html:not(#_#_) body:not(#_#_) .m32-chg{ display:block; margin-top:6px; font-style:normal; font-size:12px; opacity:.75; }
+
+/* Home: the 30-day dot graph (its own full-width row, above the cheque register) */
+html:not(#_#_) body:not(#_#_) .m32-home{ grid-area:dots; display:flex; flex-direction:column; gap:10px; }
+html:not(#_#_) body:not(#_#_) .m32-home .m5-row{ align-items:flex-start; gap:12px; }
+html:not(#_#_) body:not(#_#_) .m32-home .m32-pick{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; min-height:24px; }
+html:not(#_#_) body:not(#_#_) .m32-home .m32-pick b{ font:600 20px/1.2 var(--k-font); color:var(--k-ink); font-variant-numeric:tabular-nums; white-space:nowrap; }
+html:not(#_#_) body:not(#_#_) .m32-home .m32-pick small{ font-size:12.5px; color:var(--k-ink3); }
+html:not(#_#_) body:not(#_#_) .m32-home .m32-plot{ flex:none; }
+html:not(#_#_) body:not(#_#_) .m32-home .m32-plot svg.n{ aspect-ratio:340/170; height:auto; }
+html:not(#_#_) body:not(#_#_) .m32-home .m32-plot svg.w{ aspect-ratio:900/190; height:auto; max-height:250px; }
+html:not(#_#_) body:not(#_#_) .m5-body{ grid-template-areas:
+    "seg seg seg seg chips chips chips chips chips chips chips chips"
+    "bal bal bal bal bal bal bal stack stack stack stack stack"
+    "mini mini mini mini mini mini days days days cmp cmp cmp"
+    "wave wave wave wave wave wave wave ann ann ann ann ann"
+    "act act act act act act act act act act act act"
+    "dots dots dots dots dots dots dots dots dots dots dots dots"
+    "chq chq chq chq chq chq chq owe owe owe owe owe"
+    "quick quick quick quick quick quick quick quick quick quick quick quick"; }
+@media (max-width:760px){html:not(#_#_) body:not(#_#_) .m5-body{ grid-template-areas:
+    "seg seg seg seg seg seg seg seg seg seg seg seg"
+    "chips chips chips chips chips chips chips chips chips chips chips chips"
+    "bal bal bal bal bal bal bal stack stack stack stack stack"
+    "mini mini mini mini mini mini days days days cmp cmp cmp"
+    "wave wave wave wave wave wave wave wave wave wave wave wave"
+    "ann ann ann ann ann ann ann ann ann ann ann ann"
+    "act act act act act act act act act act act act"
+    "dots dots dots dots dots dots dots dots dots dots dots dots"
+    "chq chq chq chq chq chq chq chq chq chq chq chq"
+    "owe owe owe owe owe owe owe owe owe owe owe owe"
+    "quick quick quick quick quick quick quick quick quick quick quick quick"; }}
+@media (min-width:1280px){html:not(#_#_) body:not(#_#_) .m5-body{ grid-template-areas:
+      "seg seg seg seg seg seg chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips"
+      "bal bal bal bal bal bal bal stack stack stack stack stack stack mini mini mini mini days days days days cmp cmp cmp"
+      "ann ann ann ann ann ann act act act act act act act act act act act act wave wave wave wave wave wave"
+      "ann ann ann ann ann ann act act act act act act act act act act act act quick quick quick quick quick quick"
+      "dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots"
+      "chq chq chq chq chq chq chq chq chq chq chq chq owe owe owe owe owe owe owe owe owe owe owe owe"; }}
+@media (min-width:901px){html:not(#_#_#_#_) body.m14-mid:not(#_#_#_#_) .m5-body{
+    grid-template-areas:
+      "seg seg seg seg chips chips chips chips chips chips chips chips"
+      "bal bal bal bal bal stack stack stack stack mini mini mini"
+      "days days days cmp cmp cmp wave wave wave wave wave wave"
+      "ann ann ann ann act act act act act act act act"
+      "quick quick quick quick act act act act act act act act"
+      "dots dots dots dots dots dots dots dots dots dots dots dots"
+      "chq chq chq chq chq chq owe owe owe owe owe owe" !important; }
+html:not(#_#_#_#_) body.m14-wide-s:not(#_#_#_#_) .m5-body{
+    grid-template-areas:
+      "seg seg seg seg seg seg chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips chips"
+      "bal bal bal bal bal bal stack stack stack stack stack stack mini mini mini mini days days days days cmp cmp cmp cmp"
+      "ann ann ann ann ann ann act act act act act act act act act act act act wave wave wave wave wave wave"
+      "ann ann ann ann ann ann act act act act act act act act act act act act quick quick quick quick quick quick"
+      "dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots dots"
+      "chq chq chq chq chq chq chq chq chq chq chq chq owe owe owe owe owe owe owe owe owe owe owe owe" !important; }}
+</style>
+<script id="m32-js">/* ══════════════════════════════════════════════════════════════════════════════════════
+   M32 · graphs from the Frost & Graphite demo, in the app's own orange look (Nov 2026)
+   · party page: a one-line note, the balance's change in 30 days, and a second row of
+     three cards — paid / open / late month by month (pixel dots, cheques due as rings),
+     the last 24 bills, and the payment habit;
+   · Home: the last 30 days as pixel dots (paid, open, late) with cheques due ahead.
+   Read only: nothing here writes data. Tap a column / bar / dot to see its numbers;
+   tap it again to open it.
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var DAY = 864e5, uid = 0;
+  var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var AED = '<svg class="aed-sym" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" aria-hidden="true" style="height:0.82em;width:auto;vertical-align:middle;position:relative;top:-0.05em;display:inline-block;fill:currentColor"><use href="#aed-glyph"/></svg>';
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  function money(n){ return (typeof fmt === 'function') ? fmt(+n || 0) : (+n || 0).toFixed(2); }
+  function short(n){ n = +n || 0; var a = Math.abs(n), s = n < 0 ? '-' : ''; return a >= 1e6 ? s + (a / 1e6).toFixed(1) + 'M' : a >= 1e3 ? s + (a / 1e3).toFixed(a >= 1e5 ? 0 : 1) + 'K' : s + a.toFixed(0); }
+  function f1(n){ return Math.round(n * 10) / 10; }
+  function ymd(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function today(){ var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function dOf(s){ return new Date((s || '') + 'T00:00:00'); }
+  function age(s){ return Math.round((today() - dOf(s)) / DAY); }
+  function dShort(s){ var d = dOf(s); return d.getDate() + ' ' + MON[d.getMonth()]; }
+  function sales(){ return DB.mode === 'sales'; }
+  function W(k){ var s = sales(); return { bill:s ? 'invoice' : 'bill', bills:s ? 'invoices' : 'bills', paid:s ? 'received' : 'paid', Paid:s ? 'Received' : 'Paid' }[k]; }
+  function termsOf(name){ try{ var po = typeof getPartyObj === 'function' ? getPartyObj(name) : null; if(po && po.creditDays != null && po.creditDays !== '' && !isNaN(+po.creditDays)) return +po.creditDays; }catch(e){} return 30; }
+  function isCash(name){ return typeof isCashPartyName === 'function' && isCashPartyName(name); }
+  function rowsOf(name){ try{ return partyAllocationMap(name).rows; }catch(e){ return []; } }
+  /* when a bill was settled: the date of the last payment that touched it */
+  function paidOn(row){
+    if(row.status !== 'paid') return null;
+    var d = row.rec.date || '';
+    (row.payments || []).forEach(function(x){ var pd = x.pay && x.pay.date; if(pd && pd > d) d = pd; });
+    return d;
+  }
+  /* split one bill into paid / open / late parts */
+  function parts(row, T){
+    var out = Math.max(0, +row.outstanding || 0), amt = +row.invoiced || 0;
+    var late = out > 0.005 && age(row.rec.date) > T;
+    return { paid:amt - out, open:late ? 0 : out, late:late ? out : 0 };
+  }
+
+  /* ── the pixel dot graph ─────────────────────────────────────────────────────────────────
+     b: [{ k, paid, open, late, chq, fut, now, lbl, v, c, def, go }] — one column per day/month.
+     Every dot is the same amount of money; it is drawn bottom-up: paid, open, late, then
+     (today and ahead) a ring for each part of a cheque that is due. */
+  function dots(b, Wd, Ht, o){
+    o = o || {}; uid++;
+    var padL = 2, padR = o.padR == null ? 30 : o.padR, padT = 22, padB = 16, avail = Wd - padL - padR, nb = b.length;
+    var k = Math.max(1, Math.floor(avail / (nb * (o.pMin || 6.2))) - 1), p = Math.min(o.pMax || 10, avail / (nb * (k + 1))), r = p * 0.34, slot = k + 1;
+    var rows = Math.max(5, Math.floor((Ht - padT - padB) / p)), yb = Ht - padB, x0 = padL + (avail - slot * nb * p) / 2;
+    var mx = 0; b.forEach(function(x){ mx = Math.max(mx, x.fut ? x.chq : x.paid + x.open + x.late + (x.now ? x.chq : 0)); });
+    var unit = mx > 0 ? mx / (rows * k * 0.94) : 1;
+    var s = '<svg viewBox="0 0 ' + Wd + ' ' + Ht + '" preserveAspectRatio="xMidYMid meet"' + (o.cls ? ' class="' + o.cls + '"' : '') + ' aria-hidden="true">' +
+      '<defs><pattern id="m32g' + uid + '" x="' + f1(x0) + '" y="' + f1(yb - rows * p) + '" width="' + f1(p) + '" height="' + f1(p) + '" patternUnits="userSpaceOnUse"><circle cx="' + f1(p / 2) + '" cy="' + f1(p / 2) + '" r="' + f1(r * 0.62) + '" fill="currentColor" opacity=".1"/></pattern></defs>' +
+      '<rect x="' + f1(x0) + '" y="' + f1(yb - rows * p) + '" width="' + f1(slot * nb * p) + '" height="' + f1(rows * p) + '" fill="url(#m32g' + uid + ')"/>';
+    /* a guide at half and full height, with its amount */
+    if(padR > 0) [0.5, 1].forEach(function(f){ var rr = Math.round(rows * f), y = yb - rr * p; s += '<line x1="' + f1(x0) + '" x2="' + f1(Wd - padR + 4) + '" y1="' + f1(y) + '" y2="' + f1(y) + '" stroke="currentColor" stroke-opacity=".12" stroke-dasharray="2 3"/><text x="' + (Wd - 1) + '" y="' + f1(y + 3) + '" text-anchor="end">' + short(rr * k * unit) + '</text>'; });
+    var ni = -1;
+    b.forEach(function(x, i){
+      if(x.now) ni = i;
+      var gx = x0 + i * slot * p, idx = 0, cap = rows * k, g = '';
+      /* solid dots: one dotted line per column and colour (a few elements instead of hundreds of circles) */
+      function put(n, fill, ring, op){
+        var a = idx, e = Math.min(cap, idx + n); idx = e; if(e <= a) return;
+        if(ring){ for(var j = a; j < e; j++){ var cx = gx + (j % k) * p + p / 2, cy = yb - Math.floor(j / k) * p - p / 2;
+          g += '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(r - 0.45) + '" fill="none" stroke="' + fill + '" stroke-width="1.1"/>'; } return; }
+        for(var c = 0; c < k; c++){
+          var r0 = Math.ceil((a - c) / k), r1 = Math.floor((e - 1 - c) / k); if(r1 < r0) continue;
+          var x = gx + c * p + p / 2, y0 = yb - r0 * p - p / 2, y1 = yb - r1 * p - p / 2;
+          g += r1 === r0 ? '<circle cx="' + f1(x) + '" cy="' + f1(y0) + '" r="' + f1(r) + '" fill="' + fill + '"' + (op ? ' fill-opacity="' + op + '"' : '') + '/>'
+            : '<path d="M' + f1(x) + ' ' + f1(y0) + 'V' + f1(y1) + '" stroke="' + fill + '" stroke-width="' + f1(r * 2) + '" stroke-linecap="round" stroke-dasharray="0 ' + f1(p) + '"' + (op ? ' stroke-opacity="' + op + '"' : '') + '/>';
+        }
+      }
+      function n(v){ return v > 0.005 ? Math.max(1, Math.round(v / unit)) : 0; }
+      if(!x.fut){ put(n(x.paid), 'currentColor'); put(n(x.open), 'var(--k-ink3)', false, '.55'); put(n(x.late), 'var(--k-neg)'); }
+      if(x.fut || x.now) put(n(x.chq), 'var(--k-acc)', true);
+      s += '<g class="m32-b' + (x.def ? ' on' : '') + '" data-pk="' + esc(x.k) + '" data-v="' + esc(x.v) + '" data-c="' + esc(x.c) + '"' + (x.def ? ' data-def="1"' : '') + (x.go || '') + '>' +
+        '<rect class="m32-hl" x="' + f1(gx - p * 0.3) + '" y="' + f1(yb - rows * p - 2) + '" width="' + f1(k * p + p * 0.6) + '" height="' + f1(rows * p + 4) + '" rx="' + f1(p * 0.8) + '"/>' + g +
+        '<rect x="' + f1(gx - p / 2) + '" y="0" width="' + f1(slot * p) + '" height="' + Ht + '" fill="transparent"/></g>';
+    });
+    if(ni >= 0 && ni < nb - 1){
+      var nx = x0 + (ni * slot + k) * p + p / 2;
+      s += '<line x1="' + f1(nx) + '" x2="' + f1(nx) + '" y1="' + (padT - 4) + '" y2="' + f1(yb) + '" stroke="currentColor" stroke-opacity=".45" stroke-dasharray="2 3"/>' +
+        '<rect x="' + f1(nx - 19) + '" y="' + (padT - 19) + '" width="38" height="15" rx="7.5" fill="var(--k-acc)"/><text x="' + f1(nx) + '" y="' + (padT - 8.5) + '" text-anchor="middle" style="fill:#fff;font-weight:700;font-size:8.5px;letter-spacing:.06em">NOW</text>';
+    }
+    var step = Math.max(1, Math.ceil(nb * 30 / avail));
+    b.forEach(function(x, i){ if(!x.lbl) return; if(i % step && !x.now) return; if(ni >= 0 && i !== ni && Math.abs(i - ni) < step) return;
+      s += '<text x="' + f1(x0 + i * slot * p + k * p / 2) + '" y="' + (Ht - 3) + '" text-anchor="middle"' + (x.now ? ' class="now"' : '') + '>' + esc(x.lbl) + '</text>'; });
+    return s + '</svg>';
+  }
+
+  /* ── tap: the first tap shows a column's numbers, the second opens it ───────────────────── */
+  function pick(t){
+    var c = t.closest('.m32-ch'); if(!c) return;
+    var key = t.getAttribute('data-pk');
+    [].forEach.call(c.querySelectorAll('[data-pk]'), function(x){ var on = x.getAttribute('data-pk') === key; x.classList.toggle('on', on); x.__m32 = on ? 1 : 0; });
+    var v = c.querySelector('.v'), cp = c.querySelector('.c');
+    if(v) v.textContent = t.getAttribute('data-v');
+    if(cp) cp.textContent = t.getAttribute('data-c');
+  }
+  /* runs first (capture), so the other graph code on the page does not act on the same tap */
+  document.addEventListener('click', function(e){
+    var t = e.target.closest && e.target.closest('.m32-ch [data-pk]'); if(!t) return;
+    if(!t.classList.contains('on') || !t.__m32){ pick(t); e.stopPropagation(); return; }
+    var inv = t.getAttribute('data-m32inv');
+    if(inv){ e.stopPropagation(); var r = (AD().records || []).find(function(x){ return String(x.id) === inv; }); if(r && typeof viewRecord === 'function') viewRecord(r.id); }
+    /* a month (data-pgo): the party page itself scrolls its ledger to that month */
+  }, true);
+  document.addEventListener('pointerover', function(e){ if(e.pointerType !== 'mouse') return; var t = e.target.closest && e.target.closest('.m32-ch [data-pk]'); if(t) pick(t); });
+  document.addEventListener('pointerout', function(e){
+    if(e.pointerType !== 'mouse') return; var c = e.target.closest && e.target.closest('.m32-ch'); if(!c || (e.relatedTarget && c.contains(e.relatedTarget))) return;
+    var d = c.querySelector('[data-def]'); if(d) pick(d);
+  });
+
+  /* ══ PARTY PAGE ═════════════════════════════════════════════════════════════════════════ */
+  function partyStats(name){
+    var T = termsOf(name), cash = isCash(name), rows = rowsOf(name), t30 = ymd(new Date(today() - 29 * DAY));
+    var recs = (AD().records || []).filter(function(r){ return r.party === name; }), pays = (AD().payments || []).filter(function(p){ return p.party === name; });
+    var bal = 0, b30 = 0;
+    recs.forEach(function(r){ bal += +r.amount || 0; if((r.date || '') < t30) b30 += +r.amount || 0; });
+    pays.forEach(function(p){ bal -= +p.amount || 0; if((p.date || '') < t30) b30 -= +p.amount || 0; });
+    var done = [], open = [], late = [];
+    rows.forEach(function(x){
+      var on = paidOn(x);
+      if(on != null){ x.m32d = Math.max(0, Math.round((dOf(on) - dOf(x.rec.date)) / DAY)); done.push(x); }
+      else if(x.outstanding > 0.005){ x.m32age = Math.max(0, age(x.rec.date)); (x.m32age > T ? late : open).push(x); }
+    });
+    var onTime = done.filter(function(x){ return x.m32d <= T; }).length;
+    var avg = done.length ? Math.round(done.reduce(function(s, x){ return s + x.m32d; }, 0) / done.length) : null;
+    return { T:T, cash:cash, rows:rows, bal:bal, b30:b30, done:done, open:open, late:late, onTime:onTime, avg:avg,
+      lateAmt:late.reduce(function(s, x){ return s + x.outstanding; }, 0), openAmt:open.reduce(function(s, x){ return s + x.outstanding; }, 0) };
+  }
+  /* the balance's change in the last 30 days (under the big balance) */
+  function balChange(name){
+    var st = partyStats(name); if(st.cash) return '';
+    if(Math.abs(st.b30) < 0.5 && Math.abs(st.bal) < 0.5) return '';
+    if(Math.abs(st.b30) < 0.5) return '<em class="m32-chg">New in the last 30 days</em>';
+    var d = (st.bal - st.b30) / Math.abs(st.b30) * 100;
+    if(Math.abs(d) < 0.5) return '<em class="m32-chg">Same as 30 days ago</em>';
+    return '<em class="m32-chg">' + (d > 0 ? '▲ ' : '▼ ') + Math.abs(d).toFixed(1) + '% vs 30 days ago (' + money(st.b30) + ')</em>';
+  }
+  function note(name){
+    var st = partyStats(name), s = sales(), i = '<span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3.5c.6 4.2 2.3 5.9 6.5 6.5-4.2.6-5.9 2.3-6.5 6.5-.6-4.2-2.3-5.9-6.5-6.5 4.2-.6 5.9-2.3 6.5-6.5z" fill="currentColor"/></svg></span>';
+    var go = '<button type="button" class="go" data-p="pay">' + (s ? 'Receive money' : 'Pay') + '</button>', t;
+    if(st.cash) t = '<b>Cash ' + (s ? 'customer' : 'vendor') + '.</b> Every ' + W('bill') + ' is settled on the spot.';
+    else if(st.late.length){ var o = st.late[0];
+      t = '<b>' + st.late.length + ' ' + (st.late.length === 1 ? W('bill') + ' is' : W('bills') + ' are') + ' past ' + st.T + ' days.</b> AED ' + money(st.lateAmt) + ' late — the oldest is ' + esc(o.rec.vehicle || o.rec.invNo || '') + ' from ' + dShort(o.rec.date) + ' (' + o.m32age + ' days).'; }
+    else if(st.avg != null) t = '<b>' + (s ? 'Pays' : 'You pay') + ' in ' + st.avg + ' days on average</b>' + (st.avg > st.T ? ', ' + (st.avg - st.T) + ' days more than the ' + st.T + '-day terms.' : ', inside the ' + st.T + '-day terms — ' + Math.round(st.onTime / st.done.length * 100) + '% on time.');
+    else if(st.open.length) t = '<b>No ' + (s ? 'receipts' : 'payments') + ' yet.</b> ' + st.open.length + ' open ' + (st.open.length === 1 ? W('bill') : W('bills')) + ' waiting.';
+    else return '';
+    return '<div class="m32-note">' + i + '<p>' + t + '</p>' + (!st.cash && st.bal > 0.5 ? go : '') + '</div>';
+  }
+  function card(cls, title, v, c, body, unit){
+    return '<div class="m16-ch m32-ch ' + cls + '"><div class="m16-ch-h"><small>' + title + '</small><b>' + (unit ? '' : AED + ' ') + '<span class="v">' + esc(v) + '</span>' + (unit ? '<span class="u">' + unit + '</span>' : '') + '</b><small class="c">' + esc(c) + '</small></div>' + body + '</div>';
+  }
+  function partyCards(name){
+    var st = partyStats(name), s = sales(), T = st.T, now = new Date();
+    /* 1 · month by month (12 back, 2 ahead) */
+    var ms = []; for(var j = 11; j >= -2; j--){ var d = new Date(now.getFullYear(), now.getMonth() - j, 1); ms.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); }
+    var ymNow = ms[11], B = {};
+    ms.forEach(function(k){ B[k] = { k:k, paid:0, open:0, late:0, chq:0, n:0, nc:0 }; });
+    st.rows.forEach(function(x){ var k = (x.rec.date || '').slice(0, 7), o = B[k]; if(!o) return; var pp = parts(x, T); o.paid += pp.paid; o.open += pp.open; o.late += pp.late; o.n++; });
+    ((typeof CHQ === 'function' ? CHQ() : []) || []).forEach(function(c){ if(!c || c.party !== name || c.cleared || !c.date) return; var k = c.date.slice(0, 7); if(k < ymNow) k = ymNow; var o = B[k]; if(o){ o.chq += +c.amount || 0; o.nc++; } });
+    var lastK = ymNow; st.rows.forEach(function(x){ var k = (x.rec.date || '').slice(0, 7); if(k && k <= ymNow && B[k]) lastK = k > lastK ? k : lastK; });
+    if(!B[ymNow].n) { lastK = ymNow; for(var q = 11; q >= 0; q--){ if(B[ms[q]].n){ lastK = ms[q]; break; } } }
+    var bk = ms.map(function(k, i){
+      var o = B[k], p = k.split('-'), lbl = MON[+p[1] - 1], fut = k > ymNow, full = MON[+p[1] - 1] + ' ' + p[0], tot = o.paid + o.open + o.late;
+      var c = fut ? (o.chq ? o.nc + ' cheque' + (o.nc === 1 ? '' : 's') + ' due · ' + full : full + ' · nothing due')
+        : full + ' · ' + o.n + ' ' + (o.n === 1 ? W('bill') : W('bills')) + (tot > 0.005 ? ' · ' + W('paid') + ' ' + short(o.paid) + (o.open > 0.5 ? ' · open ' + short(o.open) : '') + (o.late > 0.5 ? ' · late ' + short(o.late) : '') : '') + (o.chq > 0.5 ? ' · cheques due ' + short(o.chq) : '');
+      return { k:k, paid:o.paid, open:o.open, late:o.late, chq:o.chq, fut:fut, now:k === ymNow, lbl:lbl.charAt(0), v:money(fut ? o.chq : tot), c:c, def:k === lastK, go:fut ? '' : ' data-pgo="m:' + k + '"' };
+    });
+    var dflt = bk.filter(function(x){ return x.def; })[0] || bk[11];
+    var c1 = card('m32-c1', (s ? 'Received' : 'Paid') + ', open and late', dflt.v, dflt.c, '<div class="m32-plot">' + dots(bk, 300, 150, { padR:0, pMin:5.2 }) + '</div>');
+    /* 2 · last 24 bills */
+    var last = st.rows.slice(-24), mx = 0; last.forEach(function(x){ mx = Math.max(mx, x.invoiced); });
+    var bars = '', nPaid = 0, nOpen = 0, nLate = 0;
+    for(var e = 0; e < 24 - last.length; e++) bars += '<i></i>';
+    last.forEach(function(x, i){
+      var isLate = x.outstanding > 0.005 && age(x.rec.date) > T, isOpen = x.outstanding > 0.005 && !isLate, a = Math.max(0, age(x.rec.date));
+      if(isLate) nLate++; else if(isOpen) nOpen++; else nPaid++;
+      var cap = esc(x.rec.vehicle || x.rec.invNo || '') + ' · ' + dShort(x.rec.date) + ' · ' + (isLate ? 'late ' + a + 'd' + (x.status === 'partial' ? ', ' + short(x.outstanding) + ' left' : '') : isOpen ? (x.status === 'partial' ? short(x.outstanding) + ' left' : 'open ' + a + 'd') : (x.m32d != null ? W('paid') + ' in ' + x.m32d + 'd' : W('paid')));
+      bars += '<button type="button" class="' + (isLate ? 'l' : isOpen ? 'u' : '') + (i === last.length - 1 ? ' on' : '') + '" style="--h:' + (30 + 70 * (mx ? x.invoiced / mx : 1)).toFixed(0) + '%" data-pk="b' + esc(x.rec.id) + '" data-v="' + money(x.invoiced) + '" data-c="' + cap + '" data-m32inv="' + esc(x.rec.id) + '"' + (i === last.length - 1 ? ' data-def="1"' : '') + ' aria-label="' + cap + '"></button>';
+    });
+    var lb = last[last.length - 1];
+    var c2 = last.length ? card('m32-c2', 'Last 24 ' + W('bills'), money(lb.invoiced), (lb.rec.vehicle || lb.rec.invNo || '') + ' · ' + dShort(lb.rec.date) + ' · tap a bar',
+        '<div class="m32-run">' + bars + '</div><div class="m32-leg"><span><i></i>' + nPaid + ' ' + W('paid') + '</span><span><i class="h"></i>' + nOpen + ' open</span><span><i class="l"></i>' + nLate + ' late</span></div>')
+      : card('m32-c2', 'Last 24 ' + W('bills'), '0.00', 'Nothing yet', '<div class="m32-empty">No ' + W('bills') + ' yet</div>');
+    /* 3 · payment habit */
+    var c3;
+    if(st.cash) c3 = card('m32-c3', 'Payment habit', 'On the spot', 'Cash ' + (s ? 'customer' : 'vendor'), '<div class="m32-empty">Cash — every ' + W('bill') + ' is settled the same day</div>', ' ');
+    else {
+      var hb = st.rows.slice(-40), hd = '';
+      hb.forEach(function(x){
+        var cls, cap;
+        if(x.m32d != null){ cls = x.m32d <= T ? '' : 'l'; cap = W('paid') + ' in ' + x.m32d + ' days'; }
+        else if(x.outstanding > 0.005){ var a = Math.max(0, age(x.rec.date)); cls = a > T ? 'ol' : 'o'; cap = 'open ' + a + ' days'; }
+        else { cls = ''; cap = W('paid'); }
+        hd += '<button type="button" class="' + cls + '" data-pk="h' + esc(x.rec.id) + '" data-v="' + esc(cap) + '" data-c="' + esc((x.rec.vehicle || x.rec.invNo || '') + ' · ' + dShort(x.rec.date) + ' · AED ' + money(x.invoiced)) + '" data-m32inv="' + esc(x.rec.id) + '" aria-label="' + esc(cap) + '"></button>';
+      });
+      var lateN = st.done.length - st.onTime, pctOn = st.done.length ? st.onTime / st.done.length * 100 : 0;
+      c3 = card('m32-c3', 'Payment habit', st.avg == null ? '—' : st.avg + ' days', st.done.length ? st.onTime + ' of ' + st.done.length + ' ' + W('paid') + ' within ' + T + ' days' : 'Nothing ' + W('paid') + ' yet',
+        '<div class="m32-hab"><div class="m32-hd">' + (hd || '') + '</div>' +
+        '<div><div class="m32-hbar" title="' + Math.round(pctOn) + '% on time"><i style="width:' + pctOn.toFixed(1) + '%"></i><i class="l" style="width:' + (st.done.length ? lateN / st.done.length * 100 : 0).toFixed(1) + '%"></i></div>' +
+        '<div class="m32-leg" style="margin-top:8px"><span><i></i>On time</span><span><i class="l"></i>Late</span><span><i class="o"></i>Open</span></div></div></div>', ' avg');
+      if(!hb.length) c3 = card('m32-c3', 'Payment habit', '—', 'Nothing yet', '<div class="m32-empty">No ' + W('bills') + ' yet</div>', ' ');
+    }
+    return '<section class="m16-charts m32-row ' + (s ? 'sal' : 'pur') + '" aria-label="More graphs">' + c1 + c2 + c3 + '</section>';
+  }
+
+  /* ══ HOME · the last 30 days ════════════════════════════════════════════════════════════ */
+  function homeCard(){
+    try{
+      var s = sales(), recs = (AD().records || []), t0 = today(), days = [];
+      for(var i = -23; i <= 6; i++) days.push(ymd(new Date(t0.getTime() + i * DAY)));
+      var tk = days[23], B = {};
+      days.forEach(function(k){ B[k] = { paid:0, open:0, late:0, n:0, chq:0, nc:0 }; });
+      var tCache = {};
+      recs.forEach(function(r){
+        var o = B[r.date]; if(!o || r.date > tk) return;
+        var T = tCache[r.party] != null ? tCache[r.party] : (tCache[r.party] = termsOf(r.party));
+        var row; try{ row = invoiceRow(r); }catch(e){ row = { invoiced:+r.amount || 0, outstanding:+r.amount || 0, rec:r }; }
+        var pp = parts({ invoiced:+r.amount || 0, outstanding:row.outstanding, rec:r }, T); o.paid += pp.paid; o.open += pp.open; o.late += pp.late; o.n++;
+      });
+      ((typeof CHQ === 'function' ? CHQ() : []) || []).forEach(function(c){ if(!c || c.cleared || !c.date) return; var k = c.date < tk ? null : c.date, o = k && B[k]; if(o){ o.chq += +c.amount || 0; o.nc++; } });
+      var tot = { b:0, p:0, n:0 }, recv = 0;
+      days.slice(0, 24).forEach(function(k){ var o = B[k]; tot.b += o.paid + o.open + o.late; tot.n += o.n; });
+      (AD().payments || []).forEach(function(p){ if(p.date >= days[0] && p.date <= tk) recv += +p.amount || 0; });
+      var chqAhead = days.slice(23).reduce(function(a, k){ return a + B[k].chq; }, 0);
+      var bk = days.map(function(k, i){
+        var o = B[k], d = dOf(k), fut = k > tk, t = o.paid + o.open + o.late, full = WD[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()];
+        var c = fut ? (o.chq ? o.nc + ' cheque' + (o.nc === 1 ? '' : 's') + ' due' : 'nothing due')
+          : o.n + ' ' + (o.n === 1 ? W('bill') : W('bills')) + (t > 0.005 ? ' · ' + W('paid') + ' ' + short(o.paid) + (o.open > 0.5 ? ' · open ' + short(o.open) : '') + (o.late > 0.5 ? ' · late ' + short(o.late) : '') : '') + (o.chq > 0.5 ? ' · cheques due ' + short(o.chq) : '');
+        return { k:k, paid:o.paid, open:o.open, late:o.late, chq:o.chq, fut:fut, now:k === tk, lbl:String(d.getDate()), v:full + ' · AED ' + money(fut ? o.chq : t), c:c, def:k === tk };
+      });
+      var dI = 23; if(!(B[tk].n)){ for(var q = 22; q >= 0; q--){ if(B[days[q]].n){ dI = q; break; } } }
+      bk.forEach(function(x, i){ x.def = i === dI; });
+      var def = bk[dI];
+      return '<div class="m5-card m32-home m32-ch">' +
+        '<div class="m5-row"><div><b class="m5-h3">Last 30 days</b><small class="m5-sub">' + (s ? 'Invoices' : 'Bills') + ' each day — every dot is the same amount</small></div>' +
+          '<div class="m32-leg" style="justify-content:flex-end;max-width:55%"><span><i></i>' + W('Paid') + '</span><span><i class="o"></i>Open</span><span><i class="l"></i>Late</span><span><i class="c"></i>Cheque due</span></div></div>' +
+        '<div class="m32-pick"><b class="v">' + esc(def.v) + '</b><small class="c">' + esc(def.c) + '</small></div>' +
+        '<div class="m32-plot">' + (window.innerWidth > 760 ? dots(bk, 900, 190, { cls:'w', pMax:11 }) : dots(bk, 340, 170, { cls:'n', pMin:4.4, padR:28 })) + '</div>' +
+        '<small class="m5-sub">' + short(tot.b) + ' ' + (s ? 'invoiced' : 'billed') + ' in ' + tot.n + ' ' + W('bills') + ' · ' + short(recv) + ' ' + W('paid') + (chqAhead > 0.5 ? ' · ' + short(chqAhead) + ' in cheques due this week' : '') + '</small>' +
+      '</div>';
+    }catch(err){ console.error('[m32]', err); return ''; }
+  }
+
+  window.M32 = { partyCards:function(n){ try{ return partyCards(n); }catch(e){ console.error('[m32]', e); return ''; } },
+    note:function(n){ try{ return note(n); }catch(e){ console.error('[m32]', e); return ''; } },
+    balChange:function(n){ try{ return balChange(n); }catch(e){ return ''; } },
+    homeCard:homeCard };
 })();
 </script>
 </body>
