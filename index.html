@@ -8717,9 +8717,9 @@ html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > .m22-k, html:not(#_#_#_)
 html:not(#_#_#_) body:not(#_#_#_).m23-nolg .m22-glide.m23-lens > .m22-k, html:not(#_#_#_) body:not(#_#_#_).m23-nolg .m8-switch.m23-lens > .m8-switch-thumb{ background-color:rgba(255,255,255,.3) !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > button:not(._), html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > [role="tab"], html:not(#_#_#_) body:not(#_#_#_) .m22-glide.m23-lens > [role="radio"], html:not(#_#_#_) body:not(#_#_#_) .m8-switch.m23-lens button{ color:var(--k-ink) !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m8-switch-thumb{ transition-property:transform, background-color, scale, box-shadow !important; transition-duration:.46s, .25s, .5s, .25s !important; transition-timing-function:var(--m23-ios), ease, var(--m23-spring), ease !important; }
-html:not(#_#_#_) body:not(#_#_#_) .m23-p{ transition:scale .5s var(--m23-spring), background-color .25s ease, color .25s ease, box-shadow .25s ease, border-color .25s ease, opacity .25s ease !important;
+html:not(#_#_#_) body:not(#_#_#_) .m23-p{ transition:scale .3s cubic-bezier(.32,.72,0,1), background-color .25s ease, color .25s ease, box-shadow .25s ease, border-color .25s ease, opacity .25s ease !important;
   transition-property:scale, background-color, color, box-shadow, border-color, opacity !important; }
-html:not(#_#_#_) body:not(#_#_#_) .m23-p.m23-down{ scale:var(--m23-k, .96); transition:scale .12s ease-out, background-color .15s ease, color .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease !important;
+html:not(#_#_#_) body:not(#_#_#_) .m23-p.m23-down{ scale:var(--m23-k, .965); transition:scale .18s cubic-bezier(.32,.72,0,1), background-color .15s ease, color .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease !important;
   transition-property:scale, background-color, color, box-shadow, border-color, opacity !important; }
 @media (hover:hover) and (pointer:fine){html:not(#_#_#_) body:not(#_#_#_) .m5-card, html:not(#_#_#_) body:not(#_#_#_) .m16-ch, html:not(#_#_#_) body:not(#_#_#_) .m16-kp, html:not(#_#_#_) body:not(#_#_#_) .m22-card, html:not(#_#_#_) body:not(#_#_#_) .m13-kpi, html:not(#_#_#_) body:not(#_#_#_) .m16-total{ transition:translate .35s var(--m23-out), box-shadow .35s var(--m23-out) !important; }
 html:not(#_#_#_) body:not(#_#_#_) .m5-card:hover, html:not(#_#_#_) body:not(#_#_#_) .m16-ch:hover, html:not(#_#_#_) body:not(#_#_#_) .m16-kp:hover, html:not(#_#_#_) body:not(#_#_#_) .m13-kpi:hover{ translate:0 -2px; box-shadow:0 14px 30px -18px rgba(20,20,30,.28) !important; }
@@ -8842,9 +8842,9 @@ html:not(#_#_#_) body.m14-pillon:not(#_#_#_) #sidebar .zmenu > .m14-pill.m14-ani
 html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu .zm-item, html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu .zm-subitem, html:not(#_#_#_) body:not(#_#_#_) #sidebar .zmenu .zm-ghead{
   transition:color .3s ease, background-color .25s ease !important;
 }
-html.m24-vt::view-transition-old(root), html.m24-vt::view-transition-new(root){ animation:none; mix-blend-mode:normal; }
-html.m24-vt::view-transition-old(root){ z-index:1; }
-html.m24-vt::view-transition-new(root){ z-index:2; }
+html::view-transition-old(root), html::view-transition-new(root){ animation:none; mix-blend-mode:normal; }
+html::view-transition-old(root){ z-index:1; }
+html::view-transition-new(root){ z-index:2; }
 html.m24-vt *, html.m24-vt *::before, html.m24-vt *::after{ transition:none !important; }
 .m5-cmpbars .m5-cb i{ transform-origin:50% 100%; }
 .m24-eye{
@@ -25004,35 +25004,96 @@ AMCViewport.onSettle(function(){
         CH.bars({ title:'Unpaid by age', empty:'Nothing unpaid', rows:AGE.map(function(g){ return { k:g.l, name:g.l+' days', v:g.a, c:g.l+' days · '+g.n+' '+(sales?'invoice':'bill')+(g.n===1?'':'s') }; }), go:function(){ return ' data-pgo="unpaid"'; } })
       ]);
     }
-    var tile = function(cls, label, big, small){ return '<div class="m16-kp'+(cls?' '+cls:'')+'"><span>'+label+'</span><b>'+big+'</b><small>'+small+'</small></div>'; };
+    /* ── Nov 23 redesign: one header, a balance card, six facts, open bills, items and cheques ── */
+    var T = creditDays != null ? creditDays : 30, cashP = !!(window.isCashPartyName && isCashPartyName(S.name));
+    var payDays = [];
+    try{ partyAllocationMap(S.name).rows.forEach(function(x){
+      if(x.status !== 'paid') return; var d = x.rec.date || '';
+      (x.payments || []).forEach(function(y){ var pd = y.pay && y.pay.date; if(pd && pd > d) d = pd; });
+      payDays.push(Math.max(0, Math.round((new Date(d + 'T00:00:00') - new Date((x.rec.date || '') + 'T00:00:00')) / 86400000)));
+    }); }catch(e){}
+    var avgDays = payDays.length ? Math.round(payDays.reduce(function(s, v){ return s + v; }, 0) / payDays.length) : null;
+    var onTime = payDays.filter(function(v){ return v <= T; }).length;
+    var nowD = new Date(), ymNow = M8.ymd(nowD).slice(0, 7), pm = new Date(nowD.getFullYear(), nowD.getMonth() - 1, 1), ymPrev = M8.ymd(pm).slice(0, 7);
+    var thisM = 0, prevM = 0, bigR = null, firstR = null;
+    recs.forEach(function(r){ var k = (r.date || '').slice(0, 7), a = +r.amount || 0; if(k === ymNow) thisM += a; if(k === ymPrev) prevM += a; if(!bigR || a > (+bigR.amount || 0)) bigR = r; if(!firstR || (r.date || '') < (firstR.date || '')) firstR = r; });
+    var mChg = prevM > 0 ? Math.round((thisM - prevM) / prevM * 100) : null;
+    var openAmt = unpaid.reduce(function(s, e){ return s + e.row.outstanding; }, 0);
+    var lateList = unpaid.filter(function(e){ return days(e.date) > T; }), lateAmt = lateList.reduce(function(s, e){ return s + e.row.outstanding; }, 0);
+    var tdy = M8.ymd(nowD), pend = chqPend.slice().sort(function(a, b){ return (a.date || '').localeCompare(b.date || ''); });
+    var nextChq = pend.filter(function(c){ return (c.date || '') >= tdy; })[0] || pend[0] || null;
+    var mon = function(s){ return s ? new Date(s + 'T00:00:00').toLocaleDateString('en-GB', { month:'short', year:'numeric' }) : '—'; };
+    var dm = function(s){ return s ? new Date(s + 'T00:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : '—'; };
+    var st = cashP ? ['', 'Cash ' + (sales ? 'customer' : 'vendor')] : Math.abs(bal) < 0.5 ? ['ok', 'All settled'] : bal < 0 ? ['info', 'Advance ' + short(-bal)] : lateList.length ? ['bad', lateList.length + ' late · oldest ' + Math.max(0, days(lateList[0].date)) + 'd'] : ['wait', sales ? 'To receive' : 'To pay'];
+    var kp = function(cls, label, big, small, ic){ return '<div class="m33-kp' + (cls ? ' ' + cls : '') + '"><span class="m33-kl">' + icon(ic) + label + '</span><b>' + big + '</b><small>' + small + '</small></div>'; };
+    var QA = [['statement', 'Statement', 'stmt'], ['urdu', 'Urdu', 'urdu'], ['cheque', 'Add cheque', 'chq'], ['share', 'Share', 'share']];
+    var qa = QA.map(function(a){ return '<button type="button" class="m33-q" data-p="' + a[2] + '"><span>' + icon(a[0]) + '</span><small>' + a[1] + '</small></button>'; }).join('') +
+      (phone ? '<a class="m33-q" href="tel:' + esc(phone) + '"><span>' + icon('phone') + '</span><small>Call</small></a>' : '') +
+      (wa ? '<a class="m33-q" href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener"><span>' + icon('chat') + '</span><small>WhatsApp</small></a>' : '') +
+      (blk.email ? '<a class="m33-q" href="mailto:' + esc(blk.email) + '"><span>' + icon('mail') + '</span><small>Email</small></a>' : '') +
+      '<button type="button" class="m33-q" data-p="edit"><span>' + icon('edit') + '</span><small>Edit details</small></button>';
+    /* open bills, oldest first */
+    var openHTML = unpaid.length ? unpaid.slice(0, 5).map(function(e){
+      var r = e.r, row = e.row, n = Math.max(0, days(r.date)), late = n > T, pp = row.invoiced > 0 ? Math.max(0, Math.min(100, (row.invoiced - row.outstanding) / row.invoiced * 100)) : 0;
+      var its = (r.items && r.items.length) ? r.items : [{ desc:r.desc }];
+      return '<button type="button" class="m33-ob" data-inv="' + esc(r.id) + '"><span class="m33-age' + (late ? ' late' : '') + '"><b>' + n + '</b><small>days</small></span>' +
+        '<span class="m33-ob-m"><b>' + esc(r.vehicle || r.invNo || '') + '</b><small>' + dm(r.date) + ' · ' + esc(its[0].desc || '') + (its.length > 1 ? ' +' + (its.length - 1) : '') + '</small>' +
+        '<i class="m33-bar"><i style="width:' + pp.toFixed(1) + '%"></i></i></span>' +
+        '<span class="m33-ob-a"><b>' + money(row.outstanding) + '</b><small>' + (row.status === 'partial' ? 'of ' + money(row.invoiced) : late ? 'late' : 'due') + '</small></span></button>';
+    }).join('') + (unpaid.length > 5 ? '<button type="button" class="m33-more" data-f="unpaid">See all ' + unpaid.length + ' unpaid ' + (sales ? 'invoices' : 'bills') + icon('right') + '</button>' : '')
+      : '<div class="m33-empty">' + icon('check') + '<b>Nothing unpaid</b><small>' + (recs.length ? 'Every ' + (sales ? 'invoice' : 'bill') + ' is settled.' : 'No ' + (sales ? 'invoices' : 'bills') + ' yet.') + '</small></div>';
+    /* what they buy / what you buy */
+    var itList = Object.keys(it).map(function(k){ return it[k]; }).sort(function(a, b){ return b.a - a.a; }), itTop = itList.length ? itList[0].a : 1;
+    var itemsHTML = itList.length ? itList.slice(0, 4).map(function(x){
+      return '<div class="m33-it"><div><b>' + esc(x.d) + '</b><small>' + (typeof fmtShort === 'function' ? fmtShort(x.q) : x.q) + ' ' + esc(x.u) + (x.last ? ' · last ' + money(x.last) : '') + '</small></div><span>' + short(x.a) + '</span><i class="m33-bar"><i style="width:' + (x.a / itTop * 100).toFixed(1) + '%"></i></i></div>';
+    }).join('') : '<div class="m33-empty sm"><small>No items yet</small></div>';
+    var chqHTML = pend.length ? pend.slice(0, 3).map(function(c){
+      var n = -days(c.date), s = n < 0 ? ['late', Math.abs(n) + 'd late'] : n === 0 ? ['due', 'Today'] : ['wait', 'In ' + n + 'd'];
+      return '<button type="button" class="m33-ch" data-chq="' + esc(c.id) + '"><span class="m33-ch-ic">' + icon('cheque') + '</span><span class="m33-ob-m"><b>#' + esc(c.chequeNo || '—') + '</b><small>' + dm(c.date) + (c.note ? ' · ' + esc(c.note) : '') + '</small></span><span class="m33-ob-a"><b>' + money(c.amount) + '</b><small class="m33-s ' + s[0] + '">' + s[1] + '</small></span></button>';
+    }).join('') + (pend.length > 3 ? '<button type="button" class="m33-more" data-f="chq">See all ' + pend.length + ' cheques' + icon('right') + '</button>' : '')
+      : '<div class="m33-empty sm"><small>No pending cheques</small></div>';
     page.innerHTML =
-      '<div class="m16 m21">'+
-        '<header class="m21-head">'+
-          '<button type="button" class="m16-ib m21-back" data-p="back" aria-label="Back to parties">'+icon('left')+'</button>'+
-          '<span class="m21-av" style="--h:'+hue(S.name)+'">'+esc(initials(S.name))+'</span>'+
-          '<div class="m21-id"><h1>'+esc(blk.heading || S.name)+'</h1>'+
-            '<p>'+(blk.heading && blk.heading !== S.name ? esc(S.name)+' · ' : '')+(sales?'Customer':'Vendor')+(lastInv?' · last '+(sales?'invoice':'bill')+' '+dFmt(lastInv.date):'')+(creditDays!=null?' · '+creditDays+' days credit':'')+'</p></div>'+
-          (both ? '<button type="button" class="m21-pill" data-p="other">'+icon('swap')+'<span>'+(sales?'Also a vendor':'Also a customer')+'</span></button>' : '')+
-          '<button type="button" class="m16-ib" data-p="edit" aria-label="Edit details" title="Edit details">'+icon('edit')+'</button>'+
+      '<div class="m16 m21 m33">'+
+        '<header class="m33-top">'+
+          '<button type="button" class="m16-ib m33-back" data-p="back" aria-label="Back to parties">'+icon('left')+'</button>'+
+          '<span class="m33-av">'+esc(initials(S.name))+'</span>'+
+          '<div class="m33-id">'+
+            '<small class="m33-kind">'+(sales?'Customer':'Vendor')+(firstR?' · since '+mon(firstR.date):'')+(blk.heading && blk.heading !== S.name ? ' · '+esc(S.name) : '')+'</small>'+
+            '<h1>'+esc(blk.heading || S.name)+'</h1>'+
+            '<div class="m33-tags"><span class="m33-chip '+st[0]+'"><i></i>'+st[1]+'</span>'+
+              '<span class="m33-chip">'+icon('clock')+(creditDays!=null ? creditDays+' days credit' : 'Terms: 30 days')+'</span>'+
+              (blk.trn ? '<span class="m33-chip">'+icon('info')+'TRN '+esc(blk.trn)+'</span>' : '')+
+              (blk.address ? '<span class="m33-chip m33-addr">'+icon('pin')+esc(blk.address)+'</span>' : '')+
+              (both ? '<button type="button" class="m33-chip m33-other" data-p="other">'+icon('swap')+(sales?'Also a vendor':'Also a customer')+'</button>' : '')+
+            '</div>'+
+          '</div>'+
         '</header>'+
-        ((phone || blk.email || blk.trn || blk.address) ? '<div class="m21-contact">'+
-          (phone ? '<a class="m21-pill" href="tel:'+esc(phone)+'">'+icon('phone')+'<span>'+esc(phone)+'</span></a>' : '')+
-          (wa ? '<a class="m21-pill" href="https://wa.me/'+esc(wa)+'" target="_blank" rel="noopener">'+icon('chat')+'<span>WhatsApp</span></a>' : '')+
-          (blk.email ? '<a class="m21-pill" href="mailto:'+esc(blk.email)+'">'+icon('mail')+'<span>'+esc(blk.email)+'</span></a>' : '')+
-          (blk.trn ? '<span class="m21-pill">'+icon('info')+'<span>TRN '+esc(blk.trn)+'</span></span>' : '')+
-          (blk.address ? '<span class="m21-pill">'+icon('pin')+'<span>'+esc(blk.address)+'</span></span>' : '')+
-        '</div>' : '')+
-        '<div class="m21-acts" role="group" aria-label="Actions">'+ACTS.map(function(a, i){ return '<button type="button" class="m21-act'+(i?'':' main')+'" data-p="'+a[2]+'">'+icon(a[0])+'<span>'+a[1]+'</span></button>'; }).join('')+'</div>'+
-        '<div class="m16-hero m16-hero5">'+
-          '<div class="m16-total"><span>'+balLbl+'</span><b>'+AEDsvg()+' '+money(Math.abs(bal))+'</b>'+
-            '<small>'+(sales?'Sold ':'Billed ')+money(billed)+' · '+(sales?'received ':'paid ')+money(paid)+' ('+pct+'%)</small></div>'+
-          tile('', sales?'Invoices':'Bills', recs.length, 'avg '+money(avg))+
-          tile(unpaid.length?'unpaid':'', 'Unpaid', unpaid.length, lateCount ? lateCount+' past '+creditDays+' days credit' : oldest ? 'oldest '+Math.max(0,days(oldest.date))+' days' : 'nothing due')+
-          tile('', 'Last '+(sales?'receipt':'payment'), lastPay ? ago(lastPay.date) : 'Never', lastPay ? money(lastPay.amount)+' · '+new Date(lastPay.date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : 'no '+(sales?'receipts':'payments')+' yet')+
-          (creditLimit
-            ? tile('', 'Credit limit', Math.round(Math.max(0,bal)/creditLimit*100)+'% used', 'limit AED '+money(creditLimit))
-            : tile('', 'Pending cheques', chqPend.length, chqPend.length ? 'AED '+money(chqPendAmt) : 'none'))+
-        '</div>'+
+        '<section class="m33-main">'+
+          '<div class="m33-bal">'+
+            '<span class="m33-bl">'+balLbl+'</span>'+
+            '<b class="m33-bv">'+AEDsvg()+' '+money(Math.abs(bal))+'</b>'+
+            '<i class="m33-prog" title="'+pct+'% '+(sales?'received':'paid')+'"><i style="width:'+pct+'%"></i></i>'+
+            '<small>'+(sales?'Received ':'Paid ')+money(paid)+' of '+money(billed)+' · '+pct+'%</small>'+
+            '<div class="m33-btns">'+(cashP ? '' : '<button type="button" class="m33-b main" data-p="pay">'+icon('pay')+(sales?'Receive money':'Pay')+'</button>')+
+              '<button type="button" class="m33-b" data-p="new-inv">'+icon('plus')+(sales?'New invoice':'New bill')+'</button></div>'+
+          '</div>'+
+          '<div class="m33-kpis">'+
+            kp('', sales?'Invoices':'Bills', recs.length, recs.length ? 'avg '+short(avg)+(bigR ? ' · biggest '+short(bigR.amount) : '') : 'none yet', 'invoice')+
+            kp(unpaid.length?(lateList.length?'bad':'wait'):'', 'Unpaid', AEDsvg()+' '+short(openAmt), unpaid.length ? unpaid.length+' '+(unpaid.length===1?(sales?'invoice':'bill'):(sales?'invoices':'bills'))+(lateList.length ? ' · '+lateList.length+' past '+T+' days' : ' · oldest '+Math.max(0, days(unpaid[0].date))+'d') : 'nothing due', 'alert')+
+            kp(avgDays!=null && avgDays > T ? 'wait' : '', sales?'Pays in':'You pay in', avgDays==null ? '—' : avgDays+' days', payDays.length ? onTime+' of '+payDays.length+' within '+T+' days' : 'no '+(sales?'receipts':'payments')+' yet', 'clock')+
+            kp('', 'This month', AEDsvg()+' '+short(thisM), mChg==null ? (prevM ? '' : 'nothing last month') : (mChg >= 0 ? '▲ ' : '▼ ')+Math.abs(mChg)+'% vs '+pm.toLocaleDateString('en-GB',{month:'short'}), 'trend')+
+            kp('', 'Last '+(sales?'receipt':'payment'), lastPay ? ago(lastPay.date) : 'Never', lastPay ? money(lastPay.amount)+' · '+dm(lastPay.date) : 'no '+(sales?'receipts':'payments')+' yet', 'pay')+
+            (creditLimit
+              ? kp(bal > creditLimit ? 'bad' : '', 'Credit limit', Math.round(Math.max(0, bal)/creditLimit*100)+'% used', 'limit '+short(creditLimit), 'bank')
+              : kp('', 'Pending cheques', chqPend.length, chqPend.length ? short(chqPendAmt)+(nextChq ? ' · next '+dm(nextChq.date) : '') : 'none', 'cheque'))+
+          '</div>'+
+        '</section>'+
+        '<nav class="m33-qa" aria-label="Actions">'+qa+'</nav>'+
+        '<section class="m33-row2">'+
+          '<div class="m33-card"><div class="m33-ch-h"><b>Open '+(sales?'invoices':'bills')+'</b><small>'+(unpaid.length ? 'oldest first · '+money(openAmt) : '')+'</small></div>'+openHTML+'</div>'+
+          '<div class="m33-card"><div class="m33-ch-h"><b>Items</b><small>'+itList.length+' item'+(itList.length===1?'':'s')+' · by value</small></div>'+itemsHTML+
+            '<div class="m33-ch-h m33-ch-h2"><b>Pending cheques</b><small>'+(pend.length ? money(chqPendAmt) : '')+'</small></div>'+chqHTML+'</div>'+
+        '</section>'+
         charts+
         '<section class="m21-ledger" id="m21-ledger">'+
           '<div class="m21-lh"><div><b>Ledger</b><small>'+lg.ev.length+' entries</small></div>'+
@@ -25069,7 +25130,9 @@ AMCViewport.onSettle(function(){
         var sc = $('app-scroll'); if(to && sc) sc.scrollTo({ top:Math.max(0, to.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 90), behavior:'smooth' }); }, 30);
       return;
     }
-    if((t = e.target.closest('[data-f]'))){ S.filter = t.dataset.f; render(); return; }
+    if((t = e.target.closest('[data-f]'))){ var toL = t.classList.contains('m33-more'); S.filter = t.dataset.f; render();
+      if(toL) setTimeout(function(){ var to = $('m21-ledger'), sc = $('app-scroll'); if(to && sc) sc.scrollTo({ top:Math.max(0, to.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 90), behavior:'smooth' }); }, 30);
+      return; }
     if((t = e.target.closest('[data-r]'))){ S.range = t.dataset.r; render(); return; }
     if((t = e.target.closest('[data-inv]'))){ var id = t.dataset.inv, r = (AD().records||[]).find(function(x){ return String(x.id)===String(id); }); if(r && typeof viewRecord==='function') viewRecord(r.id); return; }
     if((t = e.target.closest('[data-pay]'))){ if(typeof openEditPayment==='function') openEditPayment(t.dataset.pay); return; }
@@ -31794,11 +31857,13 @@ AMCViewport.onSettle(function(){
   document.addEventListener('pointerdown', function(e){
     if(e.button > 0) return;
     var t = e.target.closest && e.target.closest(PRESS); if(!t || t.disabled) return;
-    if(t.closest('#m10-bar') || glassOf(t)) return;   /* glass controls have their own lens */
+    if(t.closest('#m10-bar')) return;   /* the tab bar has its own glass drop */
+    /* a toggle: the whole row it sits in pushes in, like any other button (Nov 23); its glass knob still swells */
+    if(glassOf(t)){ var row = t.closest('.m22-row, .ios-tgl, label'); if(row) t = row; }
     t.classList.add('m23-p');
-    /* big things squeeze less than small ones */
+    /* every button, tab, toggle row and card pushes in a little and comes back */
     var r = t.getBoundingClientRect(), a = r.width * r.height;
-    t.style.setProperty('--m23-k', a > 60000 ? '.985' : a > 12000 ? '.975' : '.94');
+    t.style.setProperty('--m23-k', a > 60000 ? '.98' : a > 4000 ? '.965' : '.95');
     release(); down = t; t.classList.add('m23-down');
   }, true);
   ['pointerup', 'pointercancel', 'pointerleave', 'dragstart'].forEach(function(ev){ document.addEventListener(ev, function(){ setTimeout(release, 40); }, true); });
@@ -32312,13 +32377,25 @@ AMCViewport.onSettle(function(){
       var t = k / N, e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;   // ease in-out
       frames.push({ clipPath: blob(cx, cy, Math.max(0.5, far * e), t * 2.4, 40) });
     }
-    H.classList.add('m24-vt');
+    /* Nov 23 — quicker: the switch used to restyle the whole app four times (a class before the wave,
+       another around the colour change, its removal two frames later — in the middle of the wave — and
+       a last one at the end). Now the colours and the "no fades" class change in one step, and the class
+       goes away only once the wave is over and the app is idle. */
     var vt;
-    try{ vt = D.startViewTransition(function(){ fn(); }); }catch(err){ H.classList.remove('m24-vt'); fn(); return; }
+    try{ vt = D.startViewTransition(function(){
+      window.__m24vt = 1;
+      try{ fn(); } finally { window.__m24vt = 0; }
+      /* <html> follows the theme in the same step (else it changed a moment later: a second restyle) */
+      try{ var dk = D.body.classList.contains('dark-mode'); if(H.classList.contains('am-dark') !== dk) H.classList.toggle('am-dark', dk); }catch(e){}
+      /* no colour fades: switched off in the same step as the colour change (one restyle, not three) */
+      H.classList.add('m24-vt');
+    }); }catch(err){ fn(); return; }
     vt.ready.then(function(){
       H.animate(frames, { duration:phone() ? 760 : 900, easing:'linear', pseudoElement:'::view-transition-new(root)' });
     }).catch(function(){});
-    vt.finished.then(function(){ H.classList.remove('m24-vt'); }, function(){ H.classList.remove('m24-vt'); });
+    /* fades come back only after the wave, when the app is idle (that restyle no longer lands mid-wave) */
+    var back = function(){ var go = function(){ H.classList.remove('m24-vt'); }; if(window.requestIdleCallback) window.requestIdleCallback(go, { timeout:1200 }); else setTimeout(go, 200); };
+    vt.finished.then(back, back);
   }
   function hookTheme(){
     var f = window.toggleThemeQuick;
@@ -32375,6 +32452,9 @@ AMCViewport.onSettle(function(){
   var EASE_M = 'cubic-bezier(.32,.72,0,1)';
   function openX(){ return Math.min(innerWidth * 0.68, 340); }
   function tf(q){ return 'translate3d(' + (X0 * q).toFixed(2) + 'px,0,0) scale(' + (1 - 0.14 * q).toFixed(4) + ')'; }
+  /* the card's corners follow its place (Nov 23): fully round when open, square when closed, and every step
+     in between while it moves — before, they stayed round until the card had landed, then snapped square */
+  function rad(q){ return (34 * Math.max(0, Math.min(1, q))).toFixed(2) + 'px'; }
   /* the orange menu fades in over the first 15% of the slide (and out over the last 15%): the card's
      corners are round only while it moves, and at the very start / end the menu is not yet / no longer
      behind them, so the corners turn round / square where nothing can see it (the page behind the card
@@ -32405,7 +32485,7 @@ AMCViewport.onSettle(function(){
       stopRun();
       try{
         var o = { duration:1000, fill:'both' };
-        HOLD = [ SCREEN.animate([{ transform:tf(0) }, { transform:tf(1) }], o),
+        HOLD = [ SCREEN.animate([{ transform:tf(0), borderRadius:rad(0) }, { transform:tf(1), borderRadius:rad(1) }], o),
                  SB.animate([{ opacity:1 }, { opacity:1 }], o),
                  SHADE.animate([{ transform:tf(0), opacity:0 }, { offset:1 / 3, opacity:1 }, { transform:tf(1), opacity:1 }], o) ];
         HOLD.forEach(function(a){ a.pause(); });
@@ -32449,7 +32529,7 @@ AMCViewport.onSettle(function(){
     var id = ++RUNID, o = { duration:T, easing:cv.e, fill:'forwards' };
     var next = [];
     try{
-      next = [ SCREEN.animate([{ transform:tf(from) }, { transform:tf(to) }], o),
+      next = [ SCREEN.animate([{ transform:tf(from), borderRadius:rad(from) }, { transform:tf(to), borderRadius:rad(to) }], o),
                SB.animate(sbKF(from, to), o),
                SHADE.animate([{ transform:tf(from), opacity:so(from) }, { transform:tf(to), opacity:so(to) }], o) ];
     }catch(e){ next = []; }
@@ -33676,6 +33756,7 @@ AMCViewport.onSettle(function(){
   function wrapTheme(){
     var s = window.setTheme; if(typeof s !== 'function' || s.__m31) return;
     var w = function(){
+      if(window.__m24vt) return s.apply(this, arguments);   /* inside the wave: m24 stops the fades itself */
       var root = document.documentElement; root.classList.add('m31-theme');
       var r = s.apply(this, arguments);
       requestAnimationFrame(function(){ requestAnimationFrame(function(){ root.classList.remove('m31-theme'); }); });
@@ -33788,5 +33869,120 @@ AMCViewport.onSettle(function(){
   }, true);
 })();
 </script>
+<style id="m33-css">/* ══ M33 · vendor / customer page, redesigned (Nov 23) ═══════════════════════════════════════
+   The app's own look: white cards on the grey sheet, the dark balance card, orange for actions.
+   The ledger below (bills / payments tabs) is unchanged. */
+html:not(#_#_) body:not(#_#_) .m33{ gap:12px; }
+html:not(#_#_) body:not(#_#_) .m33 .aed-sym{ height:.78em; width:auto; fill:currentColor; vertical-align:baseline; }
+/* header */
+html:not(#_#_) body:not(#_#_) .m33-top{ display:flex; align-items:center; gap:16px; padding:18px 20px; border-radius:24px; background:var(--k-card); min-width:0; }
+html:not(#_#_) body:not(#_#_) .m33-back{ flex:0 0 auto; }
+html:not(#_#_) body:not(#_#_) .m33-av{ flex:0 0 64px; width:64px; height:64px; border-radius:50%; display:grid; place-items:center; background:var(--k-acc); color:#fff;
+  font:700 22px/1 var(--k-font); letter-spacing:-.01em; box-shadow:inset 0 -6px 14px rgba(0,0,0,.12), 0 8px 20px -10px var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m33-id{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:4px; }
+html:not(#_#_) body:not(#_#_) .m33-kind{ font-size:12.5px; font-weight:500; color:var(--k-ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_) body:not(#_#_) .m33-id h1{ margin:0; font:650 26px/1.15 var(--k-font); letter-spacing:-.025em; color:var(--k-ink); overflow-wrap:anywhere; }
+html:not(#_#_) body:not(#_#_) .m33-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+html:not(#_#_) body:not(#_#_) .m33-chip{ display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 11px; border:0; border-radius:999px; background:var(--k-tile); color:var(--k-ink2);
+  font:500 12px/1 var(--k-font); white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_) body:not(#_#_) .m33-chip svg{ width:14px; height:14px; flex:0 0 14px; }
+html:not(#_#_) body:not(#_#_) .m33-chip > i{ width:7px; height:7px; border-radius:50%; background:var(--k-ink3); flex:0 0 7px; }
+html:not(#_#_) body:not(#_#_) .m33-chip.ok > i{ background:var(--k-pos); }
+html:not(#_#_) body:not(#_#_) .m33-chip.wait > i{ background:var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m33-chip.info > i{ background:var(--k-pos); }
+html:not(#_#_) body:not(#_#_) .m33-chip.bad{ color:var(--k-neg); background:color-mix(in srgb, var(--k-neg) 12%, var(--k-tile)); }
+html:not(#_#_) body:not(#_#_) .m33-chip.bad > i{ background:var(--k-neg); }
+html:not(#_#_) body:not(#_#_) .m33-addr{ max-width:320px; display:inline-block; line-height:28px; }
+html:not(#_#_) body:not(#_#_) .m33-addr svg{ vertical-align:-2px; margin-right:6px; }
+html:not(#_#_) body:not(#_#_) .m33-other{ background:var(--k-acc-soft); color:var(--k-acc); cursor:pointer; font-weight:600; }
+/* balance + six facts */
+html:not(#_#_) body:not(#_#_) .m33-main{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.75fr); gap:12px; }
+html:not(#_#_) body:not(#_#_) .m33-bal{ display:flex; flex-direction:column; gap:8px; padding:20px; border-radius:24px; background:var(--k-dark); color:var(--k-on-dark); min-width:0; }
+html:not(#_#_) body:not(#_#_) .m33-bl{ font-size:13px; font-weight:500; opacity:.75; }
+html:not(#_#_) body:not(#_#_) .m33-bv{ display:flex; align-items:center; gap:8px; font:700 32px/1.1 var(--k-font); letter-spacing:-.025em; font-variant-numeric:tabular-nums; white-space:nowrap; }
+html:not(#_#_) body:not(#_#_) .m33-bv .aed-sym{ color:var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m33-prog{ display:block; height:6px; margin-top:6px; border-radius:99px; background:rgba(127,127,127,.28); overflow:hidden; }
+html:not(#_#_) body:not(#_#_) .m33-prog > i{ display:block; height:100%; border-radius:99px; background:var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m33-bal > small{ font-size:12.5px; opacity:.72; font-variant-numeric:tabular-nums; }
+html:not(#_#_) body:not(#_#_) .m33-btns{ display:flex; gap:8px; margin-top:auto; padding-top:10px; }
+html:not(#_#_) body:not(#_#_) .m33-b{ flex:1 1 0; display:inline-flex; align-items:center; justify-content:center; gap:8px; height:46px; padding:0 14px; border:0; border-radius:999px;
+  background:rgba(127,127,127,.2); color:inherit; font:600 14px/1 var(--k-font); cursor:pointer; white-space:nowrap; }
+html:not(#_#_) body:not(#_#_) .m33-b svg{ width:18px; height:18px; flex:0 0 18px; }
+html:not(#_#_) body:not(#_#_) .m33-b.main{ background:var(--k-acc); color:#fff; }
+html:not(#_#_) body:not(#_#_) .m33-kpis{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; }
+html:not(#_#_) body:not(#_#_) .m33-kp{ display:flex; flex-direction:column; gap:6px; padding:15px 16px; border-radius:20px; background:var(--k-card); min-width:0; }
+html:not(#_#_) body:not(#_#_) .m33-kl{ display:flex; align-items:center; gap:7px; font-size:12px; font-weight:500; color:var(--k-ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_) body:not(#_#_) .m33-kl svg{ width:15px; height:15px; flex:0 0 15px; color:var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m33-kp b{ font:700 21px/1.15 var(--k-font); letter-spacing:-.015em; color:var(--k-ink); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_) body:not(#_#_) .m33-kp small{ font-size:12px; color:var(--k-ink3); line-height:1.35; }
+html:not(#_#_) body:not(#_#_) .m33-kp.wait b{ color:var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m33-kp.bad b{ color:var(--k-neg); }
+/* quick actions (round buttons, as in Quick create on Home) */
+html:not(#_#_) body:not(#_#_) .m33-qa{ display:flex; gap:6px; padding:12px 10px; border-radius:24px; background:var(--k-card); overflow-x:auto; scrollbar-width:none; }
+html:not(#_#_) body:not(#_#_) .m33-qa::-webkit-scrollbar{ display:none; }
+html:not(#_#_) body:not(#_#_) .m33-q{ flex:1 0 76px; display:flex; flex-direction:column; align-items:center; gap:7px; padding:4px 2px; border:0; background:none; color:var(--k-ink2); text-decoration:none; cursor:pointer; font-family:var(--k-font); }
+html:not(#_#_) body:not(#_#_) .m33-q > span{ width:48px; height:48px; border-radius:50%; display:grid; place-items:center; background:var(--k-tile); color:var(--k-ink); box-shadow:0 0 0 1px var(--k-line); }
+html:not(#_#_) body:not(#_#_) .m33-q > span svg{ width:19px; height:19px; }
+html:not(#_#_) body:not(#_#_) .m33-q small{ font-size:11.5px; font-weight:500; white-space:nowrap; }
+@media (hover:hover) and (pointer:fine){ html:not(#_#_) body:not(#_#_) .m33-q:hover > span{ color:var(--k-acc); box-shadow:0 0 0 1px var(--k-acc); } }
+/* open bills · items · cheques */
+html:not(#_#_) body:not(#_#_) .m33-row2{ display:grid; grid-template-columns:minmax(0, 1.4fr) minmax(0, 1fr); gap:12px; align-items:start; }
+html:not(#_#_) body:not(#_#_) .m33-card{ display:flex; flex-direction:column; gap:6px; padding:16px; border-radius:24px; background:var(--k-card); min-width:0; }
+html:not(#_#_) body:not(#_#_) .m33-ch-h{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:0 4px 6px; }
+html:not(#_#_) body:not(#_#_) .m33-ch-h b{ font:650 16px/1.2 var(--k-font); color:var(--k-ink); }
+html:not(#_#_) body:not(#_#_) .m33-ch-h small{ font-size:12px; color:var(--k-ink3); white-space:nowrap; font-variant-numeric:tabular-nums; }
+html:not(#_#_) body:not(#_#_) .m33-ch-h2{ margin-top:12px; }
+html:not(#_#_) body:not(#_#_) .m33-ob, html:not(#_#_) body:not(#_#_) .m33-ch{ display:flex; align-items:center; gap:12px; width:100%; padding:10px 12px; border:0; border-radius:16px; background:var(--k-tile); color:var(--k-ink); text-align:left; cursor:pointer; font-family:var(--k-font); min-width:0; }
+html:not(#_#_) body:not(#_#_) .m33-age{ flex:0 0 46px; height:46px; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--k-card); color:var(--k-ink2); }
+html:not(#_#_) body:not(#_#_) .m33-age b{ font:700 15px/1 var(--k-font); font-variant-numeric:tabular-nums; }
+html:not(#_#_) body:not(#_#_) .m33-age small{ font-size:9.5px; margin-top:3px; opacity:.75; }
+html:not(#_#_) body:not(#_#_) .m33-age.late{ background:color-mix(in srgb, var(--k-neg) 13%, var(--k-card)); color:var(--k-neg); }
+html:not(#_#_) body:not(#_#_) .m33-ob-m{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
+html:not(#_#_) body:not(#_#_) .m33-ob-m b{ font:600 14px/1.2 var(--k-font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_) body:not(#_#_) .m33-ob-m small{ font-size:12px; color:var(--k-ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_) body:not(#_#_) .m33-ob-a{ flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+html:not(#_#_) body:not(#_#_) .m33-ob-a b{ font:650 14.5px/1.2 var(--k-font); font-variant-numeric:tabular-nums; }
+html:not(#_#_) body:not(#_#_) .m33-ob-a small{ font-size:11.5px; color:var(--k-ink3); }
+html:not(#_#_) body:not(#_#_) .m33-bar{ display:block; height:4px; border-radius:99px; background:var(--k-line); overflow:hidden; margin-top:3px; }
+html:not(#_#_) body:not(#_#_) .m33-bar > i{ display:block; height:100%; border-radius:99px; background:var(--k-acc); }
+html:not(#_#_) body:not(#_#_) .m33-it{ display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:center; gap:2px 10px; padding:9px 12px; border-radius:16px; background:var(--k-tile); }
+html:not(#_#_) body:not(#_#_) .m33-it > div{ min-width:0; }
+html:not(#_#_) body:not(#_#_) .m33-it b{ display:block; font:600 13px/1.25 var(--k-font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_) body:not(#_#_) .m33-it small{ font-size:11.5px; color:var(--k-ink3); }
+html:not(#_#_) body:not(#_#_) .m33-it > span{ font:650 14px/1 var(--k-font); font-variant-numeric:tabular-nums; }
+html:not(#_#_) body:not(#_#_) .m33-it .m33-bar{ grid-column:1 / -1; }
+html:not(#_#_) body:not(#_#_) .m33-ch-ic{ flex:0 0 40px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:var(--k-card); color:var(--k-ink2); }
+html:not(#_#_) body:not(#_#_) .m33-ch-ic svg{ width:18px; height:18px; }
+html:not(#_#_) body:not(#_#_) .m33-s.late{ color:var(--k-neg); font-weight:600; }
+html:not(#_#_) body:not(#_#_) .m33-s.due{ color:var(--k-acc); font-weight:600; }
+html:not(#_#_) body:not(#_#_) .m33-s.wait{ color:var(--k-wait); font-weight:600; }
+html:not(#_#_) body:not(#_#_) .m33-more{ display:flex; align-items:center; justify-content:center; gap:6px; height:40px; border:0; border-radius:14px; background:none; color:var(--k-acc); font:600 13px/1 var(--k-font); cursor:pointer; }
+html:not(#_#_) body:not(#_#_) .m33-more svg{ width:15px; height:15px; }
+html:not(#_#_) body:not(#_#_) .m33-empty{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:22px 10px; border-radius:16px; background:var(--k-tile); color:var(--k-ink3); text-align:center; }
+html:not(#_#_) body:not(#_#_) .m33-empty svg{ width:22px; height:22px; color:var(--k-pos); }
+html:not(#_#_) body:not(#_#_) .m33-empty b{ font:600 14px/1.2 var(--k-font); color:var(--k-ink); }
+html:not(#_#_) body:not(#_#_) .m33-empty small{ font-size:12px; }
+html:not(#_#_) body:not(#_#_) .m33-empty.sm{ padding:14px 10px; }
+@media (hover:hover) and (pointer:fine){ html:not(#_#_) body:not(#_#_) :is(.m33-ob, .m33-ch):hover{ box-shadow:0 0 0 1px var(--k-line2); } }
+@media (max-width:1100px){
+  html:not(#_#_) body:not(#_#_) .m33-main{ grid-template-columns:1fr; }
+  html:not(#_#_) body:not(#_#_) .m33-btns{ max-width:460px; }
+}
+@media (max-width:760px){ html:not(#_#_) body:not(#_#_) .m33-row2{ grid-template-columns:1fr; } }
+@media (max-width:599px){
+  html:not(#_#_) body:not(#_#_) .m33-top{ padding:14px; gap:12px; align-items:flex-start; border-radius:22px; }
+  html:not(#_#_) body:not(#_#_) .m33-av{ flex-basis:52px; width:52px; height:52px; font-size:18px; }
+  html:not(#_#_) body:not(#_#_) .m33-id h1{ font-size:21px; }
+  html:not(#_#_) body:not(#_#_) .m33-back{ display:none; }
+  html:not(#_#_) body:not(#_#_) .m33-bal{ padding:18px; border-radius:22px; }
+  html:not(#_#_) body:not(#_#_) .m33-bv{ font-size:28px; }
+  html:not(#_#_) body:not(#_#_) .m33-kpis{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+  html:not(#_#_) body:not(#_#_) .m33-kp{ padding:13px 14px; border-radius:18px; }
+  html:not(#_#_) body:not(#_#_) .m33-kp b{ font-size:18px; }
+  html:not(#_#_) body:not(#_#_) .m33-q{ flex:0 0 70px; }
+  html:not(#_#_) body:not(#_#_) .m33-card{ padding:12px; border-radius:22px; }
+  html:not(#_#_) body:not(#_#_) .m33-addr{ max-width:100%; }
+}
+</style>
 </body>
 </html>
