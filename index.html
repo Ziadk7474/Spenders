@@ -33984,5 +33984,128 @@ html:not(#_#_) body:not(#_#_) .m33-empty.sm{ padding:14px 10px; }
   html:not(#_#_) body:not(#_#_) .m33-addr{ max-width:100%; }
 }
 </style>
+<style id="m34-css">/* ══ M34 · button states (Nov 24): loading · saved · not saved · tap again to delete · keyboard ring ══ */
+html:not(#_#_#_) body:not(#_#_#_) .m34-st{ position:relative !important; color:transparent !important; pointer-events:none !important; opacity:1 !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-st > :not(.m34-ov){ visibility:hidden !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-ov{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:7px; padding:0 10px; border-radius:inherit;
+  font:600 13.5px/1 var(--k-font, inherit); white-space:nowrap; overflow:hidden; pointer-events:none; color:#fff; animation:m34in .18s ease both; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-ov svg{ width:17px; height:17px; flex:0 0 17px; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-busy .m34-ov{ color:inherit; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-busy{ color:transparent !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-busy .m34-ov{ color:var(--m34-c, #fff); }
+html:not(#_#_#_) body:not(#_#_#_) .m34-busy .m34-ov svg{ animation:m34spin .8s linear infinite; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-ok{ background:var(--k-pos, #1f9d55) !important; border-color:transparent !important; box-shadow:0 6px 18px -8px var(--k-pos, #1f9d55) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-err{ background:var(--k-neg, #e5484d) !important; border-color:transparent !important; animation:m34shake .36s ease both; }
+html:not(#_#_#_) body:not(#_#_#_) :is(.m34-ok, .m34-err){ pointer-events:auto !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-arm{ pointer-events:auto !important; background:transparent !important; border-color:transparent !important; box-shadow:inset 0 0 0 1.5px var(--k-neg, #e5484d) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m34-arm .m34-ov{ color:var(--k-neg, #e5484d); }
+@keyframes m34in{ from{ opacity:0; transform:scale(.9); } to{ opacity:1; transform:none; } }
+@keyframes m34spin{ to{ transform:rotate(360deg); } }
+@keyframes m34shake{ 0%,100%{ translate:0; } 20%{ translate:-5px; } 40%{ translate:5px; } 60%{ translate:-3px; } 80%{ translate:2px; } }
+/* keyboard: a clear orange ring on whatever Tab lands on (never shows on touch or mouse clicks) */
+html:not(#_#_#_) body:not(#_#_#_) :is(button, a[href], summary, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="option"], [tabindex]:not([tabindex="-1"]):not(input):not(textarea):not(select)):focus-visible{
+  outline:2px solid var(--k-acc, #f26b3a) !important; outline-offset:2px !important; }
+@media (prefers-reduced-motion:reduce){ html:not(#_#_#_) body:not(#_#_#_) :is(.m34-err, .m34-ov, .m34-busy .m34-ov svg){ animation:none !important; } }
+</style>
+<script id="m34-js">/* ══════════════════════════════════════════════════════════════════════════════════════
+   M34 · button states, from the "16 states" video (Nov 24)
+   · Loading: a Save button shows a spinner while it saves and can't be tapped twice.
+   · Success: it turns green "✓ Saved" for a moment (if it is still on screen).
+   · Error:   if the save stops (a missing or wrong field) it shakes and turns red "Not saved";
+              the message that says why still shows as before.
+   · Confirm: deleting a bill, payment or cheque from its red Delete button — the first tap turns it
+              into "Tap again to delete", the second tap deletes (no browser popup). Undo stays.
+              Deletes that cannot be undone still ask with the popup.
+   · Focus:   moving with the keyboard (Tab) puts an orange ring on the button you are on.
+   Nothing here changes how saving or deleting works — only what the button shows.
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var D = document, LAST = { el:null, t:0 };
+  var SV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  var I = { busy:SV + '<path d="M12 3a9 9 0 1 0 9 9" /></svg>', ok:SV + '<path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+    err:SV + '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>', del:SV + '<path d="M5 7h14M9.5 7V5h5v2M7 7l.8 12.5h8.4L17 7"/></svg>' };
+  function seen(b){ return !!(b && b.isConnected && b.getClientRects().length && getComputedStyle(b).visibility !== 'hidden'); }
+  D.addEventListener('pointerdown', function(e){ var b = e.target.closest && e.target.closest('button, [role="button"], a'); if(b){ LAST.el = b; LAST.t = performance.now(); if(b.__m34 === 'ok' || b.__m34 === 'err') clear(b); } }, true);
+  D.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('button, [role="button"], a'); if(b){ LAST.el = b; LAST.t = performance.now(); } }, true);
+
+  /* ── show a state on a button ── */
+  function show(b, st, html, ms){
+    if(!b) return;
+    clear(b);
+    var bg = getComputedStyle(b).color; b.style.setProperty('--m34-c', bg);
+    var ov = D.createElement('span'); ov.className = 'm34-ov'; ov.innerHTML = html; b.appendChild(ov);
+    b.classList.add('m34-st', 'm34-' + st); b.__m34 = st;
+    if(ms) b.__m34t = setTimeout(function(){ clear(b); }, ms);
+  }
+  function clear(b){
+    if(!b || !b.__m34) return;
+    clearTimeout(b.__m34t); b.__m34 = null; b.__m34arm = 0;
+    b.classList.remove('m34-st', 'm34-busy', 'm34-ok', 'm34-err', 'm34-arm');
+    [].slice.call(b.querySelectorAll(':scope > .m34-ov')).forEach(function(o){ o.remove(); });
+  }
+
+  /* ── 1 · Save buttons: loading → saved / not saved ── */
+  var RUN = [], IN = {};   /* IN[name]: we are inside a save right now (other parts of the app wrap the same function) */
+  function btnFor(name){
+    var l = LAST.el;
+    if(l && performance.now() - LAST.t < 1200 && seen(l)){
+      var oc = l.getAttribute('onclick') || ''; if(oc.indexOf(name + '(') >= 0) return l;
+    }
+    var all = [].slice.call(D.querySelectorAll('[onclick*="' + name + '("]')).filter(seen);
+    return all[0] || null;
+  }
+  function wrapSave(name){
+    var orig = window[name]; if(typeof orig !== 'function' || orig.__m34) return;
+    var w = function(){
+      if(IN[name]) return orig.apply(this, arguments);                 /* called from inside the same save: just pass it on */
+      if(RUN.some(function(r){ return r.name === name; })) return;   /* already saving: a second tap does nothing */
+      var b = btnFor(name), run = { name:name, b:b, ok:false, err:false };
+      RUN.push(run);
+      if(b) show(b, 'busy', I.busy);
+      var res;
+      var done = function(){
+        var i = RUN.indexOf(run); if(i >= 0) RUN.splice(i, 1);
+        if(!b) return;
+        if(run.err){ show(b, 'err', I.err + '<span>Not saved</span>', 1500); }
+        else if(run.ok){ show(b, 'ok', I.ok + '<span>Saved</span>', 1100); requestAnimationFrame(function(){ if(!seen(b)) clear(b); }); }
+        else clear(b);
+      };
+      IN[name] = true;
+      try{ res = orig.apply(this, arguments); }catch(err){ IN[name] = false; run.err = true; done(); throw err; }
+      IN[name] = false;
+      Promise.resolve(res).then(done, function(){ run.err = true; done(); });
+      return res;
+    };
+    w.__m34 = true; window[name] = w;
+  }
+  function hookToast(){
+    var t = window.toast; if(typeof t !== 'function' || t.__m34) return;
+    var w = function(msg, type){
+      if(RUN.length){ var r = RUN[RUN.length - 1]; if(type === 'error') r.err = true; else if(type === 'success' || type == null) r.ok = true; }
+      return t.apply(this, arguments);
+    };
+    w.__m34 = true; window.toast = w;
+  }
+  var SAVES = ['saveEntry', 'savePayment', 'saveEditPayment', 'saveCheque', 'saveEditInvoice', 'savePartyDetails'];
+  function hookAll(){ SAVES.forEach(wrapSave); hookToast(); }
+  hookAll();
+  /* other parts of the app replace some of these later; check again once things have settled */
+  setTimeout(hookAll, 1500); setTimeout(hookAll, 5000);
+
+  /* ── 2 · Delete: tap again instead of the popup (only where Undo exists) ── */
+  var nConfirm = window.confirm;
+  window.confirm = function(msg){
+    var b = LAST.el, s = String(msg || '');
+    var mine = /undo it right after/i.test(s) && b && performance.now() - LAST.t < 800 && b.matches && b.matches('.btn-danger') && seen(b);
+    if(!mine) return nConfirm.apply(window, arguments);
+    if(b.__m34 === 'arm' && b.__m34arm && performance.now() - b.__m34arm < 4000){ clear(b); return true; }
+    show(b, 'arm', I.del + '<span>' + (b.offsetWidth >= 175 ? 'Tap again to delete' : 'Tap again') + '</span>', 3500);
+    b.__m34arm = performance.now();
+    if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
+    return false;
+  };
+})();
+</script>
 </body>
 </html>
