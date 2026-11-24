@@ -31303,150 +31303,107 @@ AMCViewport.onSettle(function(){
     });
   };
 
-  /* ══ 1 · LIQUID GLASS TAB BAR (studied frame by frame from the App Store) ═══════════════
-     Rest: the chosen tab sits on a soft grey pill.
-     Touch: the whole bar swells a little and the pill rises into a drop of clear glass, a bit
-       taller than the bar. Icons under it are magnified and turn orange; its rim pulls in what
-       is just outside it.
-     Slide: the drop follows the finger. Fast, it grows taller and rounder; when it slows or
-       stops it squashes wide and flat, wobbles, and settles — like jelly.
-     Let go: it glides onto the tab under the finger and melts back into the pill. */
-  var bar = null, sel = null, lens = null, lg = null, lsp = null, lsh = null, G = null, TW0 = 0;
-  var sys = null, X, Wd, P, E, Bs, drag = null, dragged = false, sinkT = 0;
-  var HOLD_W = 22, MOVE_W = 14, HOLD_H = 2, MOVE_H = 20, H0 = 74;
+  /* ══ 1 · TAB BAR LIKE iOS 26 (App Store), remade 24 Nov from Ziad's screen recording ═════
+     Rest: a slim frosted bar; the chosen tab sits on a soft grey pill, its icon in the theme colour.
+     Touch: the bar swells a little and the pill rises into a clear glass drop, a bit taller than
+       the bar. The drop does NOT blur anything: the page and the tabs stay sharp through it, the
+       tabs under it are shown magnified and in the theme colour (a sharp copy, moved only by the
+       graphics chip — no backdrop filter, so nothing gets pixelated on Android).
+     Slide: the drop follows the finger; fast, it stretches taller; when it slows it squashes and
+       wobbles a little, then settles.
+     Let go: it glides onto the tab under the finger and melts back into the pill. The page opens
+       only after that (no sudden jump while the glass is still moving). */
+  var bar = null, sel = null, lens = null, lcl = null, lrow = null, cl = [];
+  var sys = null, X, Wd, P, E, Bs, drag = null, dragged = false, sinkT = 0, pend = null, pendT = 0, rose = false, sinkThere = false;
+  var HOLD_W = 24, MOVE_W = 12, HOLD_H = 12, MOVE_H = 22;
   function tabs(){ return bar ? [].slice.call(bar.querySelectorAll('.m10-t')) : []; }
   function onTab(){ var t = tabs(); for(var i = 0; i < t.length; i++) if(t[i].classList.contains('on')) return t[i]; return null; }
   function mid(t){ return t.offsetLeft + t.offsetWidth / 2; }
   function nearest(px){ var best = null, bd = 1e9; tabs().forEach(function(t){ var d = Math.abs(mid(t) - px); if(d < bd){ bd = d; best = t; } }); return best; }
-  /* The drop (Nov 2026, remade after comparing with the App Store frame by frame): clear glass that
-     magnifies the tabs under it. The tabs inside it are a copy of the bar's own tabs, drawn once and
-     only moved and scaled by the graphics chip — the old drop bent the page through a filter worked
-     out on every frame: heavy on phones, and it showed a mirrored copy of a label at its edge
-     ("moH Home"), a sliver of an icon above it and a double label when it melted away. */
-  var lrow = null, cl = [];
+  /* a sharp copy of the tabs, in the theme colour, shown only inside the drop */
+  var cloneKey = '';
   function cloneTabs(){
-    if(!lrow) return;
+    var list = tabs(); if(!list.length || !lrow) return;
+    var key = bar.offsetWidth + 'x' + bar.offsetHeight + ':' + list.map(function(t){ return t.textContent; }).join('|');
+    if(key === cloneKey && cl.length) return; cloneKey = key;
     lrow.textContent = ''; cl = [];
-    var list = tabs(); if(!list.length) return;
-    var cs = getComputedStyle(list[0]), sv = list[0].querySelector('svg'), lb = list[0].querySelector('.m10-l'), lcs = lb ? getComputedStyle(lb) : null;
     list.forEach(function(t){
-      var c = t.cloneNode(true); c.removeAttribute('id'); c.removeAttribute('data-tab'); c.className = 'm23-ct'; c.setAttribute('tabindex', '-1');
-      c.style.cssText = 'position:absolute;left:' + t.offsetLeft + 'px;top:' + t.offsetTop + 'px;width:' + t.offsetWidth + 'px;height:' + t.offsetHeight + 'px;display:flex;flex-direction:' + cs.flexDirection + ';align-items:center;justify-content:center;gap:' + cs.rowGap + ';padding:0;margin:0;border:0;background:none;box-shadow:none;';
-      var s2 = c.querySelector('svg'); if(s2 && sv){ s2.style.width = sv.getBoundingClientRect().width / (parseFloat(bar.style.scale) || 1) + 'px'; s2.style.height = s2.style.width; s2.style.flex = 'none'; }
-      var l2 = c.querySelector('.m10-l'); if(l2 && lcs){ l2.className = 'm23-cl'; l2.style.cssText = 'display:block;font:' + lcs.fontWeight + ' ' + lcs.fontSize + '/' + lcs.lineHeight + ' ' + lcs.fontFamily + ';letter-spacing:' + lcs.letterSpacing + ';white-space:nowrap'; }
+      var c = t.cloneNode(true); c.removeAttribute('id'); c.removeAttribute('data-tab'); c.removeAttribute('onclick'); c.removeAttribute('aria-current');
+      c.className = 'm35-ct'; c.setAttribute('tabindex', '-1'); c.setAttribute('aria-hidden', 'true');
+      c.style.cssText = 'left:' + t.offsetLeft + 'px;top:' + t.offsetTop + 'px;width:' + t.offsetWidth + 'px;height:' + t.offsetHeight + 'px';
+      /* same icon and label size as the real tab (copied from it, so other style rules can't change them) */
+      var k = parseFloat(bar.style.scale) || 1, sv = t.querySelector('svg'), s2 = c.querySelector('svg');
+      if(sv && s2){ var sr = sv.getBoundingClientRect(); s2.style.cssText = 'width:' + (sr.width / k).toFixed(2) + 'px;height:' + (sr.height / k).toFixed(2) + 'px;flex:none;display:block;margin:0'; }
+      var l0 = t.querySelector('.m10-l'), l = c.querySelector('.m10-l');
+      if(l && l0){ var lc = getComputedStyle(l0); l.className = 'm35-cl'; l.style.cssText = 'display:block;margin:0;white-space:nowrap;font:' + lc.fontWeight + ' ' + lc.fontSize + '/' + lc.lineHeight + ' ' + lc.fontFamily + ';letter-spacing:' + lc.letterSpacing; }
+      c.style.gap = getComputedStyle(t).rowGap;
       lrow.appendChild(c); cl.push(c);
     });
     lrow.style.width = bar.offsetWidth + 'px'; lrow.style.height = bar.offsetHeight + 'px';
   }
-  var tint = null;
-  function buildTint(){
-    if(!tint || !bar) return;
-    tint.textContent = '';
-    var list = tabs(); if(!list.length) return;
-    list.forEach(function(t){
-      var c = t.cloneNode(true); c.removeAttribute('id'); c.removeAttribute('data-tab'); c.removeAttribute('onclick'); c.className = 'm23-tt'; c.setAttribute('tabindex', '-1'); c.setAttribute('aria-hidden', 'true');
-      c.style.cssText = 'position:absolute;left:' + t.offsetLeft + 'px;top:' + t.offsetTop + 'px;width:' + t.offsetWidth + 'px;height:' + t.offsetHeight + 'px;margin:0;padding:' + getComputedStyle(t).padding + ';';
-      tint.appendChild(c);
-    });
-    tint.__b = 1;
-  }
-  function buildLens(){
-    var t = tabs()[0]; if(!t) return;
-    var tw = t.offsetWidth; if(G && TW0 === tw && cl.length) return; TW0 = tw;
-    /* only the rim light is taken from the glass engine (drawn once per size) */
-    /* App Store (iOS 26), from the video frame by frame: calm, the rim bends softly with a light
-       rainbow; moving, the rim smears what it passes into stronger rainbow colours. Both are soft
-       at the edge (blurred into the clear middle), never a hard line. */
-    G = LG.glass(tw + HOLD_W, H0, H0 / 2, { M:22, out:true, mag:1.18, A:15, B:16, k:2.2, chroma:0.2, soft:0.35, eb:1.6, ez:1.15, sat:1.3, bright:1.03, light:0.9 });
-    G.fast = LG.glass(tw + HOLD_W, H0, H0 / 2, { M:22, out:true, mag:1.18, A:15, B:18, k:2.0, chroma:0.34, soft:0.45, eb:2.4, ez:1.3, sat:1.45, bright:1.03, light:0.9 }).filter;
-    G.calm = G.filter; G.now = G.filter;
-    G.w0 = tw + HOLD_W; G.h0 = H0;
-    lens.style.width = G.TW + 'px'; lens.style.height = G.TH + 'px';
-    /* real bending glass (as on 4 Nov) where the browser can draw it; the copied tabs only as a fallback */
-    if(LG.ok){ LG.setBF(lg, G.filter); lg.style.inset = '0px'; lg.style.borderRadius = '0px'; lg.style.clipPath = 'inset(' + G.M + 'px round ' + (H0 / 2) + 'px)'; if(lrow) lrow.textContent = ''; cl = []; }
-    else { lg.style.inset = G.M + 'px'; lg.style.borderRadius = (H0 / 2) + 'px'; cloneTabs(); }
-    lsp.style.backgroundImage = G.spec;
-    lsh.style.inset = G.M + 'px'; lsh.style.borderRadius = (H0 / 2) + 'px';
-    lens.style.setProperty('--m', G.M + 'px'); lens.style.setProperty('--r', (H0 / 2) + 'px');
-  }
-  /* the glass picture is made again only when the bar's size or the theme really changes
-     (it was remade on every class change of the page — opening the menu, scrolling, changing page —
-     and making it is heavy: that was the biggest single cause of lag) */
-  var bgKey = '', barW = 0, barH = 0;
-  function barGlass(){
-    if(!bar) return;
-    if(!barW){ barW = bar.offsetWidth; barH = bar.offsetHeight; if(!barW) return; }
-    var dark = document.body.classList.contains('dark-mode');
-    var key = barW + 'x' + barH + (dark ? 'd' : 'l');
-    if(key === bgKey) return;
-    bgKey = key;
-    /* iOS 26 tab bar glass: clear, light, lets the colours behind it through; brighter in light mode, deeper in dark */
-    var g = LG.glass(barW, barH, barH / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:12, sat:2.2, bright:dark ? 1 : 1.12, light:dark ? 0.6 : 0.95, soft:0 });
-    /* at rest the bar is frosted glass the graphics chip draws for free while the page scrolls under it;
-       the full bending glass is kept for the drop you touch (it is only on screen while you touch) */
-    LG.setBF(bar, g.filter);
-    bar.style.setProperty('background-image', g.spec, 'important');
-    bar.style.setProperty('background-size', '100% 100%', 'important');
-    bar.style.setProperty('background-repeat', 'no-repeat', 'important');
-  }
-  /* the bar's size and the tabs' places, measured once (not every frame: reading them while
-     a new page is being laid out made each frame wait for the whole page → lag) */
+  /* the bar's size and the tabs' places, measured once per touch (not every frame) */
   var GM = null;
   function measure(){
     if(!bar) return;
     var k = parseFloat(bar.style.scale) || 1, r = bar.getBoundingClientRect(), list = tabs();
-    GM = { bh:bar.offsetHeight, ow:bar.offsetWidth, cl:bar.clientLeft, cx0:r.left + r.width / 2, cy:r.top + r.height / 2, list:list, mids:list.map(mid) };
+    GM = { bh:bar.offsetHeight, ow:bar.offsetWidth, cx0:r.left + r.width / 2, cy:r.top + r.height / 2, list:list,
+           left:list.map(function(t){ return t.offsetLeft; }), w:list.map(function(t){ return t.offsetWidth; }), mids:list.map(mid) };
     void k;
   }
+  var masked = [];
+  function unmask(i){
+    if(!masked[i]) return; masked[i] = 0;
+    var t = GM.list[i]; t.style.removeProperty('-webkit-mask-image'); t.style.removeProperty('mask-image');
+  }
   function paint(){
-    if(!bar || !G) return;
+    if(!bar || !lens) return;
     if(!GM) measure();
-    var tw = Wd.x, p = Math.max(0, P.x), e = E.x, bh = GM.bh, inner = bh - 8;
-    if(drag) E.to = Math.min(1, Math.abs(X.v) / 700);            /* faster → taller and rounder */
+    var tw = Wd.x, p = Math.max(0, P.x), e = E.x, bh = GM.bh, inner = bh - 6;
+    if(drag) E.to = Math.min(1, Math.abs(X.v) / 800);             /* faster → taller */
     var wl = tw + HOLD_W + (MOVE_W - HOLD_W) * e, hl = bh + HOLD_H + (MOVE_H - HOLD_H) * e;
     var w = tw + (wl - tw) * p, h = inner + (hl - inner) * p;
-    /* the whole bar swells a little while it is held */
-    var kk = 1 + 0.035 * Math.max(0, Bs.x);
+    var kk = 1 + 0.04 * Math.max(0, Bs.x);                          /* the bar swells while held */
     bar.style.scale = kk.toFixed(4);
-    /* the resting pill melts away as the glass rises, and back as it comes down */
     sel.style.width = tw + 'px';
     sel.style.transform = 'translate3d(' + (X.x - tw / 2).toFixed(2) + 'px,0,0)';
-    sel.style.opacity = (1 - ss(0.04, 0.45, p)).toFixed(3);
-    if(p < 0.004){ if(lens.style.visibility !== 'hidden') lens.style.visibility = 'hidden'; }
-    else {
-      var s = kk;
-      var cx = GM.cx0 - GM.ow * s / 2 + (GM.cl + X.x) * s, cy = GM.cy;
-      var sx = w * s / G.w0, sy = h * s / G.h0, o = ss(0, 0.22, p).toFixed(3);
+    sel.style.opacity = (1 - ss(0.02, 0.35, p)).toFixed(3);
+    var live = p > 0.18;
+    if(p < 0.004){
+      if(lens.style.visibility !== 'hidden') lens.style.visibility = 'hidden';
+    } else {
+      var W = w * kk, H = h * kk;
+      var cx = GM.cx0 + (X.x - GM.ow / 2) * kk, cy = GM.cy;
+      var lx = cx - W / 2, ly = cy - H / 2;
       lens.style.visibility = 'visible';
-      lens.style.transform = 'translate3d(' + (cx - G.TW / 2).toFixed(2) + 'px,' + (cy - G.TH / 2).toFixed(2) + 'px,0) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
-      /* the copy of the tabs inside: lined up with the real ones and magnified around the drop's middle
-         (1 when the drop is flat, so when it melts away the copy sits exactly on the real tabs) */
-      var mg = 1 + 0.16 * ss(0.3, 1, p), bl = GM.cx0 - GM.ow * s / 2, bt = GM.cy - GM.bh * s / 2;
-      var kx = mg * s / sx, ky = mg * s / sy, tx = mg * (bl - cx) / sx - G.M + G.TW / 2, ty = mg * (bt - cy) / sy - G.M + G.TH / 2;
-      lrow.style.transform = 'translate3d(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px,0) scale(' + kx.toFixed(4) + ',' + ky.toFixed(4) + ')';
-      lg.style.opacity = o; lsp.style.opacity = o; lsh.style.opacity = o; lens.style.setProperty('--o', o);
-      /* speed → stronger rainbow (switches between two ready-made glasses; nothing is redrawn) */
-      if(LG.ok && G.fast){ var want = e > 0.3 ? G.fast : G.calm; if(want !== G.now){ G.now = want; LG.setBF(lg, want); } }
+      lens.style.width = W.toFixed(2) + 'px'; lens.style.height = H.toFixed(2) + 'px';
+      lens.style.transform = 'translate3d(' + lx.toFixed(2) + 'px,' + ly.toFixed(2) + 'px,0)';
+      lens.style.opacity = ss(0, 0.18, p).toFixed(3);
+      /* the copy of the tabs: lined up with the real ones, magnified around the drop's middle */
+      var mg = 1 + 0.15 * ss(0.15, 1, p);
+      var bx = GM.cx0 - GM.ow * kk / 2 - lx, by = GM.cy - bh * kk / 2 - ly;
+      lrow.style.transform = 'translate(' + (W / 2).toFixed(2) + 'px,' + (H / 2).toFixed(2) + 'px) scale(' + mg.toFixed(4) + ') translate(' + (bx - W / 2).toFixed(2) + 'px,' + (by - H / 2).toFixed(2) + 'px) scale(' + kk.toFixed(4) + ')';
     }
-    var live = p > 0.25;
     bar.classList.toggle('m23-live', live);
-    /* the part of the tabs under the drop turns orange — only the part it covers (App Store) */
-    if(tint){
-      if(live){
-        if(!tint.__b){ buildTint(); }
-        var L0 = X.x - w / 2, R0 = GM.ow - (X.x + w / 2) - 2 * GM.cl;
-        tint.style.clipPath = 'inset(-30px ' + R0.toFixed(1) + 'px -30px ' + L0.toFixed(1) + 'px round ' + (h / 2).toFixed(1) + 'px)';
-        if(tint.style.visibility !== 'visible') tint.style.visibility = 'visible';
-      } else if(tint.style.visibility !== 'hidden') tint.style.visibility = 'hidden';
+    /* the real tabs are hidden only where the drop covers them, so nothing shows twice */
+    var L = X.x - w / 2, R = X.x + w / 2;
+    for(var i = 0; i < GM.list.length; i++){
+      var a = L - GM.left[i], b = R - GM.left[i];
+      if(!live || b <= 0 || a >= GM.w[i]){ unmask(i); continue; }
+      var m = 'linear-gradient(90deg,#000 ' + a.toFixed(1) + 'px,transparent ' + (a + 0.5).toFixed(1) + 'px,transparent ' + (b - 0.5).toFixed(1) + 'px,#000 ' + b.toFixed(1) + 'px)';
+      GM.list[i].style.setProperty('-webkit-mask-image', m); GM.list[i].style.setProperty('mask-image', m); masked[i] = 1;
     }
-    GM.list.forEach(function(t, i){ var u = live && Math.abs(GM.mids[i] - X.x) < w * 0.32; t.classList.toggle('m23-under', u); if(cl[i]) cl[i].classList.toggle('m23-under', u); });
+    /* the page opens once the glass has landed and melted (never while it is still moving) */
+    if(p > 0.85) rose = true;
+    /* a quick tap: the glass first rises fully and glides to the tab, then melts */
+    if(sinkThere && !drag && rose && Math.abs(X.x - X.to) < 4){ sinkThere = false; sink(40); }
+    if(pend && !drag && rose && !sinkThere && P.to === 0 && p < 0.3){ var t = pend; pend = null; clearTimeout(pendT); requestAnimationFrame(function(){ open(t); }); }
   }
-  function lift(to){ measure(); clearTimeout(sinkT); P.k = 400; P.c = 25; P.to = to == null ? 1 : to; Bs.to = P.to; sys.kick(); }
-  /* on release the glass melts into the pill fast (~0.1 s, measured on iOS 27); the bar follows (~0.25 s) */
-  function sink(wait){ clearTimeout(sinkT); sinkT = setTimeout(function(){ if(drag) return; P.k = 640; P.c = 50; P.to = 0; E.to = 0; Bs.to = 0; sys.kick(); }, wait || 0); }
+  function open(t){ tabs().forEach(function(x){ x.classList.remove('m35-to'); }); if(bar) bar.classList.remove('m35-wait'); if(!t || !t.isConnected) return; dragged = false; t.click(); dragged = true; setTimeout(function(){ dragged = false; }, 60); }
+  function lift(){ measure(); cloneTabs(); clearTimeout(sinkT); rose = P.x > 0.85; sinkThere = false; P.k = 420; P.c = 27; P.to = 1; Bs.to = 1; sys.kick(); }
+  function sink(wait){ clearTimeout(sinkT); sinkT = setTimeout(function(){ if(drag) return; P.k = 520; P.c = 42; P.to = 0; E.to = 0; Bs.to = 0; sys.kick(); }, wait || 0); }
   function goTab(t, instant){
     if(!t) return;
-    measure();
+    if(!GM || GM.list.indexOf(t) < 0) measure();
     X.to = mid(t); Wd.to = t.offsetWidth;
     if(instant || reduce.matches){ X.x = X.to; X.v = 0; Wd.x = Wd.to; Wd.v = 0; }
     sys.kick();
@@ -31454,31 +31411,29 @@ AMCViewport.onSettle(function(){
   function setupBar(){
     bar = $('m10-bar'); if(!bar || bar.__m23) return;
     bar.__m23 = 1;
+    document.body.classList.add('m35-bar');
     sel = document.createElement('span'); sel.id = 'm23-sel'; sel.setAttribute('aria-hidden', 'true');
     bar.insertBefore(sel, bar.firstChild);
-    tint = document.createElement('span'); tint.id = 'm23-tint'; tint.setAttribute('aria-hidden', 'true'); tint.style.visibility = 'hidden';
-    bar.appendChild(tint);
-    /* the copy is made again when the tabs change size (rotate, resize) */
-    if(window.ResizeObserver) new ResizeObserver(function(){ if(tint) tint.__b = 0; GM = null; }).observe(bar);
-    lens = $('m23-lens') || document.createElement('div'); lens.id = 'm23-lens'; lens.setAttribute('aria-hidden', 'true'); lens.style.visibility = 'hidden';
-    lens.innerHTML = '<i class="m23-lsh"></i><i class="m23-lgl"><span class="m23-lrow"></span></i><i class="m23-lsp"></i>';
+    if(window.ResizeObserver) new ResizeObserver(function(){ GM = null; cloneKey = ''; }).observe(bar);
+    lens = $('m35-lens') || document.createElement('div'); lens.id = 'm35-lens'; lens.setAttribute('aria-hidden', 'true'); lens.style.visibility = 'hidden';
+    lens.innerHTML = '<i class="m35-clip"><span class="m35-row"></span></i><i class="m35-rim"></i>';
     document.body.appendChild(lens);
-    lsh = lens.children[0]; lg = lens.children[1]; lsp = lens.children[2]; lrow = lg.firstChild;
+    lcl = lens.firstChild; lrow = lcl.firstChild;
     sys = new Sys(paint);
-    X = sys.add(420, 40, 0.1); Wd = sys.add(420, 40, 0.1);
-    P = sys.add(400, 25, 0.002);                 /* press: 0 = pill, 1 = glass */
-    E = sys.add(190, 13, 0.003);                 /* motion: under-damped, so it wobbles */
-    Bs = sys.add(300, 34, 0.0005);               /* the bar's swell: settles a little slower than the glass (App Store) */
+    X = sys.add(380, 34, 0.1); Wd = sys.add(380, 34, 0.1);
+    P = sys.add(420, 27, 0.002);                 /* press: 0 = pill, 1 = glass */
+    E = sys.add(200, 14, 0.003);                 /* motion: a little under-damped, so it wobbles */
+    Bs = sys.add(320, 32, 0.0005);               /* the bar's swell */
     var dock = $('m10-dock');
     /* the old sideways swipe (switch book) gives way to sliding the glass, like iOS */
     ['touchstart', 'touchmove', 'touchend'].forEach(function(ev){
       dock.addEventListener(ev, function(e){ if(e.target.closest && e.target.closest('#m10-bar')) e.stopPropagation(); }, { capture:true, passive:true });
     });
     function fingerX(e){ var r = bar.getBoundingClientRect(), s = r.width / bar.offsetWidth; return (e.clientX - r.left) / s - bar.clientLeft; }
-    function clampX(x){ var h = Math.max(Wd.to / 2 + 4, (Wd.to + HOLD_W) / 2 - 6), lo = h, hi = bar.clientWidth - h; return x < lo ? lo - Math.min(10, (lo - x) * 0.25) : x > hi ? hi + Math.min(10, (x - hi) * 0.25) : x; }
+    function clampX(x){ var h = (Wd.to + HOLD_W) / 2 - 8, lo = h, hi = bar.clientWidth - h; return x < lo ? lo - Math.min(10, (lo - x) * 0.25) : x > hi ? hi + Math.min(10, (x - hi) * 0.25) : x; }
     bar.addEventListener('pointerdown', function(e){
       if(!dockQ.matches || e.button > 0) return;
-      buildLens();
+      if(pend){ pend = null; clearTimeout(pendT); tabs().forEach(function(x){ x.classList.remove('m35-to'); }); bar.classList.remove('m35-wait'); }
       var fx = fingerX(e), t = nearest(fx);
       drag = { x0:e.clientX, moved:false, id:e.pointerId, tab:t, fx:fx };
       dragged = false;
@@ -31499,43 +31454,34 @@ AMCViewport.onSettle(function(){
       var was = drag; drag = null; sys.hold = false;
       var t = was.moved ? nearest(was.fx) : was.tab;   /* the tab under the finger */
       goTab(t, false); E.to = 0;
-      sink(30);
-      /* we open the tab ourselves (the bar holds the pointer, so the browser's own click
-         may land on the bar instead of the tab); the browser's click is then ignored */
-      if(t && (was.moved ? !t.classList.contains('on') : e && e.type === 'pointerup')){ dragged = false; t.click(); }
-      dragged = true; setTimeout(function(){ dragged = false; }, 80);
+      /* tapping the open tab again (scroll to top) needs no wait; a new tab opens once the glass has settled */
+      var go = t && (was.moved ? !t.classList.contains('on') : e && e.type === 'pointerup');
+      if(go && t.classList.contains('on')){ open(t); go = false; }
+      if(rose) sink(was.moved ? 60 : 110); else sinkThere = true;
+      if(go){ t.classList.add('m35-to'); bar.classList.add('m35-wait'); pend = t; clearTimeout(pendT); pendT = setTimeout(function(){ if(pend === t){ pend = null; sinkThere = false; sink(0); open(t); } }, 900); }
+      dragged = true; setTimeout(function(){ if(!pend) dragged = false; }, 80);
     }
     bar.addEventListener('pointerup', end);
     bar.addEventListener('pointercancel', end);
-    /* a tap that came from a slide is not a second tap */
-    bar.addEventListener('click', function(e){ if(dragged){ e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-    /* follow the app: when the chosen tab changes from elsewhere, the glass travels there */
-    var lastOn = null;
+    /* the browser's own click after a touch is ignored: we open the tab ourselves (above) */
+    bar.addEventListener('click', function(e){ if(dragged || pend){ e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    /* follow the app: when the chosen tab changes from elsewhere, the pill glides there */
+    var lastOn = null, follow = 0;
     new MutationObserver(function(list){
-      /* the glass's own classes (m23-under / m23-live) change every frame: ignore those,
-         otherwise every frame measured the tabs again → lag */
       var real = false;
-      for(var i = 0; i < list.length; i++){ var o = list[i].oldValue || '', n = list[i].target.className || ''; if(o.replace(/\s*m23-(under|live)\b/g, '') !== String(n).replace(/\s*m23-(under|live)\b/g, '')){ real = true; break; } }
+      for(var i = 0; i < list.length; i++){ var o = list[i].oldValue || '', n = list[i].target.className || ''; if(o.replace(/\s*m(23|35)-(under|live|to|wait)\b/g, '') !== String(n).replace(/\s*m(23|35)-(under|live|to|wait)\b/g, '')){ real = true; break; } }
       if(!real || follow) return;
       follow = requestAnimationFrame(function(){ follow = 0; followTab(); });
     }).observe(bar, { attributes:true, subtree:true, attributeFilter:['class'], attributeOldValue:true });
-    var follow = 0;
     function followTab(){
-      if(drag) return; var t = onTab();
+      if(drag || pend) return; var t = onTab();
       if(!t){ sel.style.opacity = '0'; lastOn = null; return; }
-      if(t === lastOn && Math.abs(X.to - (GM && GM.list.indexOf(t) >= 0 ? GM.mids[GM.list.indexOf(t)] : X.to)) < 2) return;
+      if(t === lastOn && Math.abs(X.to - mid(t)) < 2) return;
       lastOn = t;
-      /* a page opened from somewhere else (menu, a button on Home): the pill just glides to its tab.
-         (It used to rise into the glass drop too, which drew a heavy glass effect at the same moment the
-         new page was being built — a visible hitch on phones. Touching the bar still makes the drop.) */
-      if(Math.abs(mid(t) - X.to) > 2){ goTab(t, false); }
+      if(Math.abs(mid(t) - X.to) > 2) goTab(t, false);
     }
-    new MutationObserver(barGlass).observe(document.body, { attributes:true, attributeFilter:['class'] });
-    if(window.ResizeObserver) new ResizeObserver(function(en){ var r = en[0].contentRect; var w = bar.offsetWidth, h = bar.offsetHeight; if(w && (w !== barW || h !== barH)){ barW = w; barH = h; barGlass(); GM = null; } }).observe(bar);
-    requestAnimationFrame(function(){ buildLens(); barGlass(); goTab(onTab(), true); paint(); });
-    window.addEventListener('resize', function(){ TW0 = 0; barW = 0; buildLens(); barGlass(); goTab(onTab(), true); });
-    /* the tab names change with Purchase / Sales: the copy inside the drop is made again when you touch the bar */
-    bar.addEventListener('pointerdown', function(){ var l = tabs()[0] && tabs()[0].querySelector('.m10-l'), c = cl[0] && cl[0].querySelector('.m10-l'); if(l && c && l.textContent !== c.textContent && !LG.ok) cloneTabs(); }, true);
+    requestAnimationFrame(function(){ measure(); goTab(onTab(), true); paint(); });
+    window.addEventListener('resize', function(){ GM = null; cloneKey = ''; goTab(onTab(), true); });
   }
 
   /* ══ 1b · SWITCHES TURN INTO REAL GLASS WHILE YOU TOUCH THEM ═════════════════════════
@@ -31759,9 +31705,7 @@ AMCViewport.onSettle(function(){
     var b = document.querySelector('#m10-dock .m10-plus'); if(!b || b.__m23 || !b.offsetWidth) return;
     b.__m23 = 1;
     /* the same glass as the tab bar beside it (iOS 26): frosted, bright, the page's colours through it */
-    var w = b.offsetWidth, g = LG.glass(w, w, w / 2, { M:0, out:false, mag:1, A:6, B:11, k:2.2, chroma:0.05, blur:12, sat:2.2, bright:1.08, light:0.95, soft:0 });
-    LG.setBF(b, g.filter);
-    var sp = document.createElement('i'); sp.className = 'm23-pspec'; sp.setAttribute('aria-hidden', 'true'); sp.style.backgroundImage = g.spec; b.appendChild(sp);
+    /* Nov 24: plain frosted glass from CSS (m35-css), same as the bar — the bending filter pixelated on Android */
   }
 
   /* ══ 1c · EVERY SWITCH CAN BE DRAGGED ═════════════════════════════════════════════════
@@ -34107,5 +34051,52 @@ html:not(#_#_#_) body:not(#_#_#_) :is(button, a[href], summary, [role="button"],
   };
 })();
 </script>
+<style id="m35-css">/* ── M35 · tab bar like iOS 26 (App Store), 24 Nov ──
+   slim frosted bar (58px), clear glass drop that never blurs what is under it */
+@media screen and (max-width:900px){
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-bar{ height:58px !important; padding:3px !important; border-radius:29px !important;
+  background-color:rgba(255,255,255,.6) !important; background-image:none !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.9) brightness(1.04) !important; backdrop-filter:blur(14px) saturate(1.9) brightness(1.04) !important;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.8), inset 0 1px 1px rgba(255,255,255,.85), 0 0 0 .5px rgba(0,0,0,.07), 0 10px 28px -12px rgba(20,22,35,.28), 0 2px 6px -2px rgba(20,22,35,.08) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_).dark-mode #m10-dock .m10-bar{ background-color:rgba(34,34,38,.62) !important;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.10), inset 0 1px 1px rgba(255,255,255,.07), 0 0 0 .5px rgba(0,0,0,.4), 0 12px 30px -10px rgba(0,0,0,.7) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-t{ height:52px !important; border-radius:26px !important; gap:2px !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-t svg{ width:23px !important; height:23px !important; scale:1 !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-l{ font:600 10px/1 var(--k-font) !important; letter-spacing:.01em !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-bar.m35-wait .m10-t.on:not(.m35-to){ color:var(--k-ink) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-bar .m10-t.m35-to{ color:var(--k-acc) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m23-sel{ top:3px !important; height:52px !important; border-radius:26px !important; background:rgba(20,20,30,.075) !important; box-shadow:none !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_).dark-mode #m23-sel{ background:rgba(255,255,255,.13) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-plus{ width:58px !important; height:58px !important; flex:0 0 58px !important;
+  background:rgba(255,255,255,.6) !important; background-image:none !important; color:var(--k-acc) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.9) brightness(1.04) !important; backdrop-filter:blur(14px) saturate(1.9) brightness(1.04) !important;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.8), inset 0 1px 1px rgba(255,255,255,.85), 0 0 0 .5px rgba(0,0,0,.07), 0 10px 28px -12px rgba(20,22,35,.28), 0 2px 6px -2px rgba(20,22,35,.08) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_).dark-mode #m10-dock .m10-plus{ background:rgba(34,34,38,.62) !important;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.10), inset 0 1px 1px rgba(255,255,255,.07), 0 0 0 .5px rgba(0,0,0,.4), 0 12px 30px -10px rgba(0,0,0,.7) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-plus .m23-pspec{ display:none !important; }
+}
+/* the glass drop */
+#m35-lens{ position:fixed; left:0; top:0; z-index:8002; pointer-events:none; border-radius:999px; contain:layout style; will-change:transform, width, height, opacity; }
+#m35-lens > i{ position:absolute; inset:0; display:block; border-radius:inherit; pointer-events:none; }
+#m35-lens .m35-clip{ overflow:hidden; background:rgba(255,255,255,.16); }
+#m35-lens .m35-row{ position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform; }
+#m35-lens .m35-ct{ position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-sizing:border-box;
+  margin:0; padding:0; border:0; outline:0; background:none; box-shadow:none; color:var(--k-acc); font:inherit; -webkit-appearance:none; appearance:none; }
+#m35-lens .m35-ct svg{ display:block; width:23px; height:23px; flex:none; }
+#m35-lens .m35-cl{ display:block; font:600 10px/1 var(--k-font); letter-spacing:.01em; white-space:nowrap; }
+#m35-lens .m35-rim{
+  background:linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 30%, rgba(255,255,255,0) 72%, rgba(255,255,255,.16));
+  box-shadow:inset 0 0 0 .6px rgba(255,255,255,.95), inset 0 1.5px 1px -.5px #fff, inset 0 -1.5px 2px -1px rgba(0,0,0,.10),
+    inset 6px 0 8px -6px rgba(70,160,255,.5), inset -6px 0 8px -6px rgba(255,80,170,.42),
+    inset 0 6px 8px -7px rgba(130,205,255,.4), inset 0 -6px 8px -7px rgba(255,140,200,.34),
+    0 0 0 .5px rgba(0,0,0,.09), 0 8px 20px -8px rgba(15,18,35,.26); }
+body.dark-mode #m35-lens .m35-clip{ background:rgba(255,255,255,.07); }
+body.dark-mode #m35-lens .m35-rim{
+  background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 30%, rgba(255,255,255,0) 72%, rgba(255,255,255,.06));
+  box-shadow:inset 0 0 0 .6px rgba(255,255,255,.4), inset 0 1.5px 1px -.5px rgba(255,255,255,.5), inset 0 -1.5px 2px -1px rgba(0,0,0,.3),
+    inset 6px 0 8px -6px rgba(70,160,255,.45), inset -6px 0 8px -6px rgba(255,80,170,.38),
+    0 0 0 .5px rgba(0,0,0,.4), 0 10px 22px -8px rgba(0,0,0,.6); }
+@media print{ #m35-lens{ display:none !important; } }
+</style>
 </body>
 </html>
