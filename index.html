@@ -31313,9 +31313,9 @@ AMCViewport.onSettle(function(){
        wobbles a little, then settles.
      Let go: it glides onto the tab under the finger and melts back into the pill. The page opens
        only after that (no sudden jump while the glass is still moving). */
-  var bar = null, sel = null, lens = null, lcl = null, lrow = null, cl = [];
+  var bar = null, sel = null, lens = null, lcl = null, lrow = null, ledge = null, lrow2 = null, cl = [];
   var sys = null, X, Wd, P, E, Bs, drag = null, dragged = false, sinkT = 0, pend = null, pendT = 0, rose = false, sinkThere = false;
-  var HOLD_W = 24, MOVE_W = 12, HOLD_H = 12, MOVE_H = 22;
+  var HOLD_W = 24, MOVE_W = 2, HOLD_H = 8, MOVE_H = 26;   /* still: wide; moving fast: narrow and tall */
   function tabs(){ return bar ? [].slice.call(bar.querySelectorAll('.m10-t')) : []; }
   function onTab(){ var t = tabs(); for(var i = 0; i < t.length; i++) if(t[i].classList.contains('on')) return t[i]; return null; }
   function mid(t){ return t.offsetLeft + t.offsetWidth / 2; }
@@ -31340,6 +31340,8 @@ AMCViewport.onSettle(function(){
       lrow.appendChild(c); cl.push(c);
     });
     lrow.style.width = bar.offsetWidth + 'px'; lrow.style.height = bar.offsetHeight + 'px';
+    /* a second, more magnified copy shows only near the drop's ends: the glass bends things at its edge */
+    if(ledge){ ledge.textContent = ''; lrow2 = lrow.cloneNode(true); ledge.appendChild(lrow2); }
   }
   /* the bar's size and the tabs' places, measured once per touch (not every frame) */
   var GM = null;
@@ -31355,11 +31357,14 @@ AMCViewport.onSettle(function(){
     if(!masked[i]) return; masked[i] = 0;
     var t = GM.list[i]; t.style.removeProperty('-webkit-mask-image'); t.style.removeProperty('mask-image');
   }
+  function cmp(v, lo, hi){ return v < lo ? lo : v > hi ? hi : v; }
   function paint(){
     if(!bar || !lens) return;
     if(!GM) measure();
-    var tw = Wd.x, p = Math.max(0, P.x), e = E.x, bh = GM.bh, inner = bh - 6;
-    if(drag) E.to = Math.min(1, Math.abs(X.v) / 800);             /* faster → taller */
+    var tw = Wd.x, p = Math.max(0, P.x), bh = GM.bh, inner = bh - 6, vx = X.v;
+    /* speed shapes the drop — while sliding AND while it glides after a tap */
+    if(drag || p > 0.1) E.to = Math.min(1, Math.abs(vx) / 750);
+    var e = E.x, sp = Math.min(1, Math.abs(vx) / 900);
     var wl = tw + HOLD_W + (MOVE_W - HOLD_W) * e, hl = bh + HOLD_H + (MOVE_H - HOLD_H) * e;
     var w = tw + (wl - tw) * p, h = inner + (hl - inner) * p;
     var kk = 1 + 0.04 * Math.max(0, Bs.x);                          /* the bar swells while held */
@@ -31374,14 +31379,28 @@ AMCViewport.onSettle(function(){
       var W = w * kk, H = h * kk;
       var cx = GM.cx0 + (X.x - GM.ow / 2) * kk, cy = GM.cy;
       var lx = cx - W / 2, ly = cy - H / 2;
+      var lean = cmp(-vx * 0.006, -6, 6);                         /* it leans back a little, like a drop being pulled */
       lens.style.visibility = 'visible';
       lens.style.width = W.toFixed(2) + 'px'; lens.style.height = H.toFixed(2) + 'px';
-      lens.style.transform = 'translate3d(' + lx.toFixed(2) + 'px,' + ly.toFixed(2) + 'px,0)';
-      lens.style.opacity = ss(0, 0.18, p).toFixed(3);
-      /* the copy of the tabs: lined up with the real ones, magnified around the drop's middle */
-      var mg = 1 + 0.15 * ss(0.15, 1, p);
-      var bx = GM.cx0 - GM.ow * kk / 2 - lx, by = GM.cy - bh * kk / 2 - ly;
-      lrow.style.transform = 'translate(' + (W / 2).toFixed(2) + 'px,' + (H / 2).toFixed(2) + 'px) scale(' + mg.toFixed(4) + ') translate(' + (bx - W / 2).toFixed(2) + 'px,' + (by - H / 2).toFixed(2) + 'px) scale(' + kk.toFixed(4) + ')';
+      lens.style.transform = 'translate3d(' + lx.toFixed(2) + 'px,' + ly.toFixed(2) + 'px,0) skewX(' + lean.toFixed(2) + 'deg)';
+      var op = ss(0, 0.18, p); lens.style.opacity = op > 0.995 ? '' : op.toFixed(3);
+      /* light: the shine turns with the movement, the rainbow edge gets stronger with speed */
+      lens.style.setProperty('--la', (150 + cmp(vx * 0.05, -70, 70)).toFixed(1) + 'deg');
+      lens.style.setProperty('--sp', (0.45 + 0.55 * sp).toFixed(3));
+      lens.style.setProperty('--gx', cmp(28 - vx * 0.02, 8, 70).toFixed(1) + '%');
+      /* the copy of the tabs: magnified around the drop's middle; it lags a touch behind when moving */
+      var mg = 1 + 0.15 * ss(0.15, 1, p) + 0.05 * sp;
+      var lag = cmp(-vx * 0.006, -6, 6);
+      var bx = GM.cx0 - GM.ow * kk / 2 - lx + lag, by = GM.cy - bh * kk / 2 - ly;
+      function tf(m){ return 'translate(' + (W / 2).toFixed(2) + 'px,' + (H / 2).toFixed(2) + 'px) scale(' + m.toFixed(4) + ') translate(' + (bx - W / 2).toFixed(2) + 'px,' + (by - H / 2).toFixed(2) + 'px) scale(' + kk.toFixed(4) + ')'; }
+      lrow.style.transform = tf(mg);
+      /* the bent edge shows only while moving (still, it would look like a double letter) */
+      var eo = ss(0.15, 0.7, sp); if(ledge.__o !== eo){ ledge.__o = eo; ledge.style.opacity = eo.toFixed(2); }
+      if(lrow2 && eo > 0) lrow2.style.transform = tf(mg * 1.18);
+      /* colours split a little at speed (red one way, blue the other), like light through water */
+      var d = 1.8 * sp * (vx < 0 ? -1 : 1);
+      var f = Math.abs(d) < 0.15 ? '' : 'drop-shadow(' + d.toFixed(2) + 'px 0 0 rgba(255,45,120,.55)) drop-shadow(' + (-d).toFixed(2) + 'px 0 0 rgba(0,165,255,.55))';
+      if(lrow.__f !== f){ lrow.__f = f; lrow.style.filter = f; }
     }
     bar.classList.toggle('m23-live', live);
     /* the real tabs are hidden only where the drop covers them, so nothing shows twice */
@@ -31392,14 +31411,13 @@ AMCViewport.onSettle(function(){
       var m = 'linear-gradient(90deg,#000 ' + a.toFixed(1) + 'px,transparent ' + (a + 0.5).toFixed(1) + 'px,transparent ' + (b - 0.5).toFixed(1) + 'px,#000 ' + b.toFixed(1) + 'px)';
       GM.list[i].style.setProperty('-webkit-mask-image', m); GM.list[i].style.setProperty('mask-image', m); masked[i] = 1;
     }
-    /* the page opens once the glass has landed and melted (never while it is still moving) */
     if(p > 0.85) rose = true;
     /* a quick tap: the glass first rises fully and glides to the tab, then melts */
     if(sinkThere && !drag && rose && Math.abs(X.x - X.to) < 4){ sinkThere = false; sink(40); }
     if(pend && !drag && rose && !sinkThere && P.to === 0 && p < 0.3){ var t = pend; pend = null; clearTimeout(pendT); requestAnimationFrame(function(){ open(t); }); }
   }
   function open(t){ tabs().forEach(function(x){ x.classList.remove('m35-to'); }); if(bar) bar.classList.remove('m35-wait'); if(!t || !t.isConnected) return; dragged = false; t.click(); dragged = true; setTimeout(function(){ dragged = false; }, 60); }
-  function lift(){ measure(); cloneTabs(); clearTimeout(sinkT); rose = P.x > 0.85; sinkThere = false; P.k = 420; P.c = 27; P.to = 1; Bs.to = 1; sys.kick(); }
+  function lift(){ measure(); cloneTabs(); clearTimeout(sinkT); rose = P.x > 0.85; sinkThere = false; P.k = 430; P.c = 21; P.to = 1; Bs.to = 1; sys.kick(); }
   function sink(wait){ clearTimeout(sinkT); sinkT = setTimeout(function(){ if(drag) return; P.k = 520; P.c = 42; P.to = 0; E.to = 0; Bs.to = 0; sys.kick(); }, wait || 0); }
   function goTab(t, instant){
     if(!t) return;
@@ -31416,13 +31434,13 @@ AMCViewport.onSettle(function(){
     bar.insertBefore(sel, bar.firstChild);
     if(window.ResizeObserver) new ResizeObserver(function(){ GM = null; cloneKey = ''; }).observe(bar);
     lens = $('m35-lens') || document.createElement('div'); lens.id = 'm35-lens'; lens.setAttribute('aria-hidden', 'true'); lens.style.visibility = 'hidden';
-    lens.innerHTML = '<i class="m35-clip"><span class="m35-row"></span></i><i class="m35-rim"></i>';
+    lens.innerHTML = '<i class="m35-clip"><span class="m35-row"></span><i class="m35-edge"></i></i><i class="m35-rb"></i><i class="m35-gl"></i><i class="m35-ring"></i><i class="m35-rim"></i>';
     document.body.appendChild(lens);
-    lcl = lens.firstChild; lrow = lcl.firstChild;
+    lcl = lens.firstChild; lrow = lcl.firstChild; ledge = lcl.children[1];
     sys = new Sys(paint);
     X = sys.add(380, 34, 0.1); Wd = sys.add(380, 34, 0.1);
-    P = sys.add(420, 27, 0.002);                 /* press: 0 = pill, 1 = glass */
-    E = sys.add(200, 14, 0.003);                 /* motion: a little under-damped, so it wobbles */
+    P = sys.add(430, 21, 0.002);                 /* press: 0 = pill, 1 = glass (pops a little past full) */
+    E = sys.add(230, 11, 0.003);                 /* motion: under-damped, so it squashes and wobbles when it stops */
     Bs = sys.add(320, 32, 0.0005);               /* the bar's swell */
     var dock = $('m10-dock');
     /* the old sideways swipe (switch book) gives way to sliding the glass, like iOS */
@@ -34075,27 +34093,38 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_).dark-mode #m10-dock .m10-plus{ backgro
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.10), inset 0 1px 1px rgba(255,255,255,.07), 0 0 0 .5px rgba(0,0,0,.4), 0 12px 30px -10px rgba(0,0,0,.7) !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m10-dock .m10-plus .m23-pspec{ display:none !important; }
 }
-/* the glass drop */
-#m35-lens{ position:fixed; left:0; top:0; z-index:8002; pointer-events:none; border-radius:999px; contain:layout style; will-change:transform, width, height, opacity; }
+/* the glass drop — clear like water: no blur, colours a little richer, bright edges that catch the light */
+#m35-lens{ position:fixed; left:0; top:0; z-index:8002; pointer-events:none; border-radius:999px; contain:layout style; will-change:transform, width, height;
+  --la:150deg; --sp:.45; --gx:28%; transform-origin:50% 50%; }
 #m35-lens > i{ position:absolute; inset:0; display:block; border-radius:inherit; pointer-events:none; }
-#m35-lens .m35-clip{ overflow:hidden; background:rgba(255,255,255,.16); }
+#m35-lens .m35-clip{ overflow:hidden; background:rgba(255,255,255,.04);
+  -webkit-backdrop-filter:saturate(1.9) brightness(1.07) contrast(1.05); backdrop-filter:saturate(1.9) brightness(1.07) contrast(1.05); }
 #m35-lens .m35-row{ position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform; }
+#m35-lens .m35-edge{ position:absolute; inset:0; display:block; overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,rgba(0,0,0,.85) 7%,transparent 24%,transparent 76%,rgba(0,0,0,.85) 93%,#000 100%);
+          mask-image:linear-gradient(90deg,#000 0,rgba(0,0,0,.85) 7%,transparent 24%,transparent 76%,rgba(0,0,0,.85) 93%,#000 100%); }
 #m35-lens .m35-ct{ position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-sizing:border-box;
   margin:0; padding:0; border:0; outline:0; background:none; box-shadow:none; color:var(--k-acc); font:inherit; -webkit-appearance:none; appearance:none; }
 #m35-lens .m35-ct svg{ display:block; width:23px; height:23px; flex:none; }
 #m35-lens .m35-cl{ display:block; font:600 10px/1 var(--k-font); letter-spacing:.01em; white-space:nowrap; }
-#m35-lens .m35-rim{
-  background:linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 30%, rgba(255,255,255,0) 72%, rgba(255,255,255,.16));
-  box-shadow:inset 0 0 0 .6px rgba(255,255,255,.95), inset 0 1.5px 1px -.5px #fff, inset 0 -1.5px 2px -1px rgba(0,0,0,.10),
-    inset 6px 0 8px -6px rgba(70,160,255,.5), inset -6px 0 8px -6px rgba(255,80,170,.42),
-    inset 0 6px 8px -7px rgba(130,205,255,.4), inset 0 -6px 8px -7px rgba(255,140,200,.34),
-    0 0 0 .5px rgba(0,0,0,.09), 0 8px 20px -8px rgba(15,18,35,.26); }
-body.dark-mode #m35-lens .m35-clip{ background:rgba(255,255,255,.07); }
-body.dark-mode #m35-lens .m35-rim{
-  background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 30%, rgba(255,255,255,0) 72%, rgba(255,255,255,.06));
-  box-shadow:inset 0 0 0 .6px rgba(255,255,255,.4), inset 0 1.5px 1px -.5px rgba(255,255,255,.5), inset 0 -1.5px 2px -1px rgba(0,0,0,.3),
-    inset 6px 0 8px -6px rgba(70,160,255,.45), inset -6px 0 8px -6px rgba(255,80,170,.38),
-    0 0 0 .5px rgba(0,0,0,.4), 0 10px 22px -8px rgba(0,0,0,.6); }
+/* rainbow at the inside edge (stronger when moving fast) */
+#m35-lens .m35-rb{ opacity:var(--sp);
+  box-shadow:inset 8px 0 10px -7px rgba(40,150,255,.85), inset -8px 0 10px -7px rgba(255,55,160,.8),
+    inset 0 7px 9px -7px rgba(110,240,255,.55), inset 0 -7px 9px -7px rgba(255,190,70,.5); }
+/* a soft reflection that slides the other way as the drop moves */
+#m35-lens .m35-gl{ background:radial-gradient(ellipse 38% 34% at var(--gx) 16%, rgba(255,255,255,.75), rgba(255,255,255,.18) 55%, transparent 75%),
+  radial-gradient(ellipse 30% 26% at calc(100% - var(--gx)) 92%, rgba(255,255,255,.35), transparent 70%); }
+/* the bright rim: light on two sides, turning with the movement */
+#m35-lens .m35-ring{ padding:1.6px; box-sizing:border-box;
+  background:linear-gradient(var(--la), #fff 0%, rgba(255,255,255,.35) 22%, rgba(255,255,255,.06) 48%, rgba(255,255,255,.35) 76%, #fff 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+#m35-lens .m35-rim{ box-shadow:inset 0 0 0 .5px rgba(255,255,255,.6), inset 0 -2px 3px -1px rgba(0,0,0,.10),
+  0 0 0 .5px rgba(0,0,0,.08), 0 10px 22px -8px rgba(15,18,35,.30), 0 2px 6px -2px rgba(15,18,35,.12); }
+body.dark-mode #m35-lens .m35-clip{ background:rgba(255,255,255,.03); -webkit-backdrop-filter:saturate(1.7) brightness(1.18); backdrop-filter:saturate(1.7) brightness(1.18); }
+body.dark-mode #m35-lens .m35-gl{ opacity:.55; }
+body.dark-mode #m35-lens .m35-ring{ opacity:.8; }
+body.dark-mode #m35-lens .m35-rim{ box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3), 0 0 0 .5px rgba(0,0,0,.4), 0 12px 24px -8px rgba(0,0,0,.65); }
 @media print{ #m35-lens{ display:none !important; } }
 </style>
 </body>
