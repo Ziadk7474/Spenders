@@ -34411,12 +34411,8 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_).dark-mode #m5-home .m5-hero .m5-cta{ b
 /* ── the first card on Home ── */
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal{ background:var(--k-tile) !important; border:1px solid var(--k-line) !important; border-radius:28px !important; padding:6px !important; box-shadow:0 1px 2px rgba(0,0,0,.04) !important; overflow:hidden; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-tile{ position:relative; background:transparent !important; border:0 !important; box-shadow:none !important; padding:16px 16px 14px !important; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-tile::before{ content:''; position:absolute; right:-60px; top:-80px; width:220px; height:220px; border-radius:50%; pointer-events:none;
-  background:radial-gradient(closest-side, rgba(var(--am-acc-rgb),.16), rgba(var(--am-acc-rgb),0)); }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-brand{ font:500 12px/1.2 var(--k-font) !important; letter-spacing:.08em !important; text-transform:uppercase; font-style:normal !important; color:var(--k-ink3) !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-pill{ background:var(--k-card) !important; border:1px solid var(--k-line) !important; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-tile > .m5-lbl{ display:flex; align-items:center; gap:8px; margin-top:14px !important; font:500 13.5px/1.2 var(--k-font) !important; color:var(--k-ink2) !important; }
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-tile > .m5-lbl::before{ content:''; flex:0 0 7px; width:7px; height:7px; border-radius:50%; background:var(--k-acc); box-shadow:0 0 0 4px rgba(var(--am-acc-rgb),.14); }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-tile > .m5-lbl{ display:flex; align-items:center; gap:8px; margin-top:12px !important; font:500 13.5px/1.2 var(--k-font) !important; color:var(--k-ink2) !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-big{ margin-top:6px !important; font-weight:600 !important; letter-spacing:-.025em !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-btns{ margin-top:16px !important; }
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-btn{ height:46px !important; border-radius:999px !important; font-weight:500 !important; }
@@ -34457,7 +34453,9 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_){ --m31-sheet:520ms !important; --m31-m
   function restore(){ rows().forEach(function(e){ var k = key(e); if(saved[k] != null && Math.abs(e.scrollLeft - saved[k]) > 1) e.scrollLeft = saved[k]; }); }
   function hook(){
     var f = window.renderDashboard; if(typeof f !== 'function' || f.__m38) return;
-    var w = function(){ save(); var r = f.apply(this, arguments); restore(); requestAnimationFrame(restore); return r; };
+    var w = function(){ save(); var r = f.apply(this, arguments);
+      restore(); requestAnimationFrame(restore); return r;
+    };
     w.__m38 = true; window.renderDashboard = w;
   }
   /* the colour belongs to the top of the page: it fades away as you scroll up, so the header turns clear */
@@ -34472,6 +34470,18 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_){ --m31-sheet:520ms !important; --m31-m
     var sc = $('app-scroll');
     if(sc){ sc.addEventListener('scroll', function(){ if(!fadeQ) fadeQ = requestAnimationFrame(fade); }, { passive:true }); fade(); }
     if(window.M8 && M8.after) M8.after('showPage', function(){ requestAnimationFrame(fade); }); hook(); setTimeout(hook, 1500); setTimeout(hook, 5000);
+    /* Purchase / Sales on Home: the pill glides over first (like every other switch), and only then does
+       Home redraw for the other side. Redrawing at the moment of the tap rebuilt the switch while its
+       glass was still moving, which made the cut-up words and the jump. */
+    document.addEventListener('click', function(e){
+      var t = e.target.closest && e.target.closest('#m5-home .m5-seg [data-view]'); if(!t) return;
+      var v = t.getAttribute('data-view'); e.stopImmediatePropagation(); e.preventDefault();
+      if(v === DB.mode || t.__m38busy) return;
+      var seg = t.parentNode;
+      [].forEach.call(seg.querySelectorAll('[data-view]'), function(x){ var on = x === t; x.classList.toggle('on', on); x.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      t.__m38busy = 1;
+      setTimeout(function(){ t.__m38busy = 0; if(window.M8 && M8.switchMode) M8.switchMode(v); else if(typeof setAppMode === 'function') setAppMode(v); }, 380);
+    }, true);
     /* also keep track while you scroll a row (a redraw can come from a sync at any time) */
     document.addEventListener('scroll', function(e){ var t = e.target; if(t && t.nodeType === 1 && t.closest && t.closest('#m5-home')) saved[key(t)] = t.scrollLeft; }, true);
   }
