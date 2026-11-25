@@ -4614,6 +4614,15 @@ body.mode-sales:not(.dark-mode) #app-scroll .page .tbl-wrap table:not(.ref-table
    the app has its own dark mode (and turns it on by itself when the phone is in dark mode) */
 :root{ color-scheme: only light; }
 html:has(> body.dark-mode), html.m39-dark{ color-scheme: dark; }
+/* Samsung Internet only skips its own forced dark when the page has a real dark theme written for
+   prefers-color-scheme. These rules are that theme's base (the app's dark mode does the rest). */
+@media (prefers-color-scheme: dark){
+  html{ background-color:#0c0c0d; }
+  html body.dark-mode{ background-color:#0c0c0d; color:#f2f2f3; }
+}
+@media (prefers-color-scheme: light){
+  html{ background-color:#efefef; }
+}
 html body.dark-mode{ color-scheme: dark; }
 html body.dark-mode{
   
