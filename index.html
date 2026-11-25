@@ -22638,7 +22638,9 @@ AMCViewport.onSettle(function(){
     }
     var d = f.contentDocument || f.contentWindow.document;
     var ph = prepare(html);
-    if(opts.a4) ph = ph.replace(/<\/head>/i, '<style>.inv-doc{border:0!important;padding:40px!important}</style></head>');   /* as on paper */
+    /* A4 mode: lay the page out exactly as the printer does — the print rules on, and the
+       printer's own 1 cm page margin around it — so what you see is what comes out. */
+    if(opts.a4) ph = ph.replace(/@media\s+print/gi, '@media all').replace(/<\/head>/i, '<style>@media screen{html,body{padding:0!important;margin:0!important}body{padding:1cm!important;box-sizing:border-box!important}}</style></head>');
     d.open(); d.write(window.AMTheme ? AMTheme.doc(ph) : ph); d.close();
     var tries = 0;
     (function settle(){ fit(); if(++tries < 12) setTimeout(settle, tries < 4 ? 80 : 300); })();
