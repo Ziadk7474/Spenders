@@ -34386,8 +34386,8 @@ html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .m36-old{ display:none !importa
 #m38-sky{ display:none; }
 @media screen and (max-width:900px){
 html:not(#_#_#_#_) body:not(#_#_#_#_){
-  /* exactly the side menu's paint, laid over the same full-screen size, so the two look like one colour */
-  --m38-sky:radial-gradient(120% 70% at 0% 0%, var(--am-m3) 0%, var(--am-m4) 60%, var(--am-m5) 100%);
+  /* the app's own orange (the same as its buttons), flat, fading only at the bottom edge */
+  --m38-sky:linear-gradient(180deg, var(--am-acc) 0%, var(--am-acc) 100%);
 }
 /* the colour lives on its own layer. The side menu changes the screen card's corners on every
    frame, which redraws the card's own background each time; a plain colour there is cheap. */
