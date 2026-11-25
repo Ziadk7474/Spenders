@@ -34388,48 +34388,45 @@ html:not(#_#_#_) body:not(#_#_#_){
   --k-zone:#F2F2F4 !important; --k-card:#FFFFFF !important; --k-tile:#F4F4F6 !important;
   --k-line:#ECECEF !important; --k-line2:#E0E0E5 !important;
   --k-shadow:0 1px 2px rgba(40,20,8,.04), 0 10px 28px -16px rgba(60,28,8,.22) !important;
-  --m37-sky:linear-gradient(180deg,#FF6A1F 0px,#FF7B34 70px,#FF9358 150px,#FFB487 230px,#FFD7BF 310px,#F8EAE2 380px,#F2F2F4 470px);
+  --m37-a:rgb(var(--am-acc-rgb));
+  --m37-sky:linear-gradient(180deg,var(--m37-a) 0px,color-mix(in srgb,var(--m37-a) 92%,#fff) 70px,color-mix(in srgb,var(--m37-a) 72%,#fff) 150px,color-mix(in srgb,var(--m37-a) 46%,#F2F2F4) 230px,color-mix(in srgb,var(--m37-a) 22%,#F2F2F4) 310px,color-mix(in srgb,var(--m37-a) 8%,#F2F2F4) 380px,#F2F2F4 470px);
   --m37-card:#FFFFFF; --m37-ink:#141416; --m37-ink2:#6B6B73; --m37-ink3:#A1A1A9; --m37-tile:#F4F4F6; --m37-line:#ECECEF;
-  --m37-sh:0 1px 2px rgba(40,20,8,.04), 0 12px 30px -18px rgba(70,30,8,.28);
+  --m37-sh:0 1px 2px rgba(0,0,0,.04);
 }
 html:not(#_#_#_) body:not(#_#_#_).dark-mode{
   --k-zone:#0C0C0E !important; --k-card:#1A1A1D !important; --k-tile:#242428 !important;
   --k-line:#2A2A2F !important; --k-line2:#36363C !important;
   --k-shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 30px -16px rgba(0,0,0,.6) !important;
-  --m37-sky:linear-gradient(180deg,#8A3410 0px,#6E2A0E 80px,#4C1F0C 170px,#2A150B 260px,#140E0B 350px,#0C0C0E 460px);
+  --m37-a:rgb(var(--am-acc-dk-rgb));
+  --m37-sky:linear-gradient(180deg,color-mix(in srgb,var(--m37-a) 58%,#0C0C0E) 0px,color-mix(in srgb,var(--m37-a) 46%,#0C0C0E) 80px,color-mix(in srgb,var(--m37-a) 30%,#0C0C0E) 170px,color-mix(in srgb,var(--m37-a) 16%,#0C0C0E) 260px,color-mix(in srgb,var(--m37-a) 6%,#0C0C0E) 350px,#0C0C0E 460px);
   --m37-card:#1A1A1D; --m37-ink:#F2F2F3; --m37-ink2:#A5A5AC; --m37-ink3:#74747C; --m37-tile:#242428; --m37-line:#2A2A2F;
-  --m37-sh:0 1px 2px rgba(0,0,0,.3), 0 14px 32px -18px rgba(0,0,0,.7);
+  --m37-sh:none;
 }
-/* the sky: painted once on the fixed screen, so scrolling costs nothing */
-html:not(#_#_#_) body:not(#_#_#_) #m24-screen{ background:var(--m37-sky) !important; background-color:var(--k-zone) !important; }
+/* the sky sits on its own layer: the side menu's moving corners repaint the screen card every frame,
+   and a gradient painted on the card itself made every frame slow (it was the menu lag) */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m24-screen{ background:var(--k-zone) !important; background-image:none !important; }
 html:not(#_#_#_) body:not(#_#_#_){ background:var(--k-zone) !important; }
+#m37-sky{ position:fixed; left:0; right:0; top:0; height:520px; z-index:-1; pointer-events:none; background:var(--m37-sky); will-change:transform; }
 /* header on the orange: white words, white ring round the logo */
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m5-hdr .m5-ttl, html:not(#_#_#_#_) body:not(#_#_#_#_) #m5-hdr .m5-ttl .amx{ color:#fff !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m5-hdr .m5-ttl b{ color:rgba(255,255,255,.86) !important; }
 /* when the page scrolls, an orange band sits behind the header so words never run under it */
+html:not(#_#_#_) body:not(#_#_#_) #m37-sky{ display:block; }
 html:not(#_#_#_) body:not(#_#_#_) #m37-band{ display:block; position:absolute; left:0; right:0; top:0; height:calc(100% + 26px); z-index:-1; pointer-events:none;
-  background:linear-gradient(180deg,#FF6A1F 0%,#FF6F25 62%,rgba(255,112,40,0) 100%); opacity:0; transition:opacity .35s ease; }
-html:not(#_#_#_) body:not(#_#_#_).dark-mode #m37-band{ background:linear-gradient(180deg,#8A3410 0%,#86330F 62%,rgba(138,52,16,0) 100%); }
+  background:linear-gradient(180deg,var(--m37-a) 0%,var(--m37-a) 62%,transparent 100%); opacity:0; transition:opacity .35s ease; }
+html:not(#_#_#_) body:not(#_#_#_).dark-mode #m37-band{ background:linear-gradient(180deg,color-mix(in srgb,var(--m37-a) 58%,#0C0C0E) 0%,color-mix(in srgb,var(--m37-a) 56%,#0C0C0E) 62%,transparent 100%); }
 html:not(#_#_#_) body:not(#_#_#_).m10-scrolled #m37-band{ opacity:1; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #m5-hdr .m5-ttl svg circle{ fill:#fff !important; }
 html:not(#_#_#_) body:not(#_#_#_) #m5-hdr #m5-logo{ box-shadow:0 0 0 2px rgba(255,255,255,.55), 0 8px 20px -8px rgba(90,30,0,.45) !important; border-radius:50% !important; }
 /* pages float on the sky (no white sheet any more) */
 html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page{ background:transparent !important; box-shadow:none !important; border:0 !important; }
 html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page > .page-header h1,
-html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page > .page-header h2{ color:#fff !important; text-shadow:0 1px 12px rgba(120,40,0,.18); }
+html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page > .page-header h2{ color:#fff !important; text-shadow:0 1px 12px rgba(0,0,0,.12); }
 html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page > .page-header p{ color:rgba(255,255,255,.88) !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #app-scroll .m8-ph-t h1, html:not(#_#_#_#_) body:not(#_#_#_#_) #app-scroll .m8-ph-t h2{ color:#fff !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #app-scroll .m8-ph-t p{ color:rgba(255,255,255,.88) !important; }
 html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page .tbl-wrap{ background:transparent !important; background-image:none !important; box-shadow:none !important; border:0 !important; }
 /* cards: white, soft lift */
-html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page .tbl-wrap tbody tr{ background:var(--m37-card) !important; box-shadow:var(--m37-sh) !important; border-color:transparent !important; border-radius:24px !important; }
-html:not(#_#_#_) body:not(#_#_#_) #app-scroll .m8-search, html:not(#_#_#_) body:not(#_#_#_) #app-scroll .m8-chip:not(.on):not(.active){ background:var(--m37-card) !important; box-shadow:var(--m37-sh) !important; border-color:transparent !important; }
-html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page > .page-header .btn-ghost{ background:rgba(255,255,255,.92) !important; border-color:transparent !important; box-shadow:0 8px 20px -12px rgba(90,30,0,.45) !important; }
-html:not(#_#_#_) body:not(#_#_#_).dark-mode #app-scroll > .page > .page-header .btn-ghost{ background:rgba(255,255,255,.1) !important; color:#fff !important; }
-html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page > .page-header .btn-success,
-html:not(#_#_#_) body:not(#_#_#_) #app-scroll > .page > .page-header .btn-primary{ background:#141416 !important; color:#fff !important; border-color:transparent !important; box-shadow:0 10px 22px -12px rgba(0,0,0,.55) !important; }
-html:not(#_#_#_) body:not(#_#_#_).dark-mode #app-scroll > .page > .page-header .btn-success,
-html:not(#_#_#_) body:not(#_#_#_).dark-mode #app-scroll > .page > .page-header .btn-primary{ background:#fff !important; color:#141416 !important; }
 /* every new card on the page comes up softly (one time, when the page opens) */
 html:not(#_#_#_#_) body:not(#_#_#_#_) #app-scroll .page.m37-in > *{ animation:m37up .62s cubic-bezier(.22,1,.36,1) calc(var(--i,0) * 55ms) both !important; }
 /* no progress bars anywhere: the numbers next to them already say it */
@@ -34448,7 +34445,7 @@ html:not(#_#_#_) body:not(#_#_#_).m37-on #m5-home{ display:none !important; }
 @keyframes m37float{ 0%,100%{ transform:translate3d(0,0,0); } 50%{ transform:translate3d(0,-5px,0); } }
 
 /* ───────────── the new home ───────────── */
-#m37-home, #m37-band{ display:none; }
+#m37-home, #m37-band, #m37-sky{ display:none; }
 @media screen and (max-width:1100px){
 html:not(#_#_#_) body:not(#_#_#_).m37-on #page-dashboard > #m37-home{ display:block !important; }
 #m37-home{ padding:6px 16px 140px; color:var(--m37-ink); font-family:var(--k-font); -webkit-tap-highlight-color:transparent; }
@@ -34465,7 +34462,7 @@ html:not(#_#_#_) body:not(#_#_#_).m37-on #page-dashboard > #m37-home{ display:bl
 #m37-home .m37-seg button.on{ background:#fff; color:#141416; box-shadow:0 6px 14px -8px rgba(90,30,0,.5); }
 body.dark-mode #m37-home .m37-seg button.on{ background:#fff; color:#141416; }
 /* card */
-#m37-home .m37-card{ position:relative; background:var(--m37-card); border-radius:28px; box-shadow:var(--m37-sh); padding:18px; overflow:hidden; }
+#m37-home .m37-card{ position:relative; background:var(--m37-card); border:1px solid var(--m37-line); border-radius:28px; box-shadow:var(--m37-sh); padding:18px; overflow:hidden; }
 #m37-home .m37-h{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
 #m37-home .m37-h b{ font:500 15px/1.2 var(--k-font); }
 #m37-home .m37-h span, #m37-home .m37-h button.m37-link{ font:500 13px/1.2 var(--k-font); color:var(--m37-ink3); }
@@ -34492,7 +34489,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m37-home .m37-lbl i::after{ content:''; p
 #m37-home .m37-gauge .m37-gv{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 #m37-home .m37-gauge .m37-gv b{ font:750 20px/1 var(--k-font); letter-spacing:-.02em; }
 #m37-home .m37-gauge .m37-gv small{ font:500 11px/1.2 var(--k-font); color:var(--m37-ink3); margin-top:3px; }
-#m37-home .m37-ask{ all:unset; box-sizing:border-box; cursor:pointer; margin-top:16px; width:100%; display:flex; align-items:center; gap:10px; height:52px; padding:0 6px 0 16px; border-radius:999px; background:var(--m37-tile); color:var(--m37-ink3); font:500 14.5px/1 var(--k-font); }
+#m37-home .m37-ask{ all:unset; box-sizing:border-box; cursor:pointer; margin-top:16px; width:100%; display:flex; align-items:center; gap:10px; height:52px; padding:0 6px 0 16px; border-radius:999px; background:var(--m37-tile); border:1px solid var(--m37-line); color:var(--m37-ink3); font:500 14.5px/1 var(--k-font); }
 #m37-home .m37-ask svg{ width:18px; height:18px; flex:0 0 18px; }
 #m37-home .m37-ask span{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 #m37-home .m37-ask em{ flex:0 0 40px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:var(--k-acc); color:#fff; box-shadow:0 8px 16px -8px var(--k-acc); }
@@ -34506,8 +34503,8 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m37-home .m37-lbl i::after{ content:''; p
 /* range chips */
 #m37-home .m37-chips{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px 4px; scroll-snap-type:x proximity; }
 #m37-home .m37-chips::-webkit-scrollbar{ display:none; }
-#m37-home .m37-chips button{ all:unset; cursor:pointer; flex:0 0 auto; scroll-snap-align:start; padding:10px 16px; border-radius:999px; background:var(--m37-card); box-shadow:var(--m37-sh); font:500 13px/1 var(--k-font); color:var(--m37-ink2); transition:background .3s, color .3s; }
-#m37-home .m37-chips button.on{ background:var(--m37-ink); color:var(--m37-card); }
+#m37-home .m37-chips button{ all:unset; cursor:pointer; flex:0 0 auto; scroll-snap-align:start; padding:9px 15px; border:1px solid var(--m37-line); border-radius:999px; background:var(--m37-card); box-shadow:var(--m37-sh); font:500 13px/1 var(--k-font); color:var(--m37-ink2); transition:background .3s, color .3s; }
+#m37-home .m37-chips button.on{ background:var(--m37-ink); color:var(--m37-card); border-color:var(--m37-ink); }
 /* flow chart */
 #m37-home .m37-flow .m37-fv{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
 #m37-home .m37-flow .m37-fv b{ font:600 22px/1.15 var(--k-font); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
@@ -34551,7 +34548,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m37-home .m37-lbl i::after{ content:''; p
 /* cheques: big date tiles you can scroll sideways */
 #m37-home .m37-cq{ display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px 6px; scroll-snap-type:x mandatory; }
 #m37-home .m37-cq::-webkit-scrollbar{ display:none; }
-#m37-home .m37-c{ all:unset; box-sizing:border-box; cursor:pointer; flex:0 0 72%; max-width:300px; scroll-snap-align:start; position:relative; display:flex; flex-direction:column; gap:12px; padding:16px; border-radius:26px; background:var(--m37-card); box-shadow:var(--m37-sh); }
+#m37-home .m37-c{ all:unset; box-sizing:border-box; cursor:pointer; flex:0 0 72%; max-width:300px; scroll-snap-align:start; position:relative; display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid var(--m37-line); border-radius:26px; background:var(--m37-card); box-shadow:var(--m37-sh); }
 #m37-home .m37-c.hot{ background:#141416; color:#fff; }
 body.dark-mode #m37-home .m37-c.hot{ background:#fff; color:#141416; }
 #m37-home .m37-c-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
@@ -34752,7 +34749,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m37-home .m37-float{ animation:m37float 4
     var H = '';
     H += '<div class="m37-wrap">';
     H += '<div class="m37-hi a" style="--i:0"><div><small>' + esc(greet + (who ? ', ' + who : '')) + '</small><h1>' + (S ? 'Your sales' : 'Your business') + ',<br><span>at a glance</span></h1></div>' +
-      '<div class="m37-seg" role="tablist"><button type="button" role="tab" data-m37mode="purchase" class="' + (S ? '' : 'on') + '" aria-selected="' + !S + '">Purchase</button><button type="button" role="tab" data-m37mode="sales" class="' + (S ? 'on' : '') + '" aria-selected="' + S + '">Sales</button></div></div>';
+      '<div class="m37-seg m5-seg" role="tablist"><button type="button" role="tab" data-m37mode="purchase" class="' + (S ? '' : 'on') + '" aria-selected="' + !S + '">Purchase</button><button type="button" role="tab" data-m37mode="sales" class="' + (S ? 'on' : '') + '" aria-selected="' + S + '">Sales</button></div></div>';
     /* range */
     H += '<div class="m37-chips a" style="--i:3" role="tablist">' + RANGES.map(function(r){ return '<button type="button" role="tab" data-m37range="' + r[0] + '" class="' + (DR.key === r[0] ? 'on' : '') + '">' + r[1] + '</button>'; }).join('') + '</div>';
     /* hero */
@@ -34797,7 +34794,10 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m37-home .m37-float{ animation:m37float 4
     }).join('') : '<div class="m37-empty">Nothing yet.</div>') + '</section>';
     H += '</div></div>';
     if(!animate && home.classList.contains('m37-enter')){ clearTimeout(enterT); home.classList.remove('m37-enter'); }   /* a data refresh never replays the entrance */
+    /* keep the sideways lists where they were (tapping "Last month" must not jump back to the start) */
+    var keep = {}; ['.m37-chips', '.m37-cq'].forEach(function(q){ var el = home.querySelector(q); if(el) keep[q] = el.scrollLeft; });
     home.innerHTML = H;
+    Object.keys(keep).forEach(function(q){ var el = home.querySelector(q); if(el) el.scrollLeft = keep[q]; });
     if(animate && !RM.matches) enter(home);
   }
   /* the entrance: cards rise one after another, the line draws, numbers count up */
@@ -34917,6 +34917,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m37-home .m37-float{ animation:m37float 4
   }
   function boot(){
     hook(); setTimeout(hook, 1500); setTimeout(hook, 5000);
+    var scr = $('m24-screen') || document.body; if(!$('m37-sky')){ var sk = document.createElement('div'); sk.id = 'm37-sky'; sk.setAttribute('aria-hidden', 'true'); scr.insertBefore(sk, scr.firstChild); }
     var tb = $('topbar'); if(tb && !$('m37-band')){ var bd = document.createElement('div'); bd.id = 'm37-band'; bd.setAttribute('aria-hidden', 'true'); tb.insertBefore(bd, tb.firstChild); }
     if(on()) document.body.classList.add('m37-on');
     var mo = new MutationObserver(function(list){
