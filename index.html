@@ -34379,5 +34379,310 @@ html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .m36-old{ display:none !importa
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>
+<style id="m38-css">/* ══ M38 · NEW LOOK, SMALL (25 Nov 2026) — demo ══════════════════════════════════════════
+   The old design stays. Only: (1) the top of the screen takes the theme colour (the same
+   colour as the side menu), on its own layer so the side menu slides smoothly, and (2) the
+   first card on Home is redrawn cleaner. Phone and Z Fold only (the sliding screen card). */
+#m38-sky{ display:none; }
+@media screen and (max-width:900px){
+html:not(#_#_#_#_) body:not(#_#_#_#_){
+  /* the app's own orange (the same as its buttons), flat, fading only at the bottom edge */
+  --m38-sky:linear-gradient(180deg, var(--am-acc) 0%, var(--am-acc) 100%);
+}
+/* the colour lives on its own layer. The side menu changes the screen card's corners on every
+   frame, which redraws the card's own background each time; a plain colour there is cheap. */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m24-screen{ background-image:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #m38-sky{ display:block; position:fixed; left:0; right:0; top:0; height:360px; z-index:-1; pointer-events:none; background:var(--m38-sky); background-size:100vw 100vh; background-size:100vw 100dvh; background-position:0 0; background-repeat:no-repeat; will-change:transform, opacity;
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 calc(100% - 72px),transparent 100%); mask-image:linear-gradient(180deg,#000 0,#000 calc(100% - 72px),transparent 100%); }
+/* words that sit on the colour turn white */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-hdr .m5-ttl, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-hdr .m5-ttl .amx{ color:#fff !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-hdr .m5-ttl b{ color:rgba(255,255,255,.85) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-hdr .m5-ttl svg circle{ fill:#fff !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-hdr #m5-logo{ box-shadow:0 0 0 2px rgba(255,255,255,.6) !important; border-radius:50% !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero h2, html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-dayname{ color:#fff !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-ask{ color:rgba(255,255,255,.78) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-ask::before{ background:#fff !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-vr{ background:rgba(255,255,255,.4) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-day{ background:rgba(255,255,255,.16) !important; border-color:rgba(255,255,255,.55) !important; color:#fff !important; box-shadow:none !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-day b{ color:#fff !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-mic{ background:rgba(255,255,255,.2) !important; border-color:rgba(255,255,255,.4) !important; color:#fff !important; box-shadow:none !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-hero .m5-cta{ background:#fff !important; color:#141414 !important; border-color:#fff !important; box-shadow:0 10px 24px -14px rgba(0,0,0,.45) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_).dark-mode #m5-home .m5-hero .m5-cta{ background:#f2f2f3 !important; color:#111 !important; }
+/* ── the first card on Home ── */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal{ background:var(--k-tile) !important; border:1px solid var(--k-line) !important; border-radius:28px !important; padding:6px !important; box-shadow:0 1px 2px rgba(0,0,0,.04) !important; overflow:hidden; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-tile{ position:relative; background:transparent !important; border:0 !important; box-shadow:none !important; padding:16px 16px 14px !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-pill{ background:var(--k-card) !important; border:1px solid var(--k-line) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-tile > .m5-lbl{ display:flex; align-items:center; gap:8px; margin-top:12px !important; font:500 13.5px/1.2 var(--k-font) !important; color:var(--k-ink2) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-big{ margin-top:6px !important; font-weight:600 !important; letter-spacing:-.025em !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-btns{ margin-top:16px !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-btn{ height:46px !important; border-radius:999px !important; font-weight:500 !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-btn.soft{ background:var(--k-card) !important; border:1px solid var(--k-line) !important; }
+/* the figures under it: one calm grid inside the card, thin lines between */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-kpis{ grid-template-columns:1fr 1fr !important; gap:0 !important; margin:4px 0 0 !important; padding:0 !important; background:var(--k-card) !important; border-radius:22px !important; overflow:hidden; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-kpis > div{ padding:13px 16px !important; margin:0 !important; border:0 !important; background:none !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-kpis > div:nth-child(even){ border-left:1px solid var(--k-line) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-kpis > div:nth-child(n+3){ border-top:1px solid var(--k-line) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-kpis .m5-lbl{ font:400 12px/1.2 var(--k-font) !important; color:var(--k-ink3) !important; margin:0 0 5px !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-kpis b{ font:500 15.5px/1.2 var(--k-font) !important; color:var(--k-ink) !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-bal .m5-kpis b .aed-sym{ color:var(--k-ink3) !important; }
+}
+/* the date chips on Home were pushed to the right edge; when they did not fit, the first ones were cut off
+   on the left where you could not scroll to them. Now they still sit right when they fit, and start at
+   the left edge (fully reachable) when they don't. All widths. */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-chips{ justify-content:flex-start !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m5-home .m5-chips > :first-child{ margin-left:auto !important; }
+/* windows and sheets open slower and softer (closing stays quick) */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_){ --m31-sheet:520ms !important; --m31-modal:380ms !important; }
+@media print{ #m38-sky{ display:none !important; } }
+</style>
+<script id="m38-js">/* ══ M38 · NEW LOOK, SMALL (25 Nov 2026) — demo ══════════════════════════════════════════
+   Adds the colour layer and the header band; keeps the Home's sideways rows (date chips,
+   cheque tiles) where you left them when Home redraws. Writes nothing, changes no data. */
+(function(){
+  'use strict';
+  var $ = function(i){ return document.getElementById(i); };
+  function layers(){
+    var scr = $('m24-screen'), tb = $('topbar');
+    if(scr && !$('m38-sky')){ var s = document.createElement('div'); s.id = 'm38-sky'; s.setAttribute('aria-hidden', 'true'); scr.insertBefore(s, scr.firstChild); }
+  }
+  /* sideways rows on Home: remember where each one was scrolled, put it back after a redraw */
+  function rows(){ var h = $('m5-home'); return h ? [].filter.call(h.querySelectorAll('*'), function(e){ return e.scrollWidth > e.clientWidth + 4 && /auto|scroll/.test(getComputedStyle(e).overflowX); }) : []; }
+  function key(e){ return (e.className && typeof e.className === 'string' ? e.className.split(/\s+/)[0] : e.tagName) + ':' + [].indexOf.call(e.parentNode.children, e); }
+  var saved = {};
+  function save(){ rows().forEach(function(e){ saved[key(e)] = e.scrollLeft; }); }
+  function restore(){ rows().forEach(function(e){ var k = key(e); if(saved[k] != null && Math.abs(e.scrollLeft - saved[k]) > 1) e.scrollLeft = saved[k]; }); }
+  function hook(){
+    var f = window.renderDashboard; if(typeof f !== 'function' || f.__m38) return;
+    var w = function(){ save(); var r = f.apply(this, arguments);
+      restore(); requestAnimationFrame(restore); return r;
+    };
+    w.__m38 = true; window.renderDashboard = w;
+  }
+  /* the colour belongs to the top of the page: it fades away as you scroll up, so the header turns clear */
+  var fadeQ = 0, lastO = -1;
+  function fade(){
+    fadeQ = 0; var sc = $('app-scroll'), sk = $('m38-sky'); if(!sc || !sk) return;
+    var o = Math.max(0, Math.min(1, 1 - sc.scrollTop / 200)); o = Math.round(o * 100) / 100;
+    if(o !== lastO){ lastO = o; sk.style.opacity = o; }
+  }
+  function boot(){
+    layers();
+    var sc = $('app-scroll');
+    if(sc){ sc.addEventListener('scroll', function(){ if(!fadeQ) fadeQ = requestAnimationFrame(fade); }, { passive:true }); fade(); }
+    if(window.M8 && M8.after) M8.after('showPage', function(){ requestAnimationFrame(fade); }); hook(); setTimeout(hook, 1500); setTimeout(hook, 5000);
+    /* Purchase / Sales on Home: the pill glides over first (like every other switch), and only then does
+       Home redraw for the other side. Redrawing at the moment of the tap rebuilt the switch while its
+       glass was still moving, which made the cut-up words and the jump. */
+    document.addEventListener('click', function(e){
+      var t = e.target.closest && e.target.closest('#m5-home .m5-seg [data-view]'); if(!t) return;
+      var v = t.getAttribute('data-view'); e.stopImmediatePropagation(); e.preventDefault();
+      if(v === DB.mode || t.__m38busy) return;
+      var seg = t.parentNode;
+      [].forEach.call(seg.querySelectorAll('[data-view]'), function(x){ var on = x === t; x.classList.toggle('on', on); x.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      t.__m38busy = 1;
+      setTimeout(function(){ t.__m38busy = 0; if(window.M8 && M8.switchMode) M8.switchMode(v); else if(typeof setAppMode === 'function') setAppMode(v); }, 380);
+    }, true);
+    /* also keep track while you scroll a row (a redraw can come from a sync at any time) */
+    document.addEventListener('scroll', function(e){ var t = e.target; if(t && t.nodeType === 1 && t.closest && t.closest('#m5-home')) saved[key(t)] = t.scrollLeft; }, true);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<style id="m38n-css">/* ══ M38 · NOTIFICATIONS (25 Nov 2026) — demo ═══════════════════════════════════════════
+   The bell opens a plain list of what needs you (cheques late or due soon). Swipe one left
+   to clear it, or "Clear all". Reminder settings live in Settings → Notifications. */
+.m38n .m8-sheet-h{ align-items:flex-start !important; }
+.m38n-hr{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+.m38n-clr{ all:unset; cursor:pointer; height:40px; padding:0 16px; border-radius:999px; border:1px solid var(--k-line); background:var(--k-tile); color:var(--k-ink); font:500 14px/40px var(--k-font); -webkit-tap-highlight-color:transparent; }
+.m38n-clr[disabled]{ opacity:.4; pointer-events:none; }
+.m38n-clr:active{ transform:scale(.96); }
+.m38n-b{ padding:4px 16px 24px !important; }
+.m38n-sec{ margin:14px 4px 8px; font:500 12.5px/1.2 var(--k-font); color:var(--k-ink3); letter-spacing:.02em; }
+.m38n-sec:first-child{ margin-top:4px; }
+.m38n-wrap{ position:relative; overflow:hidden; border-radius:22px; margin-bottom:8px; background:transparent; transition:height .32s cubic-bezier(.32,.72,0,1), margin .32s cubic-bezier(.32,.72,0,1), opacity .2s ease; }
+.m38n-wrap.sw{ background:var(--k-neg); }
+.m38n-wrap:not(.sw) .m38n-bin{ visibility:hidden; }
+.m38n-bin{ position:absolute; right:0; top:0; bottom:0; width:120px; display:flex; align-items:center; justify-content:flex-end; padding-right:24px; gap:8px; color:#fff; font:500 13.5px/1 var(--k-font); }
+.m38n-bin svg{ width:18px; height:18px; }
+.m38n-it{ all:unset; box-sizing:border-box; position:relative; display:flex; align-items:center; gap:12px; width:100%; padding:14px; border-radius:22px; background:var(--k-tile); border:1px solid var(--k-line); cursor:pointer; touch-action:pan-y; -webkit-tap-highlight-color:transparent; will-change:transform; }
+.m38n-it.anim{ transition:transform .34s cubic-bezier(.32,.72,0,1); }
+.m38n-ic{ flex:0 0 42px; width:42px; height:42px; border-radius:50%; display:grid; place-items:center; background:var(--k-card); color:var(--k-ink); }
+.m38n-ic svg{ width:20px; height:20px; }
+.m38n-it.late .m38n-ic{ background:color-mix(in srgb, var(--k-neg) 13%, var(--k-tile)); color:var(--k-neg); }
+.m38n-it.soon .m38n-ic{ background:var(--k-acc-soft); color:var(--k-acc); }
+.m38n-m{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:4px; }
+.m38n-m b{ font:500 15px/1.25 var(--k-font); color:var(--k-ink); }
+.m38n-m small{ font:400 13px/1.3 var(--k-font); color:var(--k-ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.m38n-t{ flex:0 0 auto; align-self:flex-start; font:500 12px/1.2 var(--k-font); color:var(--k-ink3); padding-top:2px; }
+.m38n-it.late .m38n-t{ color:var(--k-neg); }
+.m38n-empty{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:48px 20px 40px; text-align:center; color:var(--k-ink3); font:400 14px/1.4 var(--k-font); }
+.m38n-empty span{ width:56px; height:56px; border-radius:50%; display:grid; place-items:center; background:var(--k-card); color:var(--k-ink2); }
+.m38n-empty span svg{ width:24px; height:24px; }
+.m38n-empty b{ font:500 16px/1.2 var(--k-font); color:var(--k-ink); }
+.m38n-foot{ display:flex; justify-content:center; gap:10px; margin-top:16px; }
+.m38n-foot button{ all:unset; cursor:pointer; padding:10px 14px; font:500 13.5px/1 var(--k-font); color:var(--k-acc); }
+.m38n-hint{ text-align:center; margin-top:6px; font:400 12px/1.3 var(--k-font); color:var(--k-ink3); }
+@media (prefers-reduced-motion:reduce){ .m38n-wrap, .m38n-it.anim{ transition:none !important; } }
+</style>
+<script id="m38n-js">/* ══ M38 · NOTIFICATIONS (25 Nov 2026) — demo ═══════════════════════════════════════════
+   Reads the cheque register only. "Clearing" a notification just hides it on this device
+   (saved in this phone's storage): no cheque or payment is touched. A late cheque comes
+   back the next morning, the same way the morning reminder does. */
+(function(){
+  'use strict';
+  var $ = function(i){ return document.getElementById(i); };
+  var KEY = 'm38.notifCleared';
+  var IC = {
+    chq:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M6 10h7M6 14h4M15.5 14H18"/></svg>',
+    bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+    x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+    bin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>'
+  };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  function ymd(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function today(){ return ymd(new Date()); }
+  function dd(d){ return Math.round((new Date(d + 'T00:00:00') - new Date(today() + 'T00:00:00')) / 86400000); }
+  function money(n){ return Number(+n || 0).toLocaleString('en-AE', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function cleared(){ try{ return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }catch(e){ return {}; } }
+  function saveCleared(o){
+    /* keep only what still matters (older than 40 days goes) */
+    var lim = Date.now() - 40 * 864e5; Object.keys(o).forEach(function(k){ if(o[k] < lim) delete o[k]; });
+    try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){}
+  }
+  /* the same cheques the bell has always counted: not cleared at the bank, due within 3 days or late */
+  function items(){
+    var c = cleared(), t = today();
+    return ((typeof CHQ === 'function' ? CHQ() : []) || []).filter(function(q){ return q && q.date && !q.cleared && dd(q.date) <= 3; })
+      .map(function(q){
+        var n = dd(q.date), kind = n < 0 ? 'late' : n === 0 ? 'today' : n === 1 ? 'tomorrow' : 'soon';
+        var key = q.id + ':' + (n < 0 ? 'late:' + t : q.date + ':' + kind);
+        return { q:q, n:n, kind:kind, key:key };
+      })
+      .filter(function(x){ return !c[x.key]; })
+      .sort(function(a, b){ return a.n - b.n; });
+  }
+  function title(x){
+    var p = x.q.party || 'a supplier';
+    if(x.n < 0) return 'Cheque to ' + p + ' is ' + (-x.n) + (x.n === -1 ? ' day' : ' days') + ' late';
+    if(x.n === 0) return 'Cheque to ' + p + ' is due today';
+    if(x.n === 1) return 'Cheque to ' + p + ' is due tomorrow';
+    return 'Cheque to ' + p + ' is due in ' + x.n + ' days';
+  }
+  function when(x){ return x.n < 0 ? (-x.n) + 'd late' : x.n === 0 ? 'Today' : x.n === 1 ? 'Tomorrow' : 'In ' + x.n + 'd'; }
+  function build(){
+    if($('m38-notif')) return;
+    var ov = document.createElement('div'); ov.id = 'm38-notif'; ov.className = 'm8-ov';
+    ov.innerHTML = '<div class="m8-sheet m38n" role="dialog" aria-modal="true" aria-labelledby="m38n-t">' +
+      '<div class="m8-sheet-h"><div><b id="m38n-t">Notifications</b><small id="m38n-s"></small></div><div class="m38n-hr"><button type="button" class="m38n-clr" data-clear-all>Clear all</button><button type="button" class="m8-ib" data-x aria-label="Close">' + IC.x + '</button></div></div>' +
+      '<div class="m8-sheet-b m38n-b" id="m38n-b"></div></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', onClick);
+    bindSwipe($('m38n-b'));
+  }
+  function paint(){
+    var b = $('m38n-b'); if(!b) return;
+    var list = items(), s = $('m38n-s'), ca = document.querySelector('#m38-notif [data-clear-all]');
+    if(s) s.textContent = list.length ? list.length + (list.length === 1 ? ' needs you' : ' need you') : 'Nothing new';
+    if(ca) ca.disabled = !list.length;
+    if(!list.length){
+      b.innerHTML = '<div class="m38n-empty"><span>' + IC.bell + '</span><b>You are all caught up</b>No cheque is late or due in the next 3 days.</div>' +
+        '<div class="m38n-foot"><button type="button" data-go="cheques">Open cheque register</button><button type="button" data-go="settings">Reminder settings</button></div>';
+      return;
+    }
+    var groups = [['Late', list.filter(function(x){ return x.n < 0; })], ['Today', list.filter(function(x){ return x.n === 0; })], ['Coming up', list.filter(function(x){ return x.n > 0; })]];
+    b.innerHTML = groups.filter(function(g){ return g[1].length; }).map(function(g){
+      return '<div class="m38n-sec">' + g[0] + '</div>' + g[1].map(function(x){
+        return '<div class="m38n-wrap" data-key="' + esc(x.key) + '"><div class="m38n-bin">' + IC.bin + 'Clear</div>' +
+          '<button type="button" class="m38n-it ' + (x.n < 0 ? 'late' : x.n <= 1 ? 'soon' : '') + '" data-chq="' + esc(x.q.id) + '"><span class="m38n-ic">' + IC.chq + '</span>' +
+          '<span class="m38n-m"><b>' + esc(title(x)) + '</b><small>AED ' + money(x.q.amount) + (x.q.chequeNo ? ' · #' + esc(x.q.chequeNo) : '') + ' · ' + esc(new Date(x.q.date + 'T00:00:00').toLocaleDateString('en-GB', { day:'2-digit', month:'short' })) + '</small></span>' +
+          '<span class="m38n-t">' + when(x) + '</span></button></div>';
+      }).join('');
+    }).join('') + '<p class="m38n-hint">Swipe left to clear</p>' +
+      '<div class="m38n-foot"><button type="button" data-go="cheques">Open cheque register</button><button type="button" data-go="settings">Reminder settings</button></div>';
+  }
+  function clearKeys(keys){ var c = cleared(), t = Date.now(); keys.forEach(function(k){ c[k] = t; }); saveCleared(c); badge(); }
+  /* the row slides out, then the gap closes */
+  function removeRow(w){
+    if(!w || w.__gone) return; w.__gone = 1;
+    clearKeys([w.getAttribute('data-key')]);
+    var h = w.offsetHeight; w.style.height = h + 'px'; void w.offsetHeight;
+    w.style.height = '0px'; w.style.marginBottom = '0px'; w.style.opacity = '0';
+    setTimeout(function(){
+      var sec = w.previousElementSibling, nx = w.nextElementSibling; w.remove();
+      if(sec && sec.classList.contains('m38n-sec') && (!nx || !nx.classList.contains('m38n-wrap'))) sec.remove();
+      if(!document.querySelector('#m38n-b .m38n-wrap')) paint(); else { var s = $('m38n-s'), n = document.querySelectorAll('#m38n-b .m38n-wrap').length; if(s) s.textContent = n + (n === 1 ? ' needs you' : ' need you'); }
+    }, 340);
+  }
+  function onClick(e){
+    var ov = $('m38-notif'), t;
+    if(e.target === ov || e.target.closest('[data-x]')){ M8.closeSheet(ov); return; }
+    if(e.target.closest('[data-clear-all]')){
+      var ws = [].slice.call(document.querySelectorAll('#m38n-b .m38n-wrap'));
+      clearKeys(ws.map(function(w){ return w.getAttribute('data-key'); }));
+      ws.forEach(function(w, i){ var it = w.querySelector('.m38n-it'); setTimeout(function(){ w.classList.add('sw'); it.classList.add('anim'); it.style.transform = 'translate3d(-110%,0,0)'; }, i * 45); });
+      setTimeout(paint, ws.length * 45 + 360);
+      return;
+    }
+    if((t = e.target.closest('[data-go]'))){
+      var g = t.getAttribute('data-go'); M8.closeSheet(ov);
+      setTimeout(function(){ if(g === 'cheques') navMain(null, 'cheques'); else navMain(null, 'settings'); }, 120);
+      return;
+    }
+    if((t = e.target.closest('[data-chq]'))){
+      if(t.__swiped){ t.__swiped = 0; return; }
+      var id = t.getAttribute('data-chq'); M8.closeSheet(ov);
+      setTimeout(function(){ if(typeof openChequeModal === 'function') openChequeModal(id); }, 160);
+    }
+  }
+  /* swipe left to clear: the row follows the finger; past a third of its width (or a quick flick) it goes */
+  function bindSwipe(box){
+    var S = null;
+    box.addEventListener('pointerdown', function(e){
+      var it = e.target.closest('.m38n-it'); if(!it || e.button > 0) return;
+      S = { it:it, x0:e.clientX, y0:e.clientY, dx:0, on:false, t0:performance.now(), id:e.pointerId };
+    });
+    box.addEventListener('pointermove', function(e){
+      if(!S || e.pointerId !== S.id) return;
+      var dx = e.clientX - S.x0, dy = e.clientY - S.y0;
+      if(!S.on){
+        if(Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)){ S = null; return; }   /* a scroll, not a swipe */
+        if(Math.abs(dx) < 8) return;
+        S.on = true; S.it.parentNode.classList.add('sw'); S.it.classList.remove('anim'); try{ S.it.setPointerCapture(e.pointerId); }catch(_){}
+      }
+      S.dx = Math.min(24, dx > 0 ? dx * 0.25 : dx);
+      S.it.style.transform = 'translate3d(' + S.dx.toFixed(1) + 'px,0,0)';
+    });
+    function end(e){
+      if(!S) return; var s = S; S = null;
+      if(!s.on) return;
+      s.it.__swiped = 1; setTimeout(function(){ s.it.__swiped = 0; }, 400);
+      var w = s.it.offsetWidth, v = s.dx / Math.max(1, performance.now() - s.t0);
+      s.it.classList.add('anim');
+      if(s.dx < -w / 3 || (v < -0.6 && s.dx < -40)){ s.it.style.transform = 'translate3d(-110%,0,0)'; setTimeout(function(){ removeRow(s.it.parentNode); }, 200); }
+      else { s.it.style.transform = ''; setTimeout(function(){ if(s.it.parentNode) s.it.parentNode.classList.remove('sw'); }, 360); }
+    }
+    box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
+  }
+  function open(){ build(); paint(); M8.openSheet($('m38-notif')); }
+  /* the bell number counts only what has not been cleared */
+  function badge(){
+    var b = $('m8-bell-n'); if(!b) return;
+    var n = items().length, txt = n > 9 ? '9+' : (n ? String(n) : '');
+    if(b.textContent !== txt) b.textContent = txt;
+    if(b.classList.contains('on') !== n > 0) b.classList.toggle('on', n > 0);
+  }
+  function boot(){
+    if(!window.M8 || !M8.openSheet){ setTimeout(boot, 300); return; }
+    var settings = M8.openReminders;
+    /* bell, the R key and search open the list; "Cheque reminders" in Settings opens the settings */
+    M8.openReminders = function(showSettings){ if(showSettings === true && settings) return settings.apply(this, arguments); open(); };
+    var b = $('m8-bell-n');
+    if(b) new MutationObserver(function(){ badge(); }).observe(b, { childList:true, characterData:true, subtree:true, attributes:true, attributeFilter:['class'] });
+    badge();
+    window.addEventListener('storage', function(e){ if(e.key === KEY) badge(); });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 50); }); else setTimeout(boot, 50);
+})();
+</script>
 </body>
 </html>
