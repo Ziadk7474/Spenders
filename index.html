@@ -4610,7 +4610,10 @@ body.mode-sales:not(.dark-mode) #app-scroll .page .tbl-wrap table:not(.ref-table
   background: var(--accent-solid) !important;
   box-shadow: 0 1px 3px rgba(20,20,20,.30) !important;
 }</style>
-<style id="amc-dark-v3">:root{ color-scheme: light; }
+<style id="amc-dark-v3">/* Nov 25: 'only light' tells the phone's browser never to paint its own forced dark over the app;
+   the app has its own dark mode (and turns it on by itself when the phone is in dark mode) */
+:root{ color-scheme: only light; }
+html:has(> body.dark-mode), html.m39-dark{ color-scheme: dark; }
 html body.dark-mode{ color-scheme: dark; }
 html body.dark-mode{
   
@@ -20362,6 +20365,41 @@ function toggleThemeQuick() {
 (function() {
   const saved = localStorage.getItem('almadhi_theme');
   if (saved === 'dark') setTheme('dark');
+})();
+
+/* ══ M39 · FOLLOW THE PHONE'S DARK MODE (Nov 25) ══════════════════════════════════════════
+   Phone in dark mode → the app's own dark mode (never the browser's forced dark, which made
+   everything muddy). Phone back to light → the app goes back to light, if it was the phone
+   that made it dark. A tap on the app's own Dark / Light mode always wins until the phone
+   changes again. The page tells the browser which scheme it is in, so nothing is forced. */
+(function(){
+  var MQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null, AUTO = 'm39.autoDark', inner = false;
+  function meta(dark){
+    document.documentElement.classList.toggle('m39-dark', dark);
+    var m = document.querySelector('meta[name="color-scheme"]');
+    if(m) m.setAttribute('content', dark ? 'dark' : 'only light');
+  }
+  function sync(){ meta(document.body.classList.contains('dark-mode')); }
+  function apply(dark){
+    inner = true;
+    try{ setTheme(dark ? 'dark' : 'light'); } finally { inner = false; }
+    try{ if(dark) localStorage.setItem(AUTO, '1'); else localStorage.removeItem(AUTO); }catch(e){}
+    sync();
+  }
+  /* a tap on the app's own switch: the person chose, so the phone no longer decides (until it changes) */
+  var orig = setTheme;
+  window.setTheme = setTheme = function(mode){ var r = orig.apply(this, arguments); if(!inner){ try{ localStorage.removeItem(AUTO); }catch(e){} } sync(); return r; };
+  var sysDark = !!(MQ && MQ.matches), isDark = document.body.classList.contains('dark-mode'), auto = false;
+  try{ auto = localStorage.getItem(AUTO) === '1'; }catch(e){}
+  if(sysDark && !isDark) apply(true);
+  else if(!sysDark && isDark && auto) apply(false);
+  else sync();
+  if(MQ){
+    var on = function(e){ var d = !!e.matches; if(d !== document.body.classList.contains('dark-mode')){ apply(d); } };
+    if(MQ.addEventListener) MQ.addEventListener('change', on); else if(MQ.addListener) MQ.addListener(on);
+  }
+  window.__m39apply = apply;
+  new MutationObserver(sync).observe(document.body, { attributes:true, attributeFilter:['class'] });
 })();
 
 </script>
