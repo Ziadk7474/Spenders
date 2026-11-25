@@ -25135,7 +25135,7 @@ AMCViewport.onSettle(function(){
       return; }
     if((t = e.target.closest('[data-r]'))){ S.range = t.dataset.r; render(); return; }
     if((t = e.target.closest('[data-inv]'))){ var id = t.dataset.inv, r = (AD().records||[]).find(function(x){ return String(x.id)===String(id); }); if(r && typeof viewRecord==='function') viewRecord(r.id); return; }
-    if((t = e.target.closest('[data-pay]'))){ if(typeof openEditPayment==='function') openEditPayment(t.dataset.pay); return; }
+    if((t = e.target.closest('[data-pay]'))){ if(window.M36 && M36.openPay) M36.openPay(t.dataset.pay); else if(typeof openEditPayment==='function') openEditPayment(t.dataset.pay); return; }
     if((t = e.target.closest('[data-chq]'))){ if(typeof openChequeModal==='function') openChequeModal(t.dataset.chq); return; }
     if(!(t = e.target.closest('[data-p]'))) return;
     var a = t.dataset.p, m = mode();
@@ -34127,5 +34127,284 @@ body.dark-mode #m35-lens .m35-ring{ opacity:.8; }
 body.dark-mode #m35-lens .m35-rim{ box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3), 0 0 0 .5px rgba(0,0,0,.4), 0 12px 24px -8px rgba(0,0,0,.65); }
 @media print{ #m35-lens{ display:none !important; } }
 </style>
+<style id="m36-css">/* ══ M36 · invoice + payment detail pages, redesigned (Nov 25) ════════════════════════════
+   Same look as the vendor/customer page (M33): white cards on the grey sheet, the dark
+   balance card, orange for actions. The printed invoice paper itself is not changed. */
+html:not(#_#_#_) body:not(#_#_#_) .m36-ov .modal-body,
+html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .modal-body{ background:var(--k-sheet, #fff) !important; padding:12px !important; display:flex; flex-direction:column; gap:12px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .aed-sym{ height:.78em !important; width:auto !important; fill:currentColor; vertical-align:baseline !important; top:0 !important; position:static !important; }
+/* header: small kind + big number */
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-header h2{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .m36-hk{ font:500 12.5px/1.2 var(--k-font); color:var(--k-ink3); letter-spacing:0; text-transform:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .m36-hn{ font:650 22px/1.15 var(--k-font); letter-spacing:-.02em; color:var(--k-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* who + when */
+html:not(#_#_#_) body:not(#_#_#_) .m36-who{ display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:22px; background:var(--k-card); min-width:0; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-av{ flex:0 0 46px; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; background:var(--k-acc); color:#fff;
+  font:700 16px/1 var(--k-font); box-shadow:inset 0 -5px 12px rgba(0,0,0,.12), 0 6px 16px -9px var(--k-acc); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-wid{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-pn{ all:unset; cursor:pointer; font:650 17px/1.2 var(--k-font); color:var(--k-ink); letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-pn:focus-visible{ outline:2px solid var(--k-acc); outline-offset:2px; border-radius:6px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ws{ font:500 12.5px/1.3 var(--k-font); color:var(--k-ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip{ flex:0 0 auto; display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 11px; border-radius:999px; background:var(--k-tile); color:var(--k-ink2); font:600 12px/1 var(--k-font); white-space:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip > i{ width:7px; height:7px; border-radius:50%; background:var(--k-ink3); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip.paid{ color:var(--k-pos); background:color-mix(in srgb, var(--k-pos) 13%, var(--k-tile)); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip.paid > i{ background:var(--k-pos); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip.partial{ color:var(--k-acc); background:var(--k-acc-soft); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip.partial > i{ background:var(--k-acc); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip.unpaid{ color:var(--k-neg); background:color-mix(in srgb, var(--k-neg) 12%, var(--k-tile)); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip.unpaid > i{ background:var(--k-neg); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-chip svg{ width:14px; height:14px; }
+/* the dark money card */
+html:not(#_#_#_) body:not(#_#_#_) .m36-bal{ display:flex; flex-direction:column; gap:8px; padding:18px 20px; border-radius:24px; background:var(--k-dark); color:var(--k-on-dark); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-bl{ font:500 13px/1.2 var(--k-font); opacity:.75; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-bv{ display:flex; align-items:center; gap:8px; font:700 32px/1.1 var(--k-font); letter-spacing:-.025em; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-bv .aed-sym{ color:var(--k-acc); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-bv.ok .aed-sym{ color:var(--k-pos); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-prog{ display:block; height:6px; border-radius:99px; background:rgba(127,127,127,.28); overflow:hidden; margin-top:4px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-prog > i{ display:block; height:100%; border-radius:99px; background:var(--k-acc); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-prog.ok > i{ background:var(--k-pos); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-two > div{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-two small{ font:500 12px/1.2 var(--k-font); opacity:.7; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-two b{ font:650 15.5px/1.2 var(--k-font); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* white card with a title */
+html:not(#_#_#_) body:not(#_#_#_) .m36-card{ display:flex; flex-direction:column; gap:2px; padding:14px 16px 10px; border-radius:22px; background:var(--k-card); min-width:0; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ch{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 0 8px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ch b{ font:650 16px/1.2 var(--k-font); color:var(--k-ink); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ch span{ font:500 12.5px/1 var(--k-font); color:var(--k-ink3); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-empty{ padding:14px 4px 10px; font:500 13.5px/1.4 var(--k-font); color:var(--k-ink3); }
+/* rows (receipts / invoices) */
+html:not(#_#_#_) body:not(#_#_#_) .m36-r{ all:unset; box-sizing:border-box; display:flex; align-items:center; gap:12px; width:100%; padding:10px 0; border-top:1px solid var(--k-line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ch + .m36-r{ border-top:0; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-r:focus-visible{ outline:2px solid var(--k-acc); outline-offset:2px; border-radius:12px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ri{ flex:0 0 40px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:var(--k-tile); color:var(--k-ink); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ri svg{ width:18px; height:18px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-rm{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-rm b{ font:600 14.5px/1.2 var(--k-font); color:var(--k-ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-rm small{ font:500 12px/1.25 var(--k-font); color:var(--k-ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ra{ flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ra b{ font:700 15px/1.2 var(--k-font); color:var(--k-pos); font-variant-numeric:tabular-nums; white-space:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ra small{ font:500 11.5px/1.2 var(--k-font); color:var(--k-ink3); font-variant-numeric:tabular-nums; white-space:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ra small.due{ color:var(--k-neg); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ra small.ok{ color:var(--k-pos); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-go{ flex:0 0 16px; color:var(--k-ink3); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-go svg{ width:16px; height:16px; display:block; }
+/* facts list (payment page) */
+html:not(#_#_#_) body:not(#_#_#_) .m36-f{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:11px 0; border-top:1px solid var(--k-line); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-ch + .m36-f{ border-top:0; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-f span{ font:500 13.5px/1.3 var(--k-font); color:var(--k-ink3); flex:0 0 auto; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-f b{ font:600 14px/1.3 var(--k-font); color:var(--k-ink); text-align:right; min-width:0; overflow-wrap:anywhere; }
+/* the invoice paper: same paper, in a card, with the stamp switch above it */
+html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .m36-ph{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px; margin-bottom:-12px; border-radius:22px 22px 0 0; background:var(--k-card); }
+html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .m36-ph b{ font:650 16px/1.2 var(--k-font); color:var(--k-ink); }
+html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .m36-ph + .m8-paperhost,
+html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .m36-ph + .inv-doc{ border-radius:0 0 22px 22px !important; background:var(--k-card) !important; padding:4px 12px 12px !important; margin:0 !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-sw{ all:unset; display:inline-flex; align-items:center; gap:9px; cursor:pointer; font:500 13px/1 var(--k-font); color:var(--k-ink2); -webkit-tap-highlight-color:transparent; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-sw > i{ position:relative; width:42px; height:26px; border-radius:99px; background:var(--k-tile); box-shadow:inset 0 0 0 1px var(--k-line); transition:background .22s ease; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-sw > i::after{ content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .26s cubic-bezier(.32,.72,0,1); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-sw.on > i{ background:var(--k-acc); box-shadow:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m36-sw.on > i::after{ transform:translateX(16px); }
+html:not(#_#_#_) body:not(#_#_#_) .m36-sw:focus-visible > i{ outline:2px solid var(--k-acc); outline-offset:2px; }
+/* delete sits at the very bottom, away from the main buttons */
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-body .m36-del{ font-weight:600 !important; align-self:center; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-width:200px; height:46px; margin:2px 0 6px; border-radius:999px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-body .m36-del svg{ width:17px; height:17px; }
+/* footer: Edit + Print */
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-footer.m36-foot{ display:flex !important; flex-wrap:nowrap !important; gap:10px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-footer.m36-foot > .btn{ flex:1 1 0 !important; min-width:0 !important; height:52px !important; margin:0 !important; justify-content:center !important;
+  display:inline-flex !important; align-items:center !important; gap:9px !important; border-radius:999px !important; font:600 15.5px/1 var(--k-font) !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-footer.m36-foot > .btn svg{ width:18px; height:18px; flex:0 0 18px; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-footer.m36-foot > .m36-main{ flex:1.35 1 0 !important; background:var(--k-acc) !important; color:#fff !important; border-color:transparent !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-footer.m36-foot > .m36-edit{ background:var(--k-card) !important; color:var(--k-ink) !important; border:1px solid var(--k-line) !important; }
+html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .modal-footer > :not(.m36-k){ display:none !important; }
+/* the old allocation block is not shown any more (replaced by the cards above) */
+html:not(#_#_#_) body:not(#_#_#_) #inv-modal.m36 .m36-old{ display:none !important; }
+@media (min-width:901px){
+  html:not(#_#_#_) body:not(#_#_#_) .m36-ov .modal{ max-width:560px !important; width:100% !important; }
+  html:not(#_#_#_) body:not(#_#_#_) .m36 .modal-footer.m36-foot > .btn{ height:46px !important; }
+}
+@media (hover:hover) and (pointer:fine){
+  html:not(#_#_#_) body:not(#_#_#_) .m36-r:hover .m36-rm b{ color:var(--k-acc); }
+  html:not(#_#_#_) body:not(#_#_#_) .m36-pn:hover{ color:var(--k-acc); }
+}
+@media print{ .m36-ov{ display:none !important; } }
+</style>
+<script id="m36-js">/* ══ M36 · invoice + payment detail pages (Nov 25) ══════════════════════════════════════
+   Invoice: who/when card, dark balance card, the same invoice paper (with a stamp switch),
+     a receipts list (tap one → its page), Delete at the bottom, Edit + Print in the footer.
+   Payment / receipt: NEW page in the same style. Opens when a payment row is tapped (Receipts /
+     Payments list and the vendor/customer page). The 3-dot menu still works as before.
+   Nothing about saving, printing or deleting is changed: the same functions are called. */
+(function(){
+  'use strict';
+  var $ = function(i){ return document.getElementById(i); };
+  var I = {
+    cash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>',
+    chq:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 10h8M6 14h5M16 14h2"/></svg>',
+    bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
+    doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
+    go:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+    edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+    print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+    del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>',
+    adv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
+  };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  function money(n){ return ALLOC_AED + ' ' + fmt(+n || 0); }
+  function sales(){ return DB.mode === 'sales'; }
+  function initials(n){ var w = String(n || '').replace(/[^A-Za-z0-9 ]/g, ' ').trim().split(/\s+/).filter(Boolean); return ((w[0] || '?')[0] + (w[1] ? w[1][0] : (w[0] && w[0][1] || ''))).toUpperCase(); }
+  function mIcon(m){ m = String(m || '').toUpperCase(); return m === 'CASH' ? I.cash : /CHE/.test(m) ? I.chq : I.bank; }
+  function mName(m){ m = String(m || '').trim(); if(!m) return '—'; return m.charAt(0).toUpperCase() + m.slice(1).toLowerCase(); }
+  var ST = { paid:'Paid', partial:'Part paid', unpaid:'Unpaid' };
+  function chip(st){ return '<span class="m36-chip ' + st + '"><i></i>' + (ST[st] || ST.unpaid) + '</span>'; }
+  function head(kind, num){ return '<span class="m36-hk">' + esc(kind) + '</span><span class="m36-hn">' + esc(num) + '</span>'; }
+  function who(party, sub, right){
+    return '<div class="m36-who"><span class="m36-av" aria-hidden="true">' + esc(initials(party)) + '</span>' +
+      '<div class="m36-wid"><button type="button" class="m36-pn" data-m36="party" title="Open ' + esc(party) + '">' + esc(party) + '</button><span class="m36-ws">' + sub + '</span></div>' + (right || '') + '</div>';
+  }
+  function itemCount(r){ var n = (r.items && r.items.length) || (r.desc ? 1 : 0); return n ? n + ' item' + (n > 1 ? 's' : '') : ''; }
+
+  /* ───────────── INVOICE ───────────── */
+  var curInv = null;
+  function invRender(){
+    var m = $('inv-modal'), body = $('inv-modal-body'); if(!m || !body) return;
+    var r = (AD().records || []).find(function(x){ return String(x.id) === String(_viewingRecordId); }); if(!r) return;
+    curInv = r;
+    m.classList.add('m36');
+    var s = sales(), row = invoiceRow(r);
+    var t = $('inv-modal-title'); if(t) t.innerHTML = head(s ? 'Sales invoice' : 'Purchase invoice', invLabel(r));
+    /* the old allocation block (last child) gives way to the new cards */
+    var old = body.lastElementChild; if(old && !old.classList.contains('m8-paperhost') && !old.classList.contains('inv-doc')) old.classList.add('m36-old');
+    [].slice.call(body.querySelectorAll('.m36-k')).forEach(function(x){ x.remove(); });
+    var paper = body.querySelector(':scope > .m8-paperhost, :scope > .inv-doc');
+    var pct = row.invoiced > 0 ? Math.max(0, Math.min(100, row.paid / row.invoiced * 100)) : 0, done = row.outstanding < 0.005;
+    var sub = esc(fmtDate(r.date)) + (itemCount(r) ? ' · ' + itemCount(r) : '');
+    var top = who(r.party, sub, chip(row.status)) +
+      '<div class="m36-bal"><span class="m36-bl">' + (done ? 'Fully ' + (s ? 'received' : 'paid') : 'Balance due') + '</span>' +
+        '<span class="m36-bv' + (done ? ' ok' : '') + '">' + money(done ? row.invoiced : row.outstanding) + '</span>' +
+        '<span class="m36-prog' + (done ? ' ok' : '') + '"><i style="width:' + pct.toFixed(1) + '%"></i></span>' +
+        '<div class="m36-two"><div><small>Invoice total</small><b>' + money(row.invoiced) + '</b></div><div><small>' + (s ? 'Received' : 'Paid') + '</small><b>' + money(row.paid) + '</b></div></div></div>';
+    var stampOn = typeof _amsStampOn === 'function' ? _amsStampOn('ams_stamp_on_inv') : true;
+    var ph = '<div class="m36-ph"><b>Invoice</b><button type="button" class="m36-sw' + (stampOn ? ' on' : '') + '" role="switch" aria-checked="' + stampOn + '" data-m36="stamp">Stamp<i></i></button></div>';
+    var pays = (row.payments || []).slice().sort(function(a, b){ return (a.pay.date || '').localeCompare(b.pay.date || '') || (a.payId - b.payId); });
+    var left = row.invoiced, rows = pays.map(function(a){
+      left = Math.max(0, left - a.amount);
+      return '<button type="button" class="m36-r" data-m36pay="' + esc(a.payId) + '"><span class="m36-ri">' + mIcon(a.pay.method) + '</span>' +
+        '<span class="m36-rm"><b>' + esc(voucherNo(a.pay)) + '</b><small>' + esc(fmtDate(a.pay.date)) + ' · ' + esc(mName(a.pay.method)) + '</small></span>' +
+        '<span class="m36-ra"><b>' + money(a.amount) + '</b><small class="' + (left < 0.005 ? 'ok' : 'due') + '">' + (left < 0.005 ? 'Cleared' : 'Left ' + fmt(left)) + '</small></span>' +
+        '<span class="m36-go">' + I.go + '</span></button>';
+    }).join('');
+    var word = s ? 'Receipts' : 'Payments';
+    var rc = '<div class="m36-card m36-k"><div class="m36-ch"><b>' + word + '</b><span>' + (pays.length ? pays.length : '') + '</span></div>' +
+      (rows || '<div class="m36-empty">No ' + word.toLowerCase() + ' for this invoice yet.</div>') + '</div>';
+    var del = '<button type="button" class="btn btn-danger m36-del m36-k" data-m36="del">' + I.del + '<span>Delete invoice</span></button>';
+    var wrapTop = document.createElement('div'); wrapTop.className = 'm36-k'; wrapTop.style.cssText = 'display:flex;flex-direction:column;gap:12px';
+    wrapTop.innerHTML = top;
+    body.insertBefore(wrapTop, body.firstChild);
+    if(paper){ var p0 = document.createElement('div'); p0.className = 'm36-k'; p0.innerHTML = ph; paper.parentNode.insertBefore(p0.firstChild, paper); paper.previousElementSibling.classList.add('m36-k'); }
+    var tail = document.createElement('div'); tail.innerHTML = rc + del;
+    while(tail.firstChild) body.appendChild(tail.firstChild);
+    /* footer: Edit + Print (the old buttons stay in the page, hidden, so nothing that looks for them breaks) */
+    var f = m.querySelector('.modal-footer');
+    if(f && !f.querySelector('.m36-k')){
+      f.classList.add('m36-foot');
+      f.insertAdjacentHTML('beforeend', '<button type="button" class="btn m36-edit m36-k" data-m36="edit">' + I.edit + '<span>Edit</span></button>' +
+        '<button type="button" class="btn m36-main m36-k" data-m36="print">' + I.print + '<span>Print</span></button>');
+    }
+  }
+  function invClick(e){
+    var t = e.target.closest('[data-m36], [data-m36pay]'); if(!t) return;
+    var a = t.getAttribute('data-m36');
+    if(t.hasAttribute('data-m36pay')){ openPay(t.getAttribute('data-m36pay'), true); return; }
+    if(a === 'stamp'){ if(typeof toggleInvStamp === 'function') toggleInvStamp(); return; }
+    if(a === 'edit'){ if(typeof openEditInvoiceModal === 'function') openEditInvoiceModal(); return; }
+    if(a === 'print'){ if(typeof printInvoice === 'function') printInvoice(); return; }
+    if(a === 'del'){ if(typeof deleteRecordFromModal === 'function') deleteRecordFromModal(); return; }
+    if(a === 'party' && curInv){ var p = curInv.party; $('inv-modal').style.display = 'none'; if(window.M8 && M8.openParty) M8.openParty(p, DB.mode); }
+  }
+
+  /* ───────────── PAYMENT / RECEIPT ───────────── */
+  var curPay = null, fromInv = false;
+  function payModal(){
+    var m = $('m36-pay-modal'); if(m) return m;
+    m = document.createElement('div'); m.className = 'modal-overlay m36-ov m36'; m.id = 'm36-pay-modal'; m.style.display = 'none';
+    m.innerHTML = '<div class="modal"><div class="modal-header"><h2 id="m36-pay-title"></h2><button type="button" class="modal-close" aria-label="Close">×</button></div>' +
+      '<div class="modal-body" id="m36-pay-body"></div><div class="modal-footer m36-foot" id="m36-pay-foot"></div></div>';
+    document.body.appendChild(m);
+    m.querySelector('.modal-close').addEventListener('click', closePay);
+    m.addEventListener('click', function(e){
+      if(e.target === m){ closePay(); return; }
+      var t = e.target.closest('[data-m36], [data-m36inv]'); if(!t || !curPay) return;
+      var a = t.getAttribute('data-m36'), id = curPay.id;
+      if(t.hasAttribute('data-m36inv')){ var rid = t.getAttribute('data-m36inv'); closePay(); if(typeof viewRecord === 'function') viewRecord(rid); return; }
+      if(a === 'print'){ try{ _editPayId = id; }catch(_){} if(typeof printPaymentReceipt === 'function') printPaymentReceipt(); return; }
+      if(a === 'edit'){ closePay(); hideInv(); if(typeof openEditPayment === 'function') openEditPayment(id); return; }
+      if(a === 'party'){ var p = curPay.party; closePay(); hideInv(); if(window.M8 && M8.openParty) M8.openParty(p, DB.mode); return; }
+      if(a === 'del'){
+        try{ _editPayId = id; }catch(_){}
+        if(typeof deletePayment !== 'function') return;
+        Promise.resolve(deletePayment()).then(function(){
+          if(!(AD().payments || []).some(function(x){ return String(x.id) === String(id); })){ closePay(); hideInv(); }
+        });
+      }
+    });
+    return m;
+  }
+  function hideInv(){ var im = $('inv-modal'); if(fromInv && im) im.style.display = 'none'; }
+  function closePay(){ var m = $('m36-pay-modal'); if(m) m.style.display = 'none'; curPay = null; }
+  function openPay(id, viaInv){
+    var p = (AD().payments || []).find(function(x){ return String(x.id) === String(id); });
+    if(!p){ if(typeof openEditPayment === 'function') openEditPayment(id); return; }
+    curPay = p; fromInv = !!viaInv;
+    try{ clearLedgerCache(); }catch(_){}
+    var s = sales(), m = payModal();
+    var map = partyAllocationMap(p.party), bp = (map.byPayment[p.id] || []).slice(), adv = map.advanceByPayment[p.id] || 0;
+    $('m36-pay-title').innerHTML = head(s ? 'Receipt' : 'Payment', voucherNo(p));
+    var top = who(p.party, esc(fmtDate(p.date)), '<span class="m36-chip">' + mIcon(p.method) + esc(mName(p.method)) + '</span>') +
+      '<div class="m36-bal"><span class="m36-bl">' + (s ? 'Amount received' : 'Amount paid') + '</span><span class="m36-bv ok">' + money(p.amount) + '</span>' +
+      '<div class="m36-two"><div><small>On invoices</small><b>' + money(bp.reduce(function(t, a){ return t + a.amount; }, 0)) + '</b></div>' +
+      '<div><small>Kept as advance</small><b>' + money(adv) + '</b></div></div></div>';
+    var facts = [['Method', mName(p.method)], [s ? 'Received by' : 'Paid by', p.paidBy || '—']];
+    if(p.invoicePeriod){ var ym = String(p.invoicePeriod).split('-'), d = new Date(+ym[0], (+ym[1] || 1) - 1, 1); facts.push(['For month', isNaN(d) ? p.invoicePeriod : d.toLocaleDateString('en-GB', { month:'long', year:'numeric' })]); }
+    facts.push(['Split', p.allocMode === 'manual' ? 'Chosen by hand' : 'Oldest invoice first']);
+    if(p.notes) facts.push(['Notes', p.notes]);
+    var det = '<div class="m36-card"><div class="m36-ch"><b>Details</b></div>' + facts.map(function(f){ return '<div class="m36-f"><span>' + esc(f[0]) + '</span><b>' + esc(f[1]) + '</b></div>'; }).join('') + '</div>';
+    var inv = bp.map(function(a){
+      var out = invoiceRow(a.rec).outstanding;
+      return '<button type="button" class="m36-r" data-m36inv="' + esc(a.invId) + '"><span class="m36-ri">' + I.doc + '</span>' +
+        '<span class="m36-rm"><b>' + esc(invLabel(a.rec)) + '</b><small>' + esc(fmtDate(a.rec.date)) + ' · Total ' + fmt(+a.rec.amount || 0) + '</small></span>' +
+        '<span class="m36-ra"><b>' + money(a.amount) + '</b><small class="' + (out < 0.005 ? 'ok' : 'due') + '">' + (out < 0.005 ? 'Paid' : 'Left ' + fmt(out)) + '</small></span>' +
+        '<span class="m36-go">' + I.go + '</span></button>';
+    }).join('');
+    if(adv > 0.005) inv += '<div class="m36-r" style="cursor:default"><span class="m36-ri">' + I.adv + '</span><span class="m36-rm"><b>Advance</b><small>Will go to the next invoice</small></span><span class="m36-ra"><b>' + money(adv) + '</b></span></div>';
+    var invCard = '<div class="m36-card"><div class="m36-ch"><b>Applied to</b><span>' + (bp.length ? bp.length + ' invoice' + (bp.length > 1 ? 's' : '') : '') + '</span></div>' +
+      (inv || '<div class="m36-empty">Not applied to any invoice.</div>') + '</div>';
+    $('m36-pay-body').innerHTML = top + invCard + det +
+      '<button type="button" class="btn btn-danger m36-del" data-m36="del">' + I.del + '<span>Delete ' + (s ? 'receipt' : 'payment') + '</span></button>';
+    $('m36-pay-foot').innerHTML = '<button type="button" class="btn m36-edit" data-m36="edit">' + I.edit + '<span>Edit</span></button>' +
+      '<button type="button" class="btn m36-main" data-m36="print">' + I.print + '<span>' + (s ? 'Print receipt' : 'Print voucher') + '</span></button>';
+    m.style.display = 'flex';
+    var b = $('m36-pay-body'); if(b) b.scrollTop = 0;
+  }
+
+  /* tap a payment row (not its 3 dots) → its page */
+  function rowTap(e){
+    if(e.target.closest('.row-menu, button, a, input, select, label')) return;
+    var tr = e.target.closest('#pay-table tbody tr'); if(!tr) return;
+    var m = /openEditPayment\('([^']+)'\)/.exec(tr.innerHTML); if(!m) return;
+    openPay(m[1], false);
+  }
+
+  function boot(){
+    var im = $('inv-modal');
+    if(im) im.addEventListener('click', invClick);
+    if(window.M8 && M8.after) M8.after('viewRecord', invRender);
+    else { var o = window.viewRecord; if(typeof o === 'function'){ window.viewRecord = function(){ var r = o.apply(this, arguments); try{ invRender(); }catch(_){} return r; }; } }
+    /* the stamp re-draws the paper: keep the switch in step */
+    document.addEventListener('click', rowTap);
+    window.M36 = { openPay:openPay, closePay:closePay };
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
 </body>
 </html>
