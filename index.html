@@ -9723,14 +9723,18 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) .m8-cq .m8-cq-m b, html:not(#_#_#_#_#_
     if(open || D.getElementById('am-signin') || !trusted()) return;
     if(D.readyState === 'loading'){ D.addEventListener('DOMContentLoaded', offlineOpen, { once:true }); return; }
     wait = { app:1 };
+    /* the books are already drawn from the saved copy: the "Connecting to cloud" panel (Fold / PC) goes too */
+    try{ if(typeof hideLoadingOverlay === 'function') hideLoadingOverlay(); }catch(e){}
     try{ if(typeof LOCK !== 'undefined' && LOCK.hasPin() && !LOCK.isUnlocked() && typeof showLockScreen === 'function') showLockScreen(); }catch(e){}
     requestAnimationFrame(function(){ requestAnimationFrame(function(){ window.AMGuard.done('app'); }); });
   }
-  if(navigator.onLine === false) offlineOpen(); else setTimeout(offlineOpen, 4000);
+  /* (Nov 26) 2.5 s, not 4 s: with slow internet the cover stayed up too long */
+  if(navigator.onLine === false) offlineOpen(); else setTimeout(offlineOpen, 2500);
   window.addEventListener('offline', offlineOpen);
   /* still nothing after 15 s (no internet on a phone that never opened the app, or Firebase down) */
   setTimeout(function(){
     if(open || D.getElementById('am-signin')) return;
+    offlineOpen(); if(open) return;
     var m = g.querySelector('.amg-msg'); if(!m) return;
     m.innerHTML = '<span>Can\u2019t connect right now. Check your internet and try again.</span><button type="button">Try again</button>';
     m.querySelector('button').addEventListener('click', function(){ location.reload(); });
@@ -10419,12 +10423,17 @@ async function checkLockPin() {
 
 
 // ── Biometrics (WebAuthn) ──
+let _bioCtl = null;   /* the fingerprint request in progress (it can be cancelled) */
 async function lockBioAuth() {
   if(!_bioSupported) return;
   { const i = document.getElementById('lock-input-field'); if(i && document.activeElement === i) i.blur(); }
   if(window.lockPad) lockPad.close();
   const btn = document.getElementById('lock-bio-btn');
-  btn.disabled = true;
+  /* (Nov 26) a request the phone never showed used to keep the button dead for up to 60 s: a new tap
+     now cancels it and asks again, and the button is never switched off */
+  if(_bioCtl){ try{ _bioCtl.abort(); }catch(e){} _bioCtl = null; await new Promise(r => setTimeout(r, 120)); }
+  const ctl = (typeof AbortController === 'function') ? new AbortController() : null; _bioCtl = ctl;
+  btn.disabled = false;
   const startedAt = Date.now();
   try {
     // Use a simple platform authenticator assertion
@@ -10438,16 +10447,21 @@ async function lockBioAuth() {
     }
     const credId = Uint8Array.from(atob(credIdRaw), c => c.charCodeAt(0));
     const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const assertion = await navigator.credentials.get({
+    const opts = {
       publicKey: {
         challenge,
         allowCredentials: [{ id: credId, type: 'public-key' }],
         userVerification: 'required',
         timeout: 60000,
       }
-    });
+    };
+    if(ctl) opts.signal = ctl.signal;
+    const assertion = await navigator.credentials.get(opts);
+    if(_bioCtl === ctl) _bioCtl = null;
     if(assertion) hideLockScreen();
   } catch(e) {
+    if(_bioCtl === ctl) _bioCtl = null;
+    if(ctl && ctl.signal.aborted) return;   /* replaced by a newer tap: that one carries on */
     // A rejection within ~400ms is too fast for the OS fingerprint sheet to
     // have even been shown to the user — that's not a failed fingerprint,
     // it's the Android WebView/Credential-Manager bridge not being ready yet
@@ -13270,7 +13284,10 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signI
    app can never lock you out before the Firebase side is set up. */
 async function amGate(app, db, getFn, refFn){
   const auth = getAuth(app); window._auth = auth;
-  try{ await getRedirectResult(auth); }catch(e){}
+  /* (Nov 26) only after a redirect sign-in was started: this call loads Google's sign-in frame from the
+     internet, so on every start with slow internet it held the whole app back */
+  let redir = false; try{ redir = localStorage.getItem('am_redirect') === '1'; localStorage.removeItem('am_redirect'); }catch(e){}
+  if(redir){ try{ await Promise.race([ getRedirectResult(auth), new Promise(r => setTimeout(r, 4000)) ]); }catch(e){} }
   const first = () => new Promise(r => { const u = onAuthStateChanged(auth, x => { u(); r(x); }); });
   let user = await first();
   /* Signing out (or being refused) also wipes this device's saved copy of the
@@ -13300,6 +13317,7 @@ async function amGate(app, db, getFn, refFn){
     const v = await probe();
     if(v === 'denied'){ wipeAll(); await screen('noaccess'); return; }
     if(v === 'ok') okSet(user);
+    else probe().then(v2 => { if(v2 === 'ok') okSet(user); else if(v2 === 'denied'){ wipeAll(); screen('noaccess'); } });   /* slow: check again, mark the phone once it answers */
     G.done('auth');
     return;
   }
@@ -13363,7 +13381,7 @@ async function amGate(app, db, getFn, refFn){
             if(v === 'ok') okSet(res.user);
             done(res.user);
           }catch(e){
-            if(e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment')){ try{ await signInWithRedirect(auth, prov); return; }catch(e2){ e = e2; } }
+            if(e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment')){ try{ try{ localStorage.setItem('am_redirect', '1'); }catch(_){} await signInWithRedirect(auth, prov); return; }catch(e2){ e = e2; } }
             err.textContent = why(e); b.disabled = false;
           }
         }
@@ -29236,7 +29254,11 @@ AMCViewport.onSettle(function(){
     chips.addEventListener('click', function(e){
       var b = e.target.closest('[data-q]'); if(!b) return;
       var q = b.dataset.q;
-      if(q === 'pick'){ var op = panel.classList.toggle('m40-dates'); panel.classList.toggle('m40-keep', op); b.classList.toggle('on', op); b.setAttribute('aria-pressed', op); return; }
+      if(q === 'pick'){
+        var op = panel.classList.toggle('m40-dates'); panel.classList.toggle('m40-keep', op);
+        if(op) [].forEach.call(chips.querySelectorAll('[data-q]'), function(c){ var a = c === b; c.classList.toggle('on', a); c.setAttribute('aria-pressed', a); });
+        else sync();
+        return; }
       panel.classList.remove('m40-keep');
       if(q === 'all'){ $(ids.from).value = ''; $(ids.to).value = ''; $(ids.month).value = ''; if($(ids.party).value) run(); else sync(); return; }
       if(en){ if(typeof setQuickMonth === 'function') setQuickMonth(+q); }
@@ -32557,10 +32579,10 @@ AMCViewport.onSettle(function(){
   function tf(q){ return 'translate3d(' + (X0 * q).toFixed(2) + 'px,0,0) scale(' + (1 - 0.14 * q).toFixed(4) + ')'; }
   /* the card's corners follow its place (Nov 23): fully round when open, square when closed, and every step
      in between while it moves — before, they stayed round until the card had landed, then snapped square */
-  /* (Nov 26) the corners turn round over the first ~22% of the slide and stay round after that: a corner
+  /* (Nov 26) the corners turn round over the first ~12% of the slide and stay round after that: a corner
      that changes on every frame makes the browser rebuild the screen's layers each frame, which was the
      stutter on big pages (Statement). Still gradual, never a snap. */
-  var CUTR = 0.22;
+  var CUTR = 0.12;
   function rad(q){ return (34 * Math.max(0, Math.min(1, q / CUTR))).toFixed(2) + 'px'; }
   /* the card's keyframes from one place to another, with a stop where the corners finish turning */
   function scrKF(from, to){
@@ -34876,26 +34898,48 @@ html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa #m9q-count:empty{ display:non
   html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa{ width:100%; }
   html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa .m40-qmain{ flex:1 1 auto; height:48px; }
 }
-/* Statement — calmer: the date boxes stay folded until "Pick dates"; the bar above the statement is two neat rows */
+/* Statement — the simplest form (Nov 26): Party, four period chips and one filter button. The extra filters,
+   the dates, Clear and Show statement only appear when they are needed. Above the statement: one row —
+   Include invoices · Stamp · Print (Share and Save PDF removed). */
 html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m40-dates) .m15-grid:not(.m15-extra) > .form-group:has(#s-from, #s-to, #s-month, #ur-from, #ur-to, #ur-month){ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m15-open):not(.m40-dates) .m15-acts > :is(.m15-clear, .m15-run){ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > :is(.m15-sh, .m15-sv){ display:none !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-chips{ flex-wrap:wrap !important; overflow:visible !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-chips > .m15-chip{ height:34px !important; min-height:34px !important; font-size:13px !important; }
+/* the bar above the statement: one tidy row */
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .stmt-actions.m15-bar:not([style*="none"]){ display:flex !important; flex-wrap:nowrap !important; align-items:center !important; gap:8px !important; padding:6px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > *{ margin:0 !important; height:38px !important; min-height:38px !important; width:auto !important; min-width:0 !important; grid-column:auto !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ padding:0 14px !important; font-size:13px !important; gap:6px !important; justify-content:center !important; flex:0 0 auto !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ order:1; flex:0 1 auto !important; padding:0 6px 0 14px !important; gap:8px !important; justify-content:space-between !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg .ios-tgl-t{ font-size:13px !important; white-space:nowrap !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-stamp{ order:2; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-print{ order:3; margin-left:auto !important; }
 @media screen and (max-width:599px){
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .stmt-actions.m15-bar:not([style*="none"]){ display:grid !important; grid-template-columns:repeat(6, minmax(0, 1fr)) !important; gap:8px !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > *{ margin:0 !important; width:100% !important; min-width:0 !important; justify-self:stretch !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ justify-content:center !important; padding:0 10px !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ grid-column:span 4 !important; justify-content:space-between !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-stamp{ grid-column:span 2 !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > :is(.m15-sh, .m15-sv, .m15-print){ grid-column:span 2 !important; }
-}
-@media screen and (max-width:599px){
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips{ display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; width:100%; }
+  /* phone: Party on its own, the filter button sits small in the card's corner */
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel.m15-card{ position:relative !important; padding-bottom:12px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-acts > .m15-more{ position:absolute !important; top:7px !important; right:12px !important; width:28px !important; height:28px !important; min-height:28px !important; padding:0 !important; border-radius:50% !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-acts > .m15-more svg{ width:14px !important; height:14px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-row > .m15-chips{ width:100% !important; flex:1 1 auto !important; align-self:stretch !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-acts > .m15-more > span{ display:none !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-row{ display:flex !important; flex-direction:column !important; align-items:stretch !important; gap:10px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips{ display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; width:100%; padding:0 !important; margin:0 !important; -webkit-mask-image:none !important; mask-image:none !important; }
   html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips > .m15-chip{ min-width:0 !important; padding:0 4px !important; justify-content:center !important; text-align:center; white-space:nowrap; font-size:12.5px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts{ display:flex !important; gap:8px !important; width:100%; margin:0 !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts > :is(.m15-clear, .m15-run){ height:38px !important; min-height:38px !important; font-size:13px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts > .m15-run{ flex:1 1 auto !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m15-open):not(.m40-dates) .m15-acts{ display:contents !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ flex:1 1 auto !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ padding:0 12px !important; }
 }
 /* Customer / vendor page: no progress bars, and nothing cut off — names and details wrap */
 html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m33-bar, .m33-prog){ display:none !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m8-le-m, .m33-ob-m, .m33-it > div){ min-width:0 !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m8-le-m, .m33-ob-m, .m33-it > div) > :is(b, small){ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:anywhere; -webkit-line-clamp:unset !important; display:block; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #page-reports .m13-chips{ flex-wrap:wrap !important; overflow:visible !important; }
+/* No progress bars anywhere (Nov 26, standing rule). Fold / PC Home: "paid off" is a plain dark disc with the
+   numbers (no filling ring); "Unpaid by age" and "Top items" keep their amounts without the bars. */
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m5-ring, .m5-ring.m30-ring){ background-image:none !important; padding:0 !important; }
+html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-age-b, .m8-top-b, .m5-prog){ display:none !important; }
 </style>
 <script id="m40-js">
 /* ═══ M40 · small fixes batch (Nov 2026) ═══ */
