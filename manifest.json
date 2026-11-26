@@ -27,5 +27,59 @@
       "type": "image/png",
       "purpose": "any"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "New bill",
+      "short_name": "New bill",
+      "description": "Add a purchase bill",
+      "url": "./index.html#new-bill",
+      "icons": [
+        {
+          "src": "sc-bill.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "New sale",
+      "short_name": "New sale",
+      "description": "Add a sales invoice",
+      "url": "./index.html#new-sale",
+      "icons": [
+        {
+          "src": "sc-sale.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Cheque register",
+      "short_name": "Cheques",
+      "description": "See cheques due",
+      "url": "./index.html#cheques",
+      "icons": [
+        {
+          "src": "sc-cheque.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Statement",
+      "short_name": "Statement",
+      "description": "Open a statement",
+      "url": "./index.html#statement",
+      "icons": [
+        {
+          "src": "sc-stmt.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
