@@ -8894,7 +8894,7 @@ html.m24-hide #m5-home .m5-bal .m5-big, html.m24-hide #m5-home .m5-bal .m5-kpis 
     --m24-x:min(68vw, 340px); --m24-dx:0px;
   }
 html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen{
-    transform:translate3d(calc(var(--m24-x) + var(--m24-dx)), 0, 0) scale(.86); touch-action:none;
+    transform:translate3d(calc(var(--m24-x) + var(--m24-dx)), 0, 0) scale(.86);
   }
 html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen, html:not(#_#_#_#_) body.m24-peek:not(#_#_#_#_) #m24-screen{ border-radius:34px; }
 html:not(#_#_#_#_) body.m24-peek:not(#_#_#_#_) #sidebar{ will-change:opacity; }
@@ -8907,7 +8907,9 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m24-shade{
 html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m24-screen{ background-color:#0C0C0D; }
 html:not(#_#_#_#_) body.dark-mode:not(#_#_#_#_) #m24-shade{ box-shadow:-24px 0 60px -10px rgba(0, 0, 0, .6); }
 html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-shade{ opacity:1; transform:translate3d(calc(var(--m24-x) + var(--m24-dx)), 0, 0) scale(.86); }
-#m24-screen::after{ content:""; position:absolute; inset:0; z-index:2147483000; display:none; }
+#m24-screen::after{ content:""; position:absolute; inset:0; z-index:2147483000; display:none; touch-action:none; }
+/* (Nov 26) touch-action sits on this cover, not on the card: on the card it made the browser restyle every
+   element of the page each time the menu opened or closed (0.5–1 s on Cheques / Statement on a phone) */
 html:not(#_#_#_#_) body.mobile-sidebar-open:not(#_#_#_#_) #m24-screen::after, html:not(#_#_#_#_) body.m24-peek:not(#_#_#_#_) #m24-screen::after{ display:block; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #sidebar{
     transform:none !important; translate:none !important;
@@ -20432,9 +20434,12 @@ function toggleThemeQuick() {
 (function(){
   var MQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null, AUTO = 'm39.autoDark', inner = false;
   function meta(dark){
-    document.documentElement.classList.toggle('m39-dark', dark);
-    var m = document.querySelector('meta[name="color-scheme"]');
-    if(m) m.setAttribute('content', dark ? 'dark' : 'only light');
+    var H = document.documentElement;
+    if(H.classList.contains('m39-dark') !== dark) H.classList.toggle('m39-dark', dark);
+    /* only when it really changes: writing it again (even the same value) makes the browser restyle the
+       whole app, and this runs on every body class change — the side menu froze on big pages */
+    var m = document.querySelector('meta[name="color-scheme"]'), want = dark ? 'dark' : 'only light';
+    if(m && m.getAttribute('content') !== want) m.setAttribute('content', want);
   }
   function sync(){ meta(document.body.classList.contains('dark-mode')); }
   function apply(dark){
@@ -26438,11 +26443,12 @@ AMCViewport.onSettle(function(){
     w.innerHTML =
       '<div class="m9q-top">' +
         '<div class="m9q-title"><h1>Quotation</h1><p id="m9q-sub">New quotation</p></div>' +
-        '<div class="m9q-acts">' +
-          '<button type="button" class="m8-btn" data-q="new">' + icon('plus') + '<span>New</span></button>' +
-          '<button type="button" class="m8-btn" data-q="lib">' + icon('quote') + '<span>Saved</span><i id="m9q-count"></i></button>' +
-          '<button type="button" class="m8-btn" data-q="save">' + icon('save') + '<span>Save</span></button>' +
-          '<button type="button" class="m8-btn acc" data-q="print">' + icon('print') + '<span>Print / PDF</span></button>' +
+        /* (Nov 26) laid out like the Cheque register: one orange main button, the rest round icon buttons */
+        '<div class="m9q-acts m40-qa">' +
+          '<button type="button" class="m8-btn acc m40-qmain" data-q="print">' + icon('print') + '<span>Print / PDF</span></button>' +
+          '<button type="button" class="m8-ib" data-q="save" aria-label="Save quotation" title="Save">' + icon('save') + '</button>' +
+          '<button type="button" class="m8-ib m40-qlib" data-q="lib" aria-label="Saved quotations" title="Saved quotations">' + icon('quote') + '<i id="m9q-count"></i></button>' +
+          '<button type="button" class="m8-ib" data-q="new" aria-label="New quotation" title="New quotation">' + icon('plus') + '</button>' +
         '</div></div>' +
       '<div class="m9q-bar" id="m9q-bar" role="toolbar" aria-label="Editing">' +
         tb('undo', 'Undo (Ctrl+Z)', '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>') +
@@ -28962,7 +28968,9 @@ AMCViewport.onSettle(function(){
   function dl(name, text, type){ var b = new Blob([text], { type:type || 'text/plain' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400); }
 
   /* ── PAGE ──────────────────────────────────────────────────────────── */
-  var TABS = [['sum', 'Summary', 'chart'], ['items', 'Items', 'items'], ['trash', 'Trash', 'trash'], ['backup', 'Backups', 'backup']];
+  /* (Nov 26) two tabs only — Trash and Backups open from Settings (a hidden third/fourth button made the
+     sliding switch land on Trash) */
+  var TABS = [['sum', 'Summary', 'chart'], ['items', 'Items', 'items']];
   var cur = store('tab') || 'sum'; if(['sum','items'].indexOf(cur) < 0) cur = 'sum';
   var viaSet = false;   /* #37 — Trash and Backups open from Settings only, without the Reports tabs */
   function build(){
@@ -28971,7 +28979,7 @@ AMCViewport.onSettle(function(){
     var pg = document.createElement('div'); pg.className = 'page'; pg.id = 'page-reports';
     pg.innerHTML =
       '<div class="page-header m13-head"><div><h1>Reports &amp; tools</h1><p id="m13-sub">Monthly summary and items</p></div></div>' +
-      '<div class="m13-tabs" role="tablist" id="m13-tabs">' + TABS.map(function(t){ return '<button type="button" role="tab" class="m13-tab" data-t="' + t[0] + '">' + icon(t[2]) + '<span>' + t[1] + '</span></button>'; }).join('') + '</div>' +
+      '<div class="m9-seg m40-rt" role="tablist" id="m13-tabs">' + TABS.map(function(t){ return '<button type="button" role="tab" data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="m13-body" class="m13-body"></div>';
     ref.parentNode.insertBefore(pg, ref.nextSibling);
     pg.addEventListener('click', onClick);
@@ -28994,8 +29002,7 @@ AMCViewport.onSettle(function(){
       if(h1) h1.textContent = cur === 'trash' ? 'Trash' : cur === 'backup' ? 'Backups' : 'Reports & tools';
       if(sb) sb.textContent = cur === 'trash' ? 'Deleted entries, ready to bring back' : cur === 'backup' ? 'Daily copies saved on this device' : 'Monthly summary and items'; }
     if(!tool) store('tab', cur);
-    [].forEach.call(document.querySelectorAll('#m13-tabs .m13-tab'), function(t){ var on = t.dataset.t === cur; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
-    var a = document.querySelector('#m13-tabs .m13-tab.on'); if(a && a.scrollIntoView) try{ a.scrollIntoView({ block:'nearest', inline:'nearest' }); }catch(e){}
+    [].forEach.call(document.querySelectorAll('#m13-tabs > button'), function(t){ var on = t.dataset.t === cur; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
     var f = { sum:function(){ return window.M16 ? M16.html() : ''; }, items:pItems, trash:pTrash, backup:pBackup }[cur] || function(){ return window.M16 ? M16.html() : ''; };
     try{ b.innerHTML = f(); }catch(err){ console.error('[m13]', err); b.innerHTML = '<div class="m13-empty">Something went wrong here: ' + esc(err.message) + '</div>'; }
     if(cur === 'trash') loadTrash();
@@ -29036,18 +29043,22 @@ AMCViewport.onSettle(function(){
     });
     var list = Object.keys(map).map(function(k){ return map[k]; }).filter(function(o){ return o.n && (!q || o.name.toLowerCase().indexOf(q) >= 0); }).sort(function(a, b){ return b.amt - a.amt; });
     var total = list.reduce(function(a, o){ return a + o.amt; }, 0), top = list[0] ? list[0].amt : 1;
-    return '<div class="m13-intro"><b>' + (sales() ? 'What you sell' : 'What you buy') + '</b><span>Every item on your ' + (sales() ? 'invoices' : 'bills') + ': how much, at what rate, and the last 6 months. Switch Purchase / Sales at the top.</span></div>' +
+    return '<div class="m13-intro"><b>' + (sales() ? 'What you sell' : 'What you buy') + '</b><span>Every item on your ' + (sales() ? 'invoices' : 'bills') + ': how much, and at what rate. Switch Purchase / Sales at the top.</span></div>' +
       '<div class="m13-tools">' + chips('itemp', PERIODS, S.itemP || 'year') + '<label class="m13-search">' + icon('search') + '<input type="search" id="m13-iq" placeholder="Search item" value="' + esc(S.itemQ || '') + '"></label></div>' +
       '<div class="m13-kpis">' + kpi('Items', list.length, 'with entries in this period') + kpi('Total', AED + ' ' + money(total), '') + (list[0] ? kpi('Biggest', esc(list[0].name), Math.round(list[0].amt / (total || 1) * 100) + '% of the total') : '') + '</div>' +
-      (list.length ? '<div class="m13-list">' + list.map(function(o){
-        var avg = o.qty ? o.amt / o.qty : 0, mx = Math.max.apply(null, months.map(function(k){ return o.m[k] || 0; })) || 1;
-        var trend = o.last ? (o.last.price > avg * 1.02 ? '<em class="m13-tag neg">↑ above average</em>' : o.last.price < avg * 0.98 ? '<em class="m13-tag pos">↓ below average</em>' : '') : '';
-        return '<div class="m13-row m13-item"><span class="m13-av sq">' + icon('items') + '</span>' +
-          '<div class="m13-main"><div class="m13-l1"><b>' + esc(o.name) + '</b><span class="m13-unit">' + esc(o.unit) + '</span>' + trend + '</div>' +
-          '<div class="m13-l2">' + (+o.qty.toFixed(2)).toLocaleString('en-US') + ' ' + esc(o.unit) + ' · ' + o.n + ' ' + (sales() ? 'invoices' : 'bills') + ' · ' + Object.keys(o.parties).length + ' parties · avg ' + money(avg) + (o.min < Infinity && o.max - o.min > 0.004 ? ' · rate ' + money(o.min) + '–' + money(o.max) : '') + '</div>' +
-          '<div class="m13-share"><i style="width:' + (o.amt / top * 100).toFixed(1) + '%"></i></div></div>' +
-          '<div class="m13-spark" title="Last 6 months">' + months.map(function(k){ return '<i style="height:' + Math.max(6, (o.m[k] || 0) / mx * 100).toFixed(0) + '%" class="' + (o.m[k] ? '' : 'z') + '"></i>'; }).join('') + '</div>' +
-          '<div class="m13-amt"><b>' + money(o.amt) + '</b><small>' + (o.last ? 'last ' + money(o.last.price) + ' · ' + dShort(o.last.date) : '') + '</small></div></div>';
+      /* (Nov 26) the same card as every other list in the app: name, details on two lines that wrap (never cut),
+         a plain status word and the amount — no bars, arrows or badges */
+      (list.length ? '<div class="m9-list m40-il">' + list.map(function(o){
+        var s = sales(), avg = o.qty ? o.amt / o.qty : 0, lp = o.last ? o.last.price : null;
+        var tr = lp == null ? '' : lp > avg * 1.02 ? 'Last rate above average' : lp < avg * 0.98 ? 'Last rate below average' : '';
+        var trC = !tr ? '' : /above/.test(tr) ? (s ? 'ok' : 'bad') : (s ? 'bad' : 'ok');
+        var np = Object.keys(o.parties).length;
+        var meta = [(+o.qty.toFixed(2)).toLocaleString('en-US') + (o.unit ? ' ' + o.unit : ''), o.n + ' ' + (s ? (o.n === 1 ? 'invoice' : 'invoices') : (o.n === 1 ? 'bill' : 'bills')), np + (np === 1 ? ' party' : ' parties'), '\n',
+          'avg rate ' + money(avg), o.min < Infinity && o.max - o.min > 0.004 ? 'rates ' + money(o.min) + ' to ' + money(o.max) : '', o.last ? 'last ' + money(lp) + ' on ' + dShort(o.last.date) : ''];
+        return '<div class="m9-row"><div class="m9-row-h static amc-card">' +
+          window.amcCard({ avHtml:icon('items'), avCls:'ico', title:o.name, meta:meta.filter(Boolean).map(function(x){ return x === '\n' ? x : esc(x); }),
+            st:tr ? window.amcChip(esc(tr), trC) : '', amt:AED + ' ' + money(o.amt) }) +
+          '</div></div>';
       }).join('') + '</div>' : '<div class="m13-empty">No items in this period.</div>');
   }
 
@@ -29218,12 +29229,15 @@ AMCViewport.onSettle(function(){
     /* card: period chips + actions */
     var row = document.createElement('div'); row.className = 'm15-row';
     var chips = document.createElement('div'); chips.className = 'm15-chips'; chips.setAttribute('role', 'group'); chips.setAttribute('aria-label', 'Period');
-    var CH = en ? [['0', 'This month'], ['-1', 'Last month'], ['-2', '2 months ago'], ['-3', '3 months ago'], ['all', 'All time']]
-                : [['0', 'یہ مہینہ'], ['-1', 'پچھلا مہینہ'], ['-2', 'دو مہینے پہلے'], ['-3', 'تین مہینے پہلے'], ['all', 'تمام مدت']];
+    /* (Nov 26) fewer choices: the dates and month boxes stay folded away until "Pick dates" */
+    var CH = en ? [['all', 'All time'], ['0', 'This month'], ['-1', 'Last month'], ['pick', 'Pick dates']]
+                : [['all', 'تمام مدت'], ['0', 'یہ مہینہ'], ['-1', 'پچھلا مہینہ'], ['pick', 'تاریخ منتخب کریں']];
     chips.innerHTML = CH.map(function(c){ return '<button type="button" class="m15-chip" data-q="' + c[0] + '">' + c[1] + '</button>'; }).join('');
     chips.addEventListener('click', function(e){
       var b = e.target.closest('[data-q]'); if(!b) return;
       var q = b.dataset.q;
+      if(q === 'pick'){ var op = panel.classList.toggle('m40-dates'); panel.classList.toggle('m40-keep', op); b.classList.toggle('on', op); b.setAttribute('aria-pressed', op); return; }
+      panel.classList.remove('m40-keep');
       if(q === 'all'){ $(ids.from).value = ''; $(ids.to).value = ''; $(ids.month).value = ''; if($(ids.party).value) run(); else sync(); return; }
       if(en){ if(typeof setQuickMonth === 'function') setQuickMonth(+q); }
       else if(typeof urQuickMonth === 'function') urQuickMonth(-q);
@@ -29274,8 +29288,10 @@ AMCViewport.onSettle(function(){
     function sync(){
       var m = ($(ids.month) || {}).value, f = ($(ids.from) || {}).value, t = ($(ids.to) || {}).value, on = null;
       if(!m && !f && !t) on = 'all';
-      else if(m){ for(var n = 0; n >= -3; n--) if(ymOff(n) === m){ var ok = en ? (f && f.slice(0, 7) === m) || !f : true; if(ok) on = String(n); } }
-      [].forEach.call(chips.querySelectorAll('[data-q]'), function(b){ var a = b.dataset.q === on; b.classList.toggle('on', a); b.setAttribute('aria-pressed', a); });
+      else if(m){ for(var n = 0; n >= -1; n--) if(ymOff(n) === m){ var ok = en ? (f && f.slice(0, 7) === m) || !f : true; if(ok) on = String(n); } }
+      if(on === null){ on = 'pick'; panel.classList.add('m40-dates'); }
+      else if(on !== 'pick' && !panel.classList.contains('m40-keep')) panel.classList.remove('m40-dates');
+      [].forEach.call(chips.querySelectorAll('[data-q]'), function(b){ var a = b.dataset.q === on || (b.dataset.q === 'pick' && panel.classList.contains('m40-dates') && on === 'pick'); b.classList.toggle('on', a); b.setAttribute('aria-pressed', a); });
       var shown = area.style.display !== 'none' && area.style.display !== '';
       if(!en) shown = area.style.display === 'block';
       var emptyOn = emp && en && pg.dataset.m15ran && getComputedStyle(emp).display !== 'none';
@@ -29389,7 +29405,9 @@ AMCViewport.onSettle(function(){
   function boot(){
     build(); menus(); langSwitch($('page-search'), 'en'); langSwitch($('page-urdu-stmt'), 'ur'); statement(); scrollWatch(); watchHeader();
     M8.after('showPage', function(id){
-      if(id === 'reports'){ if(!viaSet && (cur === 'trash' || cur === 'backup')) cur = 'sum'; viaSet = false; paint(); fixHeader(); }
+      if(id === 'reports'){ if(!viaSet && (cur === 'trash' || cur === 'backup')) cur = 'sum'; viaSet = false; paint(); fixHeader();
+        /* the first time, the summary module is not ready yet and the page stayed empty: draw again once it is */
+        setTimeout(function(){ var bb = $('m13-body'); if(bb && !bb.innerHTML.trim()){ paint(); fixHeader(); } }, 0); }
       if(id === 'search' || id === 'urdu-stmt') statement();
       setTimeout(menus, 0);
     });
@@ -32539,7 +32557,17 @@ AMCViewport.onSettle(function(){
   function tf(q){ return 'translate3d(' + (X0 * q).toFixed(2) + 'px,0,0) scale(' + (1 - 0.14 * q).toFixed(4) + ')'; }
   /* the card's corners follow its place (Nov 23): fully round when open, square when closed, and every step
      in between while it moves — before, they stayed round until the card had landed, then snapped square */
-  function rad(q){ return (34 * Math.max(0, Math.min(1, q))).toFixed(2) + 'px'; }
+  /* (Nov 26) the corners turn round over the first ~22% of the slide and stay round after that: a corner
+     that changes on every frame makes the browser rebuild the screen's layers each frame, which was the
+     stutter on big pages (Statement). Still gradual, never a snap. */
+  var CUTR = 0.22;
+  function rad(q){ return (34 * Math.max(0, Math.min(1, q / CUTR))).toFixed(2) + 'px'; }
+  /* the card's keyframes from one place to another, with a stop where the corners finish turning */
+  function scrKF(from, to){
+    var k = [{ offset:0, transform:tf(from), borderRadius:rad(from) }];
+    if((from - CUTR) * (to - CUTR) < 0) k.push({ offset:Math.abs((CUTR - from) / (to - from)), transform:tf(CUTR), borderRadius:rad(CUTR) });
+    k.push({ offset:1, transform:tf(to), borderRadius:rad(to) }); return k;
+  }
   /* the orange menu fades in over the first 15% of the slide (and out over the last 15%): the card's
      corners are round only while it moves, and at the very start / end the menu is not yet / no longer
      behind them, so the corners turn round / square where nothing can see it (the page behind the card
@@ -32570,7 +32598,7 @@ AMCViewport.onSettle(function(){
       stopRun();
       try{
         var o = { duration:1000, fill:'both' };
-        HOLD = [ SCREEN.animate([{ transform:tf(0), borderRadius:rad(0) }, { transform:tf(1), borderRadius:rad(1) }], o),
+        HOLD = [ SCREEN.animate(scrKF(0, 1), o),
                  SB.animate([{ opacity:1 }, { opacity:1 }], o),
                  SHADE.animate([{ transform:tf(0), opacity:0 }, { offset:1 / 3, opacity:1 }, { transform:tf(1), opacity:1 }], o) ];
         HOLD.forEach(function(a){ a.pause(); });
@@ -32614,7 +32642,7 @@ AMCViewport.onSettle(function(){
     var id = ++RUNID, o = { duration:T, easing:cv.e, fill:'forwards' };
     var next = [];
     try{
-      next = [ SCREEN.animate([{ transform:tf(from), borderRadius:rad(from) }, { transform:tf(to), borderRadius:rad(to) }], o),
+      next = [ SCREEN.animate(from === to ? [{ transform:tf(from), borderRadius:rad(from) }, { transform:tf(to), borderRadius:rad(to) }] : scrKF(from, to), o),
                SB.animate(sbKF(from, to), o),
                SHADE.animate([{ transform:tf(from), opacity:so(from) }, { transform:tf(to), opacity:so(to) }], o) ];
     }catch(e){ next = []; }
@@ -32712,7 +32740,10 @@ AMCViewport.onSettle(function(){
       if(!odr.live){
         if(Math.abs(ddy) > 10 && Math.abs(ddy) > Math.abs(ddx)){ odr = null; return; }   /* scrolling the page */
         if(ddx < -8){ odr = null; return; }
-        if(!(ddx > 8 && ddx > Math.abs(ddy) * 1.3)) return;
+        /* (Nov 26) a finger moving right keeps the gesture from the first few pixels: before, a strip of chips
+           or the page could take it first and the swipe did nothing (it took 2–3 tries on some pages) */
+        if(ddx >= 3 && ddx > Math.abs(ddy) * 1.2 && e.cancelable) e.preventDefault();
+        if(!(ddx > 8 && ddx > Math.abs(ddy))) return;
         if(!e.cancelable){ odr = null; return; }                                         /* the page already took it */
         odr.live = true; odr.x0 += 8; ddx = t.clientX - odr.x0;
         /* only the light "peek" switch here: the menu's full switch (20–45 ms of re-style on a phone)
@@ -32866,8 +32897,9 @@ AMCViewport.onSettle(function(){
     /* <html> carries the theme too, so CSS never needs a slow html:has(body.dark-mode) */
     if(H.classList.contains('am-dark') !== dark) H.classList.toggle('am-dark', dark);
     var b = D.getElementById('m24-theme'); if(!b) return;
-    var t = dark ? 'Light mode' : 'Dark mode';
-    b.querySelector('.m24-tl').textContent = t; b.title = t; b.setAttribute('aria-label', 'Switch to ' + t.toLowerCase());
+    var t = dark ? 'Light mode' : 'Dark mode', tl = b.querySelector('.m24-tl');
+    if(tl && tl.textContent === t) return;   /* nothing changed: touching the text restyled the app on every menu open */
+    if(tl) tl.textContent = t; b.title = t; b.setAttribute('aria-label', 'Switch to ' + t.toLowerCase());
   }
   themeBtn(); sync();
   new MutationObserver(sync).observe(D.body, { attributes:true, attributeFilter:['class'] });
@@ -34828,9 +34860,42 @@ html:not(#_#_#_) body.dark-mode:not(#_#_#_) .m8-stat.m40-soon b{ color:#f5a524; 
   html:not(#_#_#_) body:not(#_#_#_) .m16-kp::before{ content:none !important; display:none !important; }
 }
 /* #37 — Reports shows Summary and Items; Trash and Backups live in Settings */
-html:not(#_#_#_) body:not(#_#_#_) #m13-tabs .m13-tab:is([data-t="trash"],[data-t="backup"]){ display:none !important; }
 html:not(#_#_#_) body:not(#_#_#_) #page-reports.m40-tool #m13-tabs{ display:none !important; }
 html:not(#_#_#_) body:not(#_#_#_) #page-reports.m40-tool .m13-intro > b{ display:none !important; }
+/* Reports: Summary / Items is one full-width switch, the same as every other switch in the app */
+html:not(#_#_#_) body:not(#_#_#_) #m13-tabs.m40-rt{ display:flex !important; width:100% !important; justify-content:stretch !important; margin:0 0 16px !important; position:relative; }
+html:not(#_#_#_) body:not(#_#_#_) #m13-tabs.m40-rt > button{ flex:1 1 0 !important; min-width:0; }
+/* Quotation: Print / PDF is the orange main button, Save · Saved · New are round icon buttons (like the Cheque register) */
+html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa{ display:flex !important; grid-template-columns:none !important; align-items:center; gap:8px; flex-wrap:nowrap; }
+html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa .m40-qmain{ flex:0 0 auto; flex-direction:row !important; gap:8px !important; height:44px; padding:0 20px !important; border-radius:999px !important; font-size:14px !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa .m40-qmain svg{ width:18px; height:18px; }
+html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa .m8-ib{ position:relative; }
+html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa #m9q-count{ position:absolute !important; top:-3px; right:-3px; margin:0 !important; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:var(--k-acc); color:#fff; font:700 10.5px/18px var(--k-font); font-style:normal; text-align:center; box-shadow:0 0 0 2px var(--k-tile); display:inline-block; }
+html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa #m9q-count:empty{ display:none !important; }
+@media screen and (max-width:599px){
+  html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa{ width:100%; }
+  html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa .m40-qmain{ flex:1 1 auto; height:48px; }
+}
+/* Statement — calmer: the date boxes stay folded until "Pick dates"; the bar above the statement is two neat rows */
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m40-dates) .m15-grid:not(.m15-extra) > .form-group:has(#s-from, #s-to, #s-month, #ur-from, #ur-to, #ur-month){ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-chips{ flex-wrap:wrap !important; overflow:visible !important; }
+@media screen and (max-width:599px){
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .stmt-actions.m15-bar:not([style*="none"]){ display:grid !important; grid-template-columns:repeat(6, minmax(0, 1fr)) !important; gap:8px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > *{ margin:0 !important; width:100% !important; min-width:0 !important; justify-self:stretch !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ justify-content:center !important; padding:0 10px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ grid-column:span 4 !important; justify-content:space-between !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-stamp{ grid-column:span 2 !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > :is(.m15-sh, .m15-sv, .m15-print){ grid-column:span 2 !important; }
+}
+@media screen and (max-width:599px){
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips{ display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; width:100%; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips > .m15-chip{ min-width:0 !important; padding:0 4px !important; justify-content:center !important; text-align:center; white-space:nowrap; font-size:12.5px !important; }
+}
+/* Customer / vendor page: no progress bars, and nothing cut off — names and details wrap */
+html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m33-bar, .m33-prog){ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m8-le-m, .m33-ob-m, .m33-it > div){ min-width:0 !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m8-le-m, .m33-ob-m, .m33-it > div) > :is(b, small){ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:anywhere; -webkit-line-clamp:unset !important; display:block; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #page-reports .m13-chips{ flex-wrap:wrap !important; overflow:visible !important; }
 </style>
 <script id="m40-js">
 /* ═══ M40 · small fixes batch (Nov 2026) ═══ */
