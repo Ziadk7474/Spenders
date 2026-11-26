@@ -8809,18 +8809,18 @@ html:not(#_#_#_) body:not(#_#_#_) #m8-switch[data-m="sales"] > button.on, html:n
 html:not(#_#_#_) body:not(#_#_#_) .alloc-seg{ display:flex !important; width:100% !important; padding:3px !important; gap:0 !important; }
 html:not(#_#_#_) body:not(#_#_#_) .alloc-seg > .alloc-seg-btn{ flex:1 1 0 !important; min-height:34px !important; font-size:13px !important; padding:6px 10px !important; }
 html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch).m23-live > button:not(._), html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch).m23-live > [role="tab"], html:not(#_#_#_) body:not(#_#_#_) :is(.m22-glide, .m8-switch).m23-live > [role="radio"]{ color:var(--k-ink) !important; }
-html:not(#_) body:not(#_) #m23-slens{ position:fixed; left:0; top:0; z-index:99991; pointer-events:none; transform-origin:50% 50%; will-change:transform; }
-html:not(#_) body:not(#_) #m23-slens > i{ position:absolute; inset:0; display:block; pointer-events:none; }
-html:not(#_) body:not(#_) #m23-slens .m23-lsp{ background-size:100% 100%; background-repeat:no-repeat; }
-html:not(#_) body:not(#_) #m23-slens .m23-lsh{ box-shadow:0 6px 16px -6px rgba(15,18,35,.22), 0 1px 3px rgba(15,18,35,.06); }
-html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lsh{ box-shadow:0 8px 20px -6px rgba(0,0,0,.55); }
-html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lsp{ filter:opacity(.75); }
-html:not(#_) body:not(#_) #m23-slens::after{ content:""; position:absolute; inset:var(--m, 18px); border-radius:var(--r, 20px); pointer-events:none; opacity:var(--o, 0);
+html:not(#_) body:not(#_) #m23-slens,html:not(#_) body:not(#_) #m23-blens{ position:fixed; left:0; top:0; z-index:99991; pointer-events:none; transform-origin:50% 50%; will-change:transform; }
+html:not(#_) body:not(#_) #m23-slens > i,html:not(#_) body:not(#_) #m23-blens > i{ position:absolute; inset:0; display:block; pointer-events:none; }
+html:not(#_) body:not(#_) #m23-slens .m23-lsp,html:not(#_) body:not(#_) #m23-blens .m23-lsp{ background-size:100% 100%; background-repeat:no-repeat; }
+html:not(#_) body:not(#_) #m23-slens .m23-lsh,html:not(#_) body:not(#_) #m23-blens .m23-lsh{ box-shadow:0 6px 16px -6px rgba(15,18,35,.22), 0 1px 3px rgba(15,18,35,.06); }
+html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lsh,html:not(#_) body:not(#_).dark-mode #m23-blens .m23-lsh{ box-shadow:0 8px 20px -6px rgba(0,0,0,.55); }
+html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lsp,html:not(#_) body:not(#_).dark-mode #m23-blens .m23-lsp{ filter:opacity(.75); }
+html:not(#_) body:not(#_) #m23-slens::after,html:not(#_) body:not(#_) #m23-blens::after{ content:""; position:absolute; inset:var(--m, 18px); border-radius:var(--r, 20px); pointer-events:none; opacity:var(--o, 0);
   box-shadow:inset 0 0 0 .6px rgba(20,22,35,.16), inset 0 -1px 1px -.5px rgba(20,22,35,.08); }
-html:not(#_) body:not(#_).dark-mode #m23-slens::after{ box-shadow:inset 0 0 0 .6px rgba(255,255,255,.14); }
-html:not(#_) body:not(#_) #m23-slens .m23-lgl, html:not(#_) body:not(#_) .m23-fl .m23-fgl{ background:rgba(255,255,255,.3);
+html:not(#_) body:not(#_).dark-mode #m23-slens::after,html:not(#_) body:not(#_).dark-mode #m23-blens::after{ box-shadow:inset 0 0 0 .6px rgba(255,255,255,.14); }
+html:not(#_) body:not(#_) #m23-slens .m23-lgl, html:not(#_) body:not(#_) .m23-fl .m23-fgl,html:not(#_) body:not(#_) #m23-blens .m23-lgl{ background:rgba(255,255,255,.3);
   box-shadow:inset 1.5px 0 0 rgba(0,170,255,.16), inset -1.5px 0 0 rgba(255,70,150,.14), inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(255,200,0,.12); }
-html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lgl, html:not(#_) body:not(#_).dark-mode .m23-fl .m23-fgl{ background:rgba(255,255,255,.1);
+html:not(#_) body:not(#_).dark-mode #m23-slens .m23-lgl, html:not(#_) body:not(#_).dark-mode .m23-fl .m23-fgl,html:not(#_) body:not(#_).dark-mode #m23-blens .m23-lgl{ background:rgba(255,255,255,.1);
   box-shadow:inset 1.5px 0 0 rgba(0,170,255,.2), inset -1.5px 0 0 rgba(255,70,150,.18), inset 0 1px 0 rgba(255,255,255,.14); }
 @media (min-width:700px){html:not(#_#_#_) body:not(#_#_#_) :is(#all-records-table, #pay-table, #party-summary-table, #cheque-table) tbody{ grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
 html:not(#_#_#_) body:not(#_#_#_) :is(#all-records-table, #pay-table, #party-summary-table, #cheque-table) tbody > tr{ min-width:0 !important; max-width:100% !important; }}
@@ -9310,7 +9310,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m8-chq .m8-cq-s b{ font-size:16px !import
   html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #sidebar #sb-collapse-btn{ min-height:0 !important; height:24px !important; }
 }
 /* Liquid Glass as it was on 4 Nov: the drops are clear bending glass, not a white/frosted fill */
-html:not(#_#_#_#_#_) body.m23-lg:not(#_#_#_#_#_) :is(#m23-lens .m23-lgl, #m23-slens .m23-lgl, .m23-fl .m23-fgl){ background:transparent !important; box-shadow:none !important; }
+html:not(#_#_#_#_#_) body.m23-lg:not(#_#_#_#_#_) :is(#m23-lens .m23-lgl, #m23-slens .m23-lgl, #m23-blens .m23-lgl, .m23-fl .m23-fgl){ background:transparent !important; box-shadow:none !important; }
 html:not(#_#_#_#_#_) body.m23-lg:not(#_#_#_#_#_) #m23-lens .m23-lrow{ display:none !important; }
 /* phone/tablet menu: no dark shadow band on the card while it slides (it showed only while moving) */
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) #m24-shade{ display:none !important; }
@@ -31410,6 +31410,31 @@ AMCViewport.onSettle(function(){
     var t = GM.list[i]; t.style.removeProperty('-webkit-mask-image'); t.style.removeProperty('mask-image');
   }
   function cmp(v, lo, hi){ return v < lo ? lo : v > hi ? hi : v; }
+  /* the bar's glass drop: built with the same lens as the segmented switches (section 1d) */
+  var BG = null;
+  function barGlass(tw, bh){
+    if(typeof LG === 'undefined' || !LG.glass) return null;
+    if(!BG){
+      var el = document.createElement('div'); el.id = 'm23-blens'; el.setAttribute('aria-hidden', 'true'); el.style.visibility = 'hidden';
+      el.innerHTML = '<i class="m23-lsh"></i><i class="m23-lgl"></i><i class="m23-lsp"></i>';
+      document.body.appendChild(el); BG = { el:el, key:'' };
+    }
+    var W0 = Math.round(tw + 14), H0 = Math.round(bh + 6), key = W0 + 'x' + H0;
+    if(BG.key !== key){
+      BG.key = key;
+      var A = Math.max(6, Math.min(14, H0 * 0.3)), B = Math.max(7, Math.min(14, H0 * 0.32));
+      var g = LG.glass(W0, H0, H0 / 2, { M:18, out:true, mag:1.16, A:A, B:B + 2, k:2.2, chroma:0.15, soft:0.35, eb:1.5, ez:1.15, sat:1.3, bright:1.03, light:0.9 });
+      g.w0 = W0; g.h0 = H0; BG.g = g;
+      var c = BG.el.children;
+      BG.el.style.width = g.TW + 'px'; BG.el.style.height = g.TH + 'px';
+      if(LG.ok){ LG.setBF(c[1], g.filter); c[1].style.inset = '0px'; c[1].style.borderRadius = '0px'; c[1].style.clipPath = 'inset(' + g.M + 'px round ' + (H0 / 2) + 'px)'; }
+      else { c[1].style.inset = g.M + 'px'; c[1].style.borderRadius = (H0 / 2) + 'px'; }
+      c[2].style.backgroundImage = g.spec;
+      c[0].style.inset = g.M + 'px'; c[0].style.borderRadius = (H0 / 2) + 'px';
+      BG.el.style.setProperty('--m', g.M + 'px'); BG.el.style.setProperty('--r', (H0 / 2) + 'px');
+    }
+    return BG;
+  }
   function paint(){
     if(!bar || !lens) return;
     if(!GM) measure();
@@ -31425,44 +31450,21 @@ AMCViewport.onSettle(function(){
     sel.style.transform = 'translate3d(' + (X.x - tw / 2).toFixed(2) + 'px,0,0)';
     sel.style.opacity = (1 - ss(0.02, 0.35, p)).toFixed(3);
     var live = p > 0.18;
-    if(p < 0.004){
-      if(lens.style.visibility !== 'hidden') lens.style.visibility = 'hidden';
+    /* Nov 26: the drop is the same liquid glass as the Purchase / Sales switches — real clear glass that
+       bends and magnifies what is under it (no blur), shaped by the movement as before */
+    if(lens.style.visibility !== 'hidden') lens.style.visibility = 'hidden';
+    var gl = barGlass(tw, bh);
+    if(p < 0.004 || !gl){
+      if(gl && gl.el.style.visibility !== 'hidden') gl.el.style.visibility = 'hidden';
     } else {
       var W = w * kk, H = h * kk;
-      var cx = GM.cx0 + (X.x - GM.ow / 2) * kk, cy = GM.cy;
-      var lx = cx - W / 2, ly = cy - H / 2;
-      var lean = cmp(-vx * 0.006, -6, 6);                         /* it leans back a little, like a drop being pulled */
-      lens.style.visibility = 'visible';
-      lens.style.width = W.toFixed(2) + 'px'; lens.style.height = H.toFixed(2) + 'px';
-      lens.style.transform = 'translate3d(' + lx.toFixed(2) + 'px,' + ly.toFixed(2) + 'px,0) skewX(' + lean.toFixed(2) + 'deg)';
-      var op = ss(0, 0.18, p); lens.style.opacity = op > 0.995 ? '' : op.toFixed(3);
-      /* light: the shine turns with the movement, the rainbow edge gets stronger with speed */
-      lens.style.setProperty('--la', (150 + cmp(vx * 0.05, -70, 70)).toFixed(1) + 'deg');
-      lens.style.setProperty('--sp', (0.45 + 0.55 * sp).toFixed(3));
-      lens.style.setProperty('--gx', cmp(28 - vx * 0.02, 8, 70).toFixed(1) + '%');
-      /* the copy of the tabs: magnified around the drop's middle; it lags a touch behind when moving */
-      var mg = 1 + 0.15 * ss(0.15, 1, p) + 0.05 * sp;
-      var lag = cmp(-vx * 0.006, -6, 6);
-      var bx = GM.cx0 - GM.ow * kk / 2 - lx + lag, by = GM.cy - bh * kk / 2 - ly;
-      function tf(m){ return 'translate(' + (W / 2).toFixed(2) + 'px,' + (H / 2).toFixed(2) + 'px) scale(' + m.toFixed(4) + ') translate(' + (bx - W / 2).toFixed(2) + 'px,' + (by - H / 2).toFixed(2) + 'px) scale(' + kk.toFixed(4) + ')'; }
-      lrow.style.transform = tf(mg);
-      /* the bent edge shows only while moving (still, it would look like a double letter) */
-      var eo = ss(0.15, 0.7, sp); if(ledge.__o !== eo){ ledge.__o = eo; ledge.style.opacity = eo.toFixed(2); }
-      if(lrow2 && eo > 0) lrow2.style.transform = tf(mg * 1.18);
-      /* colours split a little at speed (red one way, blue the other), like light through water */
-      var d = 1.8 * sp * (vx < 0 ? -1 : 1);
-      var f = Math.abs(d) < 0.15 ? '' : 'drop-shadow(' + d.toFixed(2) + 'px 0 0 rgba(255,45,120,.55)) drop-shadow(' + (-d).toFixed(2) + 'px 0 0 rgba(0,165,255,.55))';
-      if(lrow.__f !== f){ lrow.__f = f; lrow.style.filter = f; }
+      var cx = GM.cx0 + (X.x - GM.ow / 2) * kk, cy = GM.cy, o = ss(0.1, 0.3, p).toFixed(3);
+      gl.el.style.visibility = 'visible';
+      gl.el.style.transform = 'translate3d(' + (cx - gl.g.TW / 2).toFixed(2) + 'px,' + (cy - gl.g.TH / 2).toFixed(2) + 'px,0) scale(' + (W / gl.g.w0).toFixed(4) + ',' + (H / gl.g.h0).toFixed(4) + ')';
+      if(gl.o !== o){ gl.o = o; var cs = gl.el.children; cs[0].style.opacity = o; cs[1].style.opacity = o; cs[2].style.opacity = o; gl.el.style.setProperty('--o', o); }
     }
     bar.classList.toggle('m23-live', live);
-    /* the real tabs are hidden only where the drop covers them, so nothing shows twice */
-    var L = X.x - w / 2, R = X.x + w / 2;
-    for(var i = 0; i < GM.list.length; i++){
-      var a = L - GM.left[i], b = R - GM.left[i];
-      if(!live || b <= 0 || a >= GM.w[i]){ unmask(i); continue; }
-      var m = 'linear-gradient(90deg,#000 ' + a.toFixed(1) + 'px,transparent ' + (a + 0.5).toFixed(1) + 'px,transparent ' + (b - 0.5).toFixed(1) + 'px,#000 ' + b.toFixed(1) + 'px)';
-      GM.list[i].style.setProperty('-webkit-mask-image', m); GM.list[i].style.setProperty('mask-image', m); masked[i] = 1;
-    }
+    for(var i = 0; i < GM.list.length; i++) unmask(i);
     if(p > 0.85) rose = true;
     /* a quick tap: the glass first rises fully and glides to the tab, then melts */
     if(sinkThere && !drag && rose && Math.abs(X.x - X.to) < 4){ sinkThere = false; sink(40); }
