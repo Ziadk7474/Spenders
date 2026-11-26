@@ -29280,6 +29280,16 @@ AMCViewport.onSettle(function(){
     row.appendChild(chips); row.appendChild(acts);
     var oldRow = panel.querySelector(en ? '.qmonth-row' : '.ur-quick-btns'); if(oldRow) oldRow.classList.add('m15-hide');
     panel.appendChild(row);
+    /* (Nov 26) two small round buttons in the card's corner, beside "Party": × clears (shown once something is
+       chosen) and the filter opens the extra filters — the same on phone, Fold and PC */
+    var tools = document.createElement('div'); tools.className = 'm40-ptools';
+    var xb = document.createElement('button'); xb.type = 'button'; xb.className = 'm40-x';
+    xb.title = en ? 'Clear' : 'صاف کریں'; xb.setAttribute('aria-label', xb.title); xb.innerHTML = icon('x');
+    xb.addEventListener('click', function(){ if(clearBtn) clearBtn.click(); panel.classList.remove('m15-open', 'm40-dates', 'm40-keep'); if(en && typeof more !== 'undefined' && more){ more.setAttribute('aria-expanded', 'false'); var ms = more.querySelector('span'); if(ms) ms.textContent = 'More filters'; } sync(); });
+    tools.appendChild(xb);
+    if(en && more){ more.title = 'More filters'; more.setAttribute('aria-label', 'More filters'); tools.appendChild(more); }
+    panel.appendChild(tools);
+    var pSel = $(ids.party); if(pSel){ pSel.addEventListener('change', function(){ setTimeout(sync, 0); }); }
 
     /* the bar above the statement */
     bar.classList.add('m15-bar');
@@ -29309,6 +29319,7 @@ AMCViewport.onSettle(function(){
     /* which chip is on, and whether the hint shows */
     function sync(){
       var m = ($(ids.month) || {}).value, f = ($(ids.from) || {}).value, t = ($(ids.to) || {}).value, on = null;
+      panel.classList.toggle('m40-has', !!(($(ids.party) || {}).value || m || f || t || panel.classList.contains('m15-open')));
       if(!m && !f && !t) on = 'all';
       else if(m){ for(var n = 0; n >= -1; n--) if(ymOff(n) === m){ var ok = en ? (f && f.slice(0, 7) === m) || !f : true; if(ok) on = String(n); } }
       if(on === null){ on = 'pick'; panel.classList.add('m40-dates'); }
@@ -34898,47 +34909,52 @@ html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa #m9q-count:empty{ display:non
   html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa{ width:100%; }
   html:not(#_#_#_) body:not(#_#_#_) .m9q-acts.m40-qa .m40-qmain{ flex:1 1 auto; height:48px; }
 }
-/* Statement — the simplest form (Nov 26): Party, four period chips and one filter button. The extra filters,
-   the dates, Clear and Show statement only appear when they are needed. Above the statement: one row —
-   Include invoices · Stamp · Print (Share and Save PDF removed). */
+/* Statement — the simplest form (Nov 26): Party with two small round buttons in the corner (× clear, filter),
+   one row of period chips. "Show statement" only shows while the extra filters or dates are open. Above the
+   statement one full row: Include invoices · Stamp · Print, Stamp and Print the same size. Same on every screen. */
 html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m40-dates) .m15-grid:not(.m15-extra) > .form-group:has(#s-from, #s-to, #s-month, #ur-from, #ur-to, #ur-month){ display:none !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m15-open):not(.m40-dates) .m15-acts > :is(.m15-clear, .m15-run){ display:none !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > :is(.m15-sh, .m15-sv){ display:none !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-chips{ flex-wrap:wrap !important; overflow:visible !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel.m15-card{ position:relative !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts > .m15-clear{ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m15-open):not(.m40-dates) .m15-acts{ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-row{ display:flex !important; flex-direction:column !important; align-items:stretch !important; gap:10px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts{ display:flex !important; justify-content:flex-end !important; gap:8px !important; width:100%; margin:0 !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts > .m15-run{ height:38px !important; min-height:38px !important; font-size:13px !important; padding:0 18px !important; }
+/* the two round corner buttons */
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m40-ptools{ position:absolute; top:8px; right:12px; display:flex; gap:6px; z-index:2; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) #page-urdu-stmt .m40-ptools{ right:auto; left:12px; }
+html:not(#_#_#_#_#_#_) body:not(#_#_#_#_#_#_) .m15-stmt .m40-ptools > button{ position:relative !important; display:grid !important; place-items:center !important; width:30px !important; height:30px !important; min-width:30px !important; min-height:30px !important; max-width:30px !important; max-height:30px !important; flex:0 0 30px !important; line-height:1 !important; padding:0 !important; margin:0 !important; border-radius:50% !important; border:1px solid var(--k-line) !important; background:var(--k-tile) !important; color:var(--k-ink) !important; box-shadow:none !important; font-size:0 !important; gap:0 !important; }
+html:not(#_#_#_#_#_#_) body:not(#_#_#_#_#_#_) .m15-stmt .m40-ptools > button svg{ width:14px !important; height:14px !important; margin:0 !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m40-ptools > .m15-more > span{ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m40-ptools > .m15-more > .m15-cnt:not([hidden]){ display:grid !important; position:absolute; top:-4px; right:-4px; min-width:15px; height:15px; padding:0 3px; border-radius:8px; background:var(--k-acc); color:#fff; font:700 9.5px/15px var(--k-font); font-style:normal; place-items:center; }
+html:not(#_#_#_#_#_#_) body:not(#_#_#_#_#_#_) .m15-stmt .search-panel.m15-open .m40-ptools > .m15-more{ background:var(--k-dark) !important; color:var(--k-on-dark) !important; border-color:var(--k-dark) !important; }
+html:not(#_#_#_#_#_#_) body:not(#_#_#_#_#_#_) .m15-stmt .search-panel:not(.m40-has) .m40-ptools > .m40-x{ display:none !important; }
+/* period chips: one row, compact */
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-row > .m15-chips{ width:100% !important; flex:1 1 auto !important; flex-wrap:wrap !important; overflow:visible !important; padding:0 !important; margin:0 !important; -webkit-mask-image:none !important; mask-image:none !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-chips > .m15-chip{ height:34px !important; min-height:34px !important; font-size:13px !important; }
-/* the bar above the statement: one tidy row */
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .stmt-actions.m15-bar:not([style*="none"]){ display:flex !important; flex-wrap:nowrap !important; align-items:center !important; gap:8px !important; padding:6px !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > *{ margin:0 !important; height:38px !important; min-height:38px !important; width:auto !important; min-width:0 !important; grid-column:auto !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ padding:0 14px !important; font-size:13px !important; gap:6px !important; justify-content:center !important; flex:0 0 auto !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ order:1; flex:0 1 auto !important; padding:0 6px 0 14px !important; gap:8px !important; justify-content:space-between !important; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg .ios-tgl-t{ font-size:13px !important; white-space:nowrap !important; }
+/* the bar above the statement: Include invoices · Stamp · Print, filling the row with no gaps */
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > :is(.m15-sh, .m15-sv){ display:none !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .stmt-actions.m15-bar:not([style*="none"]){ display:grid !important; grid-template-columns:auto minmax(0, 1fr) minmax(0, 1fr) !important; align-items:center !important; gap:8px !important; padding:6px !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > *{ margin:0 !important; height:40px !important; min-height:40px !important; width:100% !important; min-width:0 !important; grid-column:auto !important; justify-self:stretch !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ padding:0 12px !important; font-size:13.5px !important; gap:7px !important; justify-content:center !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ order:1; padding:0 6px 0 14px !important; gap:10px !important; justify-content:space-between !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg .ios-tgl-t{ font-size:13.5px !important; white-space:nowrap !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-stamp{ order:2; }
-html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-print{ order:3; margin-left:auto !important; }
+html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-print{ order:3; margin-left:0 !important; margin-right:0 !important; }
 @media screen and (max-width:599px){
-  /* phone: Party on its own, the filter button sits small in the card's corner */
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel.m15-card{ position:relative !important; padding-bottom:12px !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-acts > .m15-more{ position:absolute !important; top:7px !important; right:12px !important; width:28px !important; height:28px !important; min-height:28px !important; padding:0 !important; border-radius:50% !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-acts > .m15-more svg{ width:14px !important; height:14px !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-row > .m15-chips{ width:100% !important; flex:1 1 auto !important; align-self:stretch !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-acts > .m15-more > span{ display:none !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-row{ display:flex !important; flex-direction:column !important; align-items:stretch !important; gap:10px !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips{ display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; width:100%; padding:0 !important; margin:0 !important; -webkit-mask-image:none !important; mask-image:none !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips{ display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; }
   html:not(#_#_#_#_) body:not(#_#_#_#_) #page-search .m15-chips > .m15-chip{ min-width:0 !important; padding:0 4px !important; justify-content:center !important; text-align:center; white-space:nowrap; font-size:12.5px !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts{ display:flex !important; gap:8px !important; width:100%; margin:0 !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts > :is(.m15-clear, .m15-run){ height:38px !important; min-height:38px !important; font-size:13px !important; }
   html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-acts > .m15-run{ flex:1 1 auto !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .search-panel:not(.m15-open):not(.m40-dates) .m15-acts{ display:contents !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ flex:1 1 auto !important; }
-  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ padding:0 12px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .btn{ padding:0 8px !important; font-size:13px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg .ios-tgl-t{ font-size:13px !important; }
+  html:not(#_#_#_#_) body:not(#_#_#_#_) .m15-stmt .m15-bar > .m15-tg{ padding:0 4px 0 12px !important; gap:8px !important; }
 }
 /* Customer / vendor page: no progress bars, and nothing cut off — names and details wrap */
 html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m33-bar, .m33-prog){ display:none !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m8-le-m, .m33-ob-m, .m33-it > div){ min-width:0 !important; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) :is(.m8-le-m, .m33-ob-m, .m33-it > div) > :is(b, small){ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:anywhere; -webkit-line-clamp:unset !important; display:block; }
 html:not(#_#_#_#_) body:not(#_#_#_#_) #page-reports .m13-chips{ flex-wrap:wrap !important; overflow:visible !important; }
-/* No progress bars anywhere (Nov 26, standing rule). Fold / PC Home: "paid off" is a plain dark disc with the
-   numbers (no filling ring); "Unpaid by age" and "Top items" keep their amounts without the bars. */
-html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m5-ring, .m5-ring.m30-ring){ background-image:none !important; padding:0 !important; }
+/* No progress bars (straight line bars) anywhere (Nov 26, standing rule). Fold / PC Home: "Unpaid by age" and
+   "Top items" keep their amounts without the bars. (The "paid off" ring is not a bar: it stays.) */
 html:not(#_#_#_#_#_) body:not(#_#_#_#_#_) :is(.m8-age-b, .m8-top-b, .m5-prog){ display:none !important; }
 </style>
 <script id="m40-js">
