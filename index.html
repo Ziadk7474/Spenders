@@ -178,7 +178,7 @@ html:not(#_#_#_#_) body:not(#_#_#_#_) #m23-tint > .m23-tt svg{ width:22px; heigh
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://al-madhi-ledger-default-rtdb.firebaseio.com">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6">
-<link rel="manifest" href="manifest.json?v=12"><script id="amx-mf">(function(){try{if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){var l=document.querySelector('link[rel="manifest"]');if(l)l.setAttribute("href","manifest-phone.json?v=3");}}catch(e){}})();</script>
+<link rel="manifest" href="manifest.json?v=13"><script id="amx-mf">(function(){try{if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){var l=document.querySelector('link[rel="manifest"]');if(l)l.setAttribute("href","manifest-phone.json?v=4");}}catch(e){}})();</script>
 <title>am. nexus</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Cairo:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript></noscript>
 <style>.inv-doc > .inv-label{ position:absolute !important; top:28px !important; right:50px !important; left:auto !important; font-size:10.5px !important; letter-spacing:.22em !important; font-weight:800 !important; opacity:1 !important; color:var(--am-acc) !important; line-height:1 !important; margin:0 !important; }
@@ -9908,10 +9908,13 @@ timers.push(setTimeout(remove,10000));
   };
   window.amcCard = function(o){
     var meta = (o.meta || []).filter(function(x){ return x && x !== '—'; });
+    /* a "\n" item starts a second meta line (used by bill rows); none at the start or the end */
+    while(meta.length && meta[0] === '\n') meta.shift();
+    while(meta.length && meta[meta.length - 1] === '\n') meta.pop();
     return '<div class="amc' + (o.cls ? ' ' + o.cls : '') + '">' +
       '<span class="amc-av' + (o.avCls ? ' ' + o.avCls : '') + '">' + (o.avHtml || esc(o.av || '')) + '</span>' +
       '<b class="amc-t">' + (o.titleHtml || esc(o.title || '—')) + '</b>' +
-      (meta.length ? '<span class="amc-m">' + meta.map(function(x){ var pl = String(x).replace(/<[^>]*>/g, '').replace(/&[a-z#0-9]+;/g, 'x'); return '<span' + (pl.length <= 26 ? ' class="nb"' : '') + '>' + x + '</span>'; }).join(' <i aria-hidden="true">·</i> ') + '</span>' : '') +
+      (meta.length ? '<span class="amc-m">' + meta.map(function(x){ if(x === '\n') return '\n'; var pl = String(x).replace(/<[^>]*>/g, '').replace(/&[a-z#0-9]+;/g, 'x'); return '<span' + (pl.length <= 26 ? ' class="nb"' : '') + '>' + x + '</span>'; }).join(' <i aria-hidden="true">·</i> ').replace(/ <i aria-hidden="true">·<\/i> \n <i aria-hidden="true">·<\/i> /g, '<span class="amc-br"></span>') + '</span>' : '') +
       ((o.st || o.amt != null) ? '<span class="amc-f">' + (o.st || '<span></span>') + (o.amt != null ? '<span class="amc-amt"' + (o.color ? ' style="color:' + o.color + '"' : '') + '>' + o.amt + '</span>' : '') + '</span>' : '') +
     '</div>';
   };
@@ -11461,7 +11464,7 @@ _syncSbControls();
       <section class="entry-section">
         <div class="entry-section-head">
           <div class="entry-section-title"><span class="entry-step">2</span><span id="entry-items-label">Purchase Line Items</span></div>
-          <div class="entry-section-hint">Max 10 items per invoice</div>
+          <div class="entry-section-hint">Add as many items as you need</div>
         </div>
         <div class="items-table-wrap">
         <table class="items-table">
@@ -11544,7 +11547,7 @@ _syncSbControls();
 
       <div class="entry-actions">
         <button class="btn btn-success" onclick="saveEntry()" style="min-width:140px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Invoice <span class="kbd-hint">Ctrl+Enter</span></button>
-        <button class="btn btn-ghost" onclick="clearEntry()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Clear</button>
+        <button class="btn btn-ghost" onclick="m40ClearAsk()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Clear</button>
         <button class="btn btn-primary" onclick="viewParty()" style="margin-left:auto">View Party</button>
       </div>
     </div>
@@ -12758,7 +12761,7 @@ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded
       <section class="entry-section">
         <div class="entry-section-head">
           <div class="entry-section-title"><span class="entry-step">2</span><span>Line Items</span></div>
-          <div class="entry-section-hint">Max 10 items</div>
+          <div class="entry-section-hint">Add as many items as you need</div>
         </div>
         <div class="items-table-wrap" id="edit-items-wrap">
           <table class="items-table">
@@ -12912,6 +12915,19 @@ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded
             <label>Notes</label>
             <input type="text" id="pm-notes" placeholder="Optional reference / memo">
           </div>
+        </div>
+        <div id="pm-chq-wrap" style="display:none">
+          <div class="amc-grid pm-bot-grid">
+            <div class="form-group">
+              <label>Cheque no.</label>
+              <input type="text" id="pm-chq-no" placeholder="e.g. 514622" inputmode="numeric" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Cheque date</label>
+              <input type="date" id="pm-chq-date">
+            </div>
+          </div>
+          <div id="pm-chq-hint" style="font-size:10.5px;color:var(--t3);margin-top:8px;line-height:1.4">Fill the cheque no. and it goes into the cheque register by itself. Leave it empty to skip.</div>
         </div>
         <div style="font-size:10.5px;color:var(--t3);margin-top:8px;line-height:1.4">"Payment is for" picks the month this money counts toward in monthly statements — for example, money paid on 3 Nov for October's bills.</div>
       </div>
@@ -14784,7 +14800,6 @@ let _lineItemCount = 0;
 function addLineItem(prefill) {
   const tbody = document.getElementById('line-items-body');
   const rows = tbody.querySelectorAll('tr');
-  if(rows.length >= 10) { toast('Maximum 10 items per invoice', 'error'); return; }
 
   const id = ++_lineItemCount;
   const units = getUnits();
@@ -16975,6 +16990,7 @@ function openPaymentModal(preParty) {
   document.getElementById('pm-month').value  = '';
   document.getElementById('pm-paidby').value = '';
   document.getElementById('pm-method').value = 'CASH';
+  _pmChqReset();
   const sEl=document.getElementById('pm-alloc-search'); if(sEl) sEl.value='';
   document.getElementById('pm-party').value = preParty || '';
   _allocState.pm = { mode:'auto', manual:{}, excludePayId:null };
@@ -16983,6 +16999,37 @@ function openPaymentModal(preParty) {
 }
 function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
 
+/* #2 — a purchase payment made by cheque also goes into the cheque register
+   (only when a cheque no. is typed; Sales receipts are left alone because the
+   register holds the cheques we give). */
+function _pmIsChq(){ var m = document.getElementById('pm-method'); return !!(m && /cheque|chq/i.test(m.value || '')); }
+function _pmChqSync(){
+  var w = document.getElementById('pm-chq-wrap'); if(!w) return;
+  var on = DB.mode !== 'sales' && _pmIsChq();
+  w.style.display = on ? '' : 'none';
+  if(on){ var d = document.getElementById('pm-chq-date'), pd = document.getElementById('pm-date'); if(d && !d.value && pd) d.value = pd.value || today(); }
+}
+function _pmChqReset(){
+  var n = document.getElementById('pm-chq-no'), d = document.getElementById('pm-chq-date');
+  if(n) n.value = ''; if(d) d.value = '';
+  _pmChqSync();
+}
+async function _pmChqToRegister(pay){
+  if(DB.mode === 'sales' || !/cheque|chq/i.test(pay.method || '')) return 0;
+  var n = document.getElementById('pm-chq-no'), d = document.getElementById('pm-chq-date');
+  var no = n ? (n.value || '').trim() : '';
+  if(!no) return 0;
+  var cd = (d && d.value) || pay.date;
+  if(chqFindDuplicate(no, cd, null)) return 2;
+  var obj = { id: chqNewId(), party: pay.party, chequeNo: no, amount: pay.amount, date: cd,
+              givenDate: pay.date, note: 'From payment ' + (pay.recNo || ''), cleared: false, createdAt: Date.now() };
+  CHQ().push(obj);
+  await fbSaveCheque(obj);
+  try { if(typeof renderCheques === 'function') renderCheques(); } catch(e){}
+  return 1;
+}
+document.addEventListener('change', function(e){ var t = e.target; if(t && t.id === 'pm-method') _pmChqSync(); }, true);
+document.addEventListener('input', function(e){ var t = e.target; if(t && t.id === 'pm-method') _pmChqSync(); }, true);
 let _paySaveBusy = false;
 async function savePayment() {
   if(_paySaveBusy) { toast('Still saving — please wait', 'error'); return; }
@@ -17032,11 +17079,13 @@ async function savePayment() {
     await fbSaveMeta();
     let _woDone = false;
     if(_woPlan) _woDone = await _postWriteoff('pm', party, date, _woPlan);
+    let _chqNote = '';
+    if(!sales){ try { const _cr = await _pmChqToRegister(pay); if(_cr === 1) _chqNote = ' — cheque added to register'; else if(_cr === 2) _chqNote = ' — cheque was already in the register'; } catch(e){} }
     clearLedgerCache();
     closePaymentModal();
     const advNote = c.advance>0.005 ? ` — ${ALLOC_AED} ${fmt(c.advance)} advance` : '';
     const woNote  = _woDone ? ` — ${ALLOC_AED} ${fmt(_woPlan.residual)} written off` : '';
-    toast(`${sales?'Receipt':'Payment'} ${ALLOC_AED} ${fmt(amount)} for ${party}${advNote}${woNote} saved`, 'success');
+    toast(`${sales?'Receipt':'Payment'} ${ALLOC_AED} ${fmt(amount)} for ${party}${advNote}${woNote} saved${_chqNote}`, 'success');
   }
   } finally { _paySaveBusy = false; }
 }
@@ -18554,7 +18603,6 @@ function closeEditInvModal() {
 
 function addEditLineItem(prefill) {
   const tbody = document.getElementById('edit-line-items-body');
-  if(tbody.querySelectorAll('tr').length >= 10) { toast('Max 10 items', 'error'); return; }
 
   const id   = ++_editLineItemCount;
   const units = getUnits();
@@ -23065,7 +23113,7 @@ AMCViewport.onSettle(function(){
   var I = {
     menu:MI('more'), search:MI('search'), arrow:MI('arrow'), cal:MI('cal'), chev:MI('down'), clock:MI('clock'),
     in:MI('payIn'), out:MI('payOut'), trend:MI('trend'), edit:MI('edit'), users:MI('parties'), doc:MI('invoice'),
-    urdu:MI('urdu'), quote:MI('quote'), box:MI('items'), cheque:MI('cheque'), sale:MI('sales'), buy:MI('purchase'), plus:MI('plus'),
+    urdu:MI('urdu'), quote:MI('quote'), box:MI('items'), cheque:MI('cheque'), vat:MI('percent'), sale:MI('sales'), buy:MI('purchase'), plus:MI('plus'),
     x:MI('x'), lock:MI('lock'), chart:MI('chart'), pay:MI('pay'), moon:MI('moon'), statement:MI('statement'), alert:MI('alert'), bell:MI('bell')
   };
   var LOGO = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1254 1254"><rect width="1254" height="1254" fill="#ED532D" style="fill:var(--am-brand,#ED532D)"/><path fill="#FFFFFF" d="M301.9 766.9C262.8 763.7 232.5 744.3 220.2 714.8C215.3 703.1 213.7 692.9 214.3 677.6C214.8 662.9 216.3 656.2 221.6 645.0C235.4 615.7 264.6 598.7 315.7 590.1C322.5 589.0 338.9 586.9 352.2 585.5C380.6 582.5 386.4 581.6 393.7 578.8C406.8 573.9 412.1 562.8 406.5 552.0C404.2 547.5 396.6 541.4 390.6 539.1C374.4 533.0 351.0 534.1 335.2 541.5C326.4 545.7 318.2 553.5 315.6 560.3L313.8 565.0 L272.4 565.0L231.0 565.0 L231.0 562.7C231.0 555.3 238.7 535.7 245.8 525.3C270.5 488.9 325.4 468.3 385.0 473.0C441.2 477.4 479.0 500.4 493.0 538.8C499.0 555.4 499.0 554.8 499.0 662.1L499.0 760.0 L496.8 760.5C495.5 760.8 475.6 760.9 452.5 760.8L410.5 760.5 L410.0 742.0L409.5 723.5 L407.2 727.2C404.3 731.8 393.7 741.7 386.3 746.8C363.9 762.0 332.4 769.5 301.9 766.9ZM522.0 664.6C522.0 560.1 521.9 561.8 527.6 545.4C538.8 512.6 564.0 487.1 597.6 474.4C614.3 468.1 637.5 465.1 654.8 467.0C687.8 470.5 710.1 482.7 730.2 508.1C732.6 511.0 733.1 511.3 733.9 509.9C736.9 505.0 745.3 496.1 751.7 491.0C781.9 466.6 824.8 459.9 865.0 473.1C903.0 485.6 928.7 514.5 936.7 553.7C938.4 561.8 938.5 570.2 938.5 661.5L938.5 760.5 L895.5 760.5L852.5 760.5 L852.0 668.0C851.5 566.5 851.9 573.3 845.5 562.4C835.1 544.6 809.2 539.2 787.4 550.3C778.9 554.6 774.4 559.4 769.8 568.7L765.5 577.3 L765.0 668.9L764.5 760.5 L723.8 760.8L683.0 761.0 L683.0 673.8C683.0 625.1 682.5 583.2 682.0 579.0C680.7 568.6 675.3 558.0 668.5 552.5C662.1 547.4 653.8 544.6 644.5 544.6C626.0 544.7 611.4 554.9 604.8 572.5L602.5 578.5 L602.2 669.8L601.9 761.0 L562.0 761.0L522.0 761.0 L522.0 664.6ZM358.7 703.4C383.4 698.3 402.0 682.4 407.4 661.7C408.2 658.6 409.2 649.4 409.6 641.4C410.2 628.0 410.2 626.7 408.7 627.3C400.1 630.6 386.9 633.6 368.0 636.5C341.1 640.7 334.8 642.2 325.3 646.5C311.4 652.9 304.0 662.8 304.0 674.9C304.0 683.7 305.3 687.8 309.6 692.8C316.6 701.1 326.7 704.8 342.3 704.9C347.1 705.0 354.5 704.3 358.7 703.4Z"/><circle cx="1010.7" cy="712.2" r="49.8" fill="#121212"/></svg>';
@@ -23267,9 +23315,12 @@ AMCViewport.onSettle(function(){
     var topItems = Object.keys(itemMap).map(function(k){ return itemMap[k]; }).sort(function(a,b){ return b.a-a.a; }).slice(0,4);
     var topMax = topItems.length ? topItems[0].a : 1;
 
-    var parties = partyBalances(m).filter(function(p){ return Math.abs(p.bal) > 0.5; }).slice(0, 8);
+    var allBal = partyBalances(m);
+    var parties = allBal.filter(function(p){ return p.bal > 0.5; }).slice(0, 8);
+    var advs = allBal.filter(function(p){ return p.bal < -0.5; });
+    var advTot = advs.reduce(function(t,p){ return t - p.bal; }, 0);
     var who = sales ? 'customers' : 'suppliers';
-    var SHORT = [['users',sales?'Customers':'Vendors','parties'],['statement','Statement','statement'],['urdu','Urdu statement','urdu'],['quote','Quotation','quotation'],['box','Items & lists','items'],['pay','Payments','payments']];
+    var SHORT = [['statement','Statement','statement'],['quote','Quotation','quotation'],['cheque','Cheques','cheques'],['chart','Reports','reports'],['vat','VAT report','vatreport'],['box','Items & lists','items']];
     var cf = (DR && DR.from) || '', ct = (DR && DR.to) || '';
 
     var html =
@@ -23432,11 +23483,11 @@ AMCViewport.onSettle(function(){
       '<div class="m5-card m5-owe">'+
         '<div class="m5-row"><b class="m5-h3">'+(sales?'Who owes you':'Who you owe')+'</b><button type="button" class="m5-link" data-act="parties">See all</button></div>'+
         (parties.length ? parties.map(function(p){
-          var pct = p.billed>0 ? Math.max(0,Math.min(100,Math.round(p.paid/p.billed*100))) : 0;
           return '<button type="button" class="m5-pi" data-party="'+encodeURIComponent(p.party)+'">'+
             '<span class="m5-av">'+esc(initials(p.party))+'</span>'+
-            '<span class="m5-ci-main"><b>'+esc(p.party)+'</b><span class="m5-prog"><i style="width:'+pct+'%"></i></span><small>'+pct+'% settled</small></span>'+
+            '<span class="m5-ci-main"><b>'+esc(p.party)+'</b><small>Paid '+short(p.paid)+' of '+short(p.billed)+'</small></span>'+
             '<span class="m5-ci-side"><b>'+fmt(p.bal)+'</b></span></button>'; }).join('') : '<p class="m5-empty">All settled. Nothing outstanding.</p>')+
+        (advs.length ? '<button type="button" class="m40-adv" data-act="parties"><span>'+(sales ? 'Advance from ' : 'Advance paid to ')+advs.length+' '+(sales ? 'customer' : 'vendor')+(advs.length>1?'s':'')+'</span><b>'+fmt(advTot)+'</b></button>' : '')+
       '</div>'+
 
       /* shortcuts (phone) */
@@ -23500,6 +23551,8 @@ AMCViewport.onSettle(function(){
       else if(a==='urdu') navMain(m2,'urdu-stmt');
       else if(a==='quotation') navMain('sales','quotation');
       else if(a==='items') navMain('items');
+      else if(a==='reports') navMain(null,'reports');
+      else if(a==='vatreport'){ if(window.AMSet && AMSet.open) AMSet.open('vatreport'); }
       else if(a==='records') navMain(m2,'records');
       else if(a==='lock'){ if(typeof lockNow==='function') lockNow(); }
       else if(a==='custom'){ ST.custom=!ST.custom; renderHome(); }
@@ -23532,16 +23585,19 @@ AMCViewport.onSettle(function(){
     'all-records-table': { act:10, build:function(c){
       var qty = [txt(c[5]), txt(c[6])].filter(Boolean).join(' ');
       return { t:txt(c[3]), amt:amountOf(c[8]), color:'', st:divOf(c[8]),
-               meta:[txt(c[1]), txt(c[2]), txt(c[4]), qty, txt(c[7]) ? '@ '+txt(c[7]) : ''] }; } },
+               meta:[txt(c[1]), txt(c[2]), '\n', txt(c[4]), qty, txt(c[7]) ? '@ '+txt(c[7]) : ''] }; } },
     'pay-table': { act:9, build:function(c){
       var alloc = c[3] ? ((c[3].querySelector('span')||{}).textContent||'').trim() : '';
       return { t:txt(c[2]), amt:amountOf(c[6]), color:'var(--k-pos)', st:'', chip:esc(alloc), chipCls:/adv/i.test(alloc) ? 'info' : '',
                meta:[txt(c[1]), txt(c[4]) ? 'by '+txt(c[4]) : '', txt(c[5]), txt(c[7])] }; } },
     'party-summary-table': { act:7, build:function(c){
       var bal = parseFloat(txt(c[5]).replace(/[^0-9.\-]/g, '')) || 0, adv = divOf(c[1]);
+      /* #26 — an advance shows once: the word "Advance" and the amount without a minus */
+      if(bal < -0.005) adv = '';
       var chip = adv ? '' : Math.abs(bal) < 0.005 ? 'Settled' : bal < 0 ? 'Advance' : (DB.mode === 'sales' ? 'To receive' : 'To pay');
       var n = parseInt(txt(c[2]), 10) || 0;
-      return { t:ownText(c[1]), amt:amountOf(c[5]), color:c[5] ? c[5].style.color : '', st:adv, chip:chip, chipCls:chip === 'Settled' ? 'ok' : chip === 'Advance' ? 'info' : chip ? 'bad' : '',
+      var amtH = amountOf(c[5]); if(bal < -0.005) amtH = amtH.replace(/(<\/svg>\s*)[-\u2212]\s*/, '$1').replace(/^\s*[-\u2212]\s*/, '');
+      return { t:ownText(c[1]), amt:amtH, color:c[5] ? c[5].style.color : '', st:adv, chip:chip, chipCls:chip === 'Settled' ? 'ok' : chip === 'Advance' ? 'info' : chip ? 'bad' : '',
                meta:[n + (n === 1 ? ' invoice' : ' invoices'), 'Billed '+txt(c[3]), 'Paid '+txt(c[4])] }; } },
     'cheque-table': { act:8, build:function(c){
       return { t:txt(c[2]), amt:amountOf(c[4]), color:'', st:c[6] ? c[6].innerHTML : '',
@@ -24382,6 +24438,15 @@ AMCViewport.onSettle(function(){
   try{ var qc = new URLSearchParams(location.search).get('clearchq'); if(qc){ history.replaceState(null, '', location.pathname + location.hash); var tries = 0, t = setInterval(function(){ if((typeof CHQ === 'function' && CHQ().length) || ++tries > 40){ clearInterval(t); askClear(qc); } }, 500); } }catch(e){}
   /* in-app banner — always shown, also when phone notifications are off */
   function banner(title, body, q){
+    /* #27 — the "cheques need attention" summary shows once a day and only on Home
+       (the bell keeps the full list); a reminder for one cheque still shows anywhere */
+    if(!q){
+      var pgA = document.querySelector('.page.active');
+      if(pgA && pgA.id !== 'page-dashboard') return;
+      var dayK = 'm40.rbDay', dayV = M8.ymd(new Date());
+      if(M8.store.get(dayK, '') === dayV) return;
+      M8.store.set(dayK, dayV);
+    }
     var b = $('m8-rb');
     if(!b){ b = document.createElement('div'); b.id = 'm8-rb'; b.setAttribute('role','alert'); document.body.appendChild(b);
       b.addEventListener('click', function(e){
@@ -24808,7 +24873,7 @@ AMCViewport.onSettle(function(){
       '<div class="m8-menu-scrim" id="m8-menu-scrim"></div>'+
       '<div class="m8-chq-sum">'+
         tile('late', 'Overdue', over, sum(over), 'overdue', V.st==='overdue' && V.per==='all')+
-        tile('soon', 'Next 7 days', week, sum(week), 'week', V.st==='pending' && V.per==='7d')+
+        tile('m40-soon', 'Next 7 days', week, sum(week), 'week', V.st==='pending' && V.per==='7d')+
         tile('', 'Pending in '+mon, mPend, sum(mPend), 'mpend', V.st==='pending' && V.per==='month')+
         tile('ok', 'Cleared in '+mon, mClr, sum(mClr), 'mclr', V.st==='cleared' && V.per==='month')+
       '</div>'+
@@ -25298,7 +25363,7 @@ AMCViewport.onSettle(function(){
     if(page && !$('m8-savebar')){
       var bar = document.createElement('div'); bar.id = 'm8-savebar';
       bar.innerHTML = '<div class="m8-sb-t"><small id="m8-sb-l">Invoice total</small><b id="m8-sb-v">0.00</b></div>'+
-        '<button type="button" class="m8-btn ghost" onclick="clearEntry()" aria-label="Clear form">'+icon('x')+'<span>Clear</span></button>'+
+        '<button type="button" class="m8-btn ghost" onclick="m40ClearAsk()" aria-label="Clear form">'+icon('x')+'<span>Clear</span></button>'+
         '<button type="button" class="m8-btn m8-close" aria-label="Close entry" title="Close (Esc) — what you typed stays">'+icon('left')+'<span>Close</span></button>'+
         '<button type="button" class="m8-btn acc" onclick="saveEntry()">'+icon('check')+'<span>Save</span><kbd>Ctrl S</kbd></button>';
       page.appendChild(bar);
@@ -25774,7 +25839,7 @@ AMCViewport.onSettle(function(){
   function initials(n){ var p = String(n || '').replace(/[^A-Za-z0-9 ]/g, ' ').trim().split(/\s+/); return ((p[0] || '')[0] || '?').toUpperCase() + ((p[1] || '')[0] || '').toUpperCase(); }
 
   var S = { tab:'items', q:'', pq:'', edit:null, adding:false, newUnit:'' };
-  try{ var saved = sessionStorage.getItem('m9.items.tab'); if(saved && saved !== 'parties') S.tab = saved; }catch(e){}
+  try{ var saved = sessionStorage.getItem('m9.items.tab'); if(saved && saved !== 'parties' && saved !== 'backup') S.tab = saved; }catch(e){}
 
   async function persist(msg){
     try{ await fbSaveCustomLists(); }catch(e){}
@@ -25801,7 +25866,8 @@ AMCViewport.onSettle(function(){
 
   /* ── page shell ── */
   /* (Nov 2026) vendors / customers live only on their own page — no second place to create one here */
-  var TABS = [['items', 'items', 'Items'], ['units', 'grid', 'Units'], ['methods', 'pay', 'Payment methods'], ['paidby', 'party', 'Paid by'], ['backup', 'backup', 'Backup']];
+  /* #38 — backups and exports live in Settings, so no Backup tab here */
+  var TABS = [['items', 'items', 'Items'], ['units', 'grid', 'Units'], ['methods', 'pay', 'Payment methods'], ['paidby', 'party', 'Paid by']];
   function build(){
     var page = $('page-manage'); if(!page || $('m9-items')) return;
     page.classList.add('m9-it-page');
@@ -25840,7 +25906,7 @@ AMCViewport.onSettle(function(){
     else if(S.tab === 'units') body = paneSimple('units', 'Units', 'e.g. TON, BAG, CTN', BUILTIN_UNITS, AD().customUnits || [], 'Units appear in the unit list on every bill. Built-in units are always there.');
     else if(S.tab === 'methods') body = paneSimple('methods', 'Payment methods', 'e.g. BANK TRANSFER', BUILTIN_METHODS, AD().customMethods || [], 'How money is paid or received — shown when you record a payment.');
     else if(S.tab === 'paidby') body = paneSimple('paidby', 'Paid by', 'e.g. AHMED', BUILTIN_PAIDBY, AD().customPaidBy || [], 'Names of the people who hand over or collect money.');
-    else body = paneBackup();
+    else { S.tab = 'items'; body = paneItems(); }
     w.innerHTML = head() + '<div class="m9-pane">' + body + '</div>';
     if(focus && focus.id){ var el = $(focus.id); if(el){ el.focus(); try{ el.setSelectionRange(focus.s, focus.s); }catch(e){} } }
   }
@@ -26051,7 +26117,7 @@ AMCViewport.onSettle(function(){
   M8.after('renderManageLists', function(){ if($('m9-items')) paint(); });
   M8.after('showPage', function(id){ if(id === 'manage') onShow(); });
   M8.after('openManageModal', function(tab){
-    var map = { desc:'items', unit:'units', method:'methods', paidby:'paidby', backup:'backup' };
+    var map = { desc:'items', unit:'units', method:'methods', paidby:'paidby', backup:'items' };
     if(tab && map[tab]){ S.tab = map[tab]; } else if(S.tab === 'parties') S.tab = 'items';
     onShow();
   });
@@ -27975,7 +28041,6 @@ AMCViewport.onSettle(function(){
   }
   function toPayment(){ focusSel(tailSeq()[0]); }
   function addRowAndFocus(){
-    if(rows().length >= 10){ toast('Maximum 10 lines on one bill', 'error'); toPayment(); return; }
     addLineItem();
     var r = rows(), last = r[r.length - 1];
     if(last) focusSel(last.querySelector('.li-desc'));
@@ -28399,7 +28464,6 @@ AMCViewport.onSettle(function(){
   function seq(){ var s = headSeq(); rows().forEach(function(tr){ s = s.concat(rowFields(tr)); }); return s.concat(tailSeq()); }
   function rowEmpty(tr){ return !rowFields(tr).some(function(el){ return el.value && String(el.value).trim(); }); }
   function addRow(){
-    if(rows().length >= 10){ toast('Maximum 10 lines on one bill', 'error'); focusSel(tailSeq()[0]); return; }
     addEditLineItem(); var r = rows(); focusSel(r[r.length - 1].querySelector('.eli-desc')); K.commitUndo();
   }
   function next(el){
@@ -28899,13 +28963,14 @@ AMCViewport.onSettle(function(){
 
   /* ── PAGE ──────────────────────────────────────────────────────────── */
   var TABS = [['sum', 'Summary', 'chart'], ['items', 'Items', 'items'], ['trash', 'Trash', 'trash'], ['backup', 'Backups', 'backup']];
-  var cur = store('tab') || 'sum'; if(['sum','items','trash','backup'].indexOf(cur) < 0) cur = 'sum';
+  var cur = store('tab') || 'sum'; if(['sum','items'].indexOf(cur) < 0) cur = 'sum';
+  var viaSet = false;   /* #37 — Trash and Backups open from Settings only, without the Reports tabs */
   function build(){
     if($('page-reports')) return;
     var ref = $('page-cheques'); if(!ref) return;
     var pg = document.createElement('div'); pg.className = 'page'; pg.id = 'page-reports';
     pg.innerHTML =
-      '<div class="page-header m13-head"><div><h1>Reports &amp; tools</h1><p id="m13-sub">Monthly summary, items, deleted entries and backups</p></div></div>' +
+      '<div class="page-header m13-head"><div><h1>Reports &amp; tools</h1><p id="m13-sub">Monthly summary and items</p></div></div>' +
       '<div class="m13-tabs" role="tablist" id="m13-tabs">' + TABS.map(function(t){ return '<button type="button" role="tab" class="m13-tab" data-t="' + t[0] + '">' + icon(t[2]) + '<span>' + t[1] + '</span></button>'; }).join('') + '</div>' +
       '<div id="m13-body" class="m13-body"></div>';
     ref.parentNode.insertBefore(pg, ref.nextSibling);
@@ -28916,13 +28981,19 @@ AMCViewport.onSettle(function(){
   function open(tab){
     build();
     if(tab && ['sum','items','trash','backup'].indexOf(tab) >= 0) cur = tab;
+    viaSet = (cur === 'trash' || cur === 'backup');
     if(typeof navMain === 'function') navMain(null, 'reports'); else showPage('reports');
   }
   window.openReports = open;
   window.M13REPAINT = function(){ paint(); };
   function paint(){
     var b = $('m13-body'); if(!b) return;
-    store('tab', cur);
+    var tool = (cur === 'trash' || cur === 'backup'), pgR = $('page-reports');
+    if(pgR){ pgR.classList.toggle('m40-tool', tool);
+      var h1 = pgR.querySelector('.m13-head h1'), sb = $('m13-sub');
+      if(h1) h1.textContent = cur === 'trash' ? 'Trash' : cur === 'backup' ? 'Backups' : 'Reports & tools';
+      if(sb) sb.textContent = cur === 'trash' ? 'Deleted entries, ready to bring back' : cur === 'backup' ? 'Daily copies saved on this device' : 'Monthly summary and items'; }
+    if(!tool) store('tab', cur);
     [].forEach.call(document.querySelectorAll('#m13-tabs .m13-tab'), function(t){ var on = t.dataset.t === cur; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
     var a = document.querySelector('#m13-tabs .m13-tab.on'); if(a && a.scrollIntoView) try{ a.scrollIntoView({ block:'nearest', inline:'nearest' }); }catch(e){}
     var f = { sum:function(){ return window.M16 ? M16.html() : ''; }, items:pItems, trash:pTrash, backup:pBackup }[cur] || function(){ return window.M16 ? M16.html() : ''; };
@@ -29318,7 +29389,7 @@ AMCViewport.onSettle(function(){
   function boot(){
     build(); menus(); langSwitch($('page-search'), 'en'); langSwitch($('page-urdu-stmt'), 'ur'); statement(); scrollWatch(); watchHeader();
     M8.after('showPage', function(id){
-      if(id === 'reports'){ paint(); fixHeader(); }
+      if(id === 'reports'){ if(!viaSet && (cur === 'trash' || cur === 'backup')) cur = 'sum'; viaSet = false; paint(); fixHeader(); }
       if(id === 'search' || id === 'urdu-stmt') statement();
       setTimeout(menus, 0);
     });
@@ -30537,9 +30608,7 @@ AMCViewport.onSettle(function(){
         row('trash', 'Trash', 'Bring back anything that was deleted', 'trash')
       ]) +
       card('Export', [
-        row('excel', 'Full Excel workbook', 'Bills, payments and cheques in one file', 'xlsx'),
-        row('download', 'Records (CSV)', (sales() ? 'Sales invoices' : 'Purchase bills') + ', for Excel or Sheets', 'csvrec'),
-        row('download', 'Payments (CSV)', (sales() ? 'Receipts' : 'Payments') + ', for Excel or Sheets', 'csvpay')
+        row('excel', 'Full Excel workbook', 'Bills, payments and cheques in one file', 'xlsx')
       ]) +
       card('Data', [
         row('zap', 'Data health check', 'Find duplicates and mistakes', 'health')
@@ -33198,7 +33267,6 @@ AMCViewport.onSettle(function(){
     var rows = [].slice.call(tb.querySelectorAll('tr'));
     var empty = rows.find(function(tr){ var d = tr.querySelector('.' + descCls(k)); return d && !d.value.trim(); });
     if(empty) return empty;
-    if(rows.length >= 10){ say('This bill already has 10 items', 'error'); return null; }
     try{ if(k === 'e') addLineItem(); else addEditLineItem(); }catch(e){ return null; }
     rows = tb.querySelectorAll('tr'); return rows[rows.length - 1] || null;
   }
@@ -34731,6 +34799,87 @@ html:not(#_#_#_#_#_) body:not(#_#_#_#_#_){ --m31-sheet:520ms !important; --m31-m
     window.addEventListener('storage', function(e){ if(e.key === KEY) badge(); });
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 50); }); else setTimeout(boot, 50);
+})();
+</script>
+<style id="m40-css">
+/* ═══ M40 · small fixes batch (Nov 2026) ═══ */
+/* #2 cheque no./date on the payment form */
+@media screen and (min-width:901px){
+  html:not(#_#_#_) body:not(#_#_#_) #pm-chq-wrap > .amc-grid{ margin-top:12px !important; }
+  html:not(#_#_#_) body:not(#_#_#_) #pm-chq-wrap > .amc-grid > .form-group{ grid-column:span 6 !important; }
+}
+/* #26 — status words are plain coloured text, no dot in front */
+html:not(#_#_#_#_#_#_) body:not(#_#_#_#_#_#_) .amc-st:is(.ok,.bad,.warn,.info)::before{ content:none !important; display:none !important; }
+/* #25 — one quiet line for advances under "Who you owe / Who owes you" */
+html:not(#_#_#_) body:not(#_#_#_) .m40-adv{ display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; margin:0; padding:8px 12px 4px; border:0; background:transparent; color:var(--k-ink3); font-family:var(--k-font); font-size:12.5px; font-weight:400; text-align:left; cursor:pointer; box-shadow:none; }
+html:not(#_#_#_) body:not(#_#_#_) .m40-adv b{ color:var(--k-pos); font-size:13px; font-weight:500; white-space:nowrap; }
+/* #32 — shortcut icons without the filled orange circle */
+html:not(#_#_#_) body:not(#_#_#_) .m5-lgrid .m5-od{ background:transparent !important; color:var(--k-acc) !important; box-shadow:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) .m5-lgrid .m5-od svg{ width:17px !important; height:17px !important; }
+/* #31 — bill rows: date and number on one line, item, quantity and rate on the next */
+html:not(#_#_#_#_#_#_) body:not(#_#_#_#_#_#_) .amc-m .amc-br{ display:block; width:100%; height:0; margin:0; padding:0; }
+/* #33 — "Next 7 days" tile looks like the other three; only its amount is amber */
+html:not(#_#_#_) body:not(#_#_#_) .m8-stat.m40-soon b{ color:#d97706; }
+html:not(#_#_#_) body.dark-mode:not(#_#_#_) .m8-stat.m40-soon b{ color:#f5a524; }
+/* #29 — Reports: no purple (bank / "others" use the app's own dark grey) and no little coloured bars on the totals */
+@media screen{
+  html:not(#_#_#_) body:not(#_#_#_) .m16{ --c-bank:#48484e; --c-others:#48484e; }
+  html:not(#_#_#_) body.dark-mode:not(#_#_#_) .m16{ --c-bank:#b9b9c0; --c-others:#b9b9c0; }
+  html:not(#_#_#_) body:not(#_#_#_) .m16-kp::before{ content:none !important; display:none !important; }
+}
+/* #37 — Reports shows Summary and Items; Trash and Backups live in Settings */
+html:not(#_#_#_) body:not(#_#_#_) #m13-tabs .m13-tab:is([data-t="trash"],[data-t="backup"]){ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) #page-reports.m40-tool #m13-tabs{ display:none !important; }
+html:not(#_#_#_) body:not(#_#_#_) #page-reports.m40-tool .m13-intro > b{ display:none !important; }
+</style>
+<script id="m40-js">
+/* ═══ M40 · small fixes batch (Nov 2026) ═══ */
+(function(){
+  'use strict';
+
+  /* #19 — long-press icon shortcuts open the right page (#cheques is handled by the cheque module) */
+  var GO = { '#new-bill':['purchase','entry'], '#new-sale':['sales','entry'], '#statement':[null,'search'] };
+  var go = GO[location.hash];
+  if(go){
+    var tries = 0, t = setInterval(function(){
+      tries++;
+      var ready = typeof navMain === 'function' && typeof DB !== 'undefined' && document.querySelector('.page.active');
+      if(!ready && tries < 60) return;
+      clearInterval(t);
+      if(!ready) return;
+      setTimeout(function(){
+        try{ navMain(go[0], go[1]); }catch(e){}
+        try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+      }, 700);
+    }, 250);
+  }
+
+  /* #28 — the Clear button asks first when there is something to lose (Save still clears by itself) */
+  window.m40ClearAsk = function(){
+    var has = false, party = document.getElementById('e-party');
+    if(party && String(party.value || '').trim()) has = true;
+    if(!has){
+      var body = document.getElementById('line-items-body');
+      if(body) Array.prototype.some.call(body.querySelectorAll('input:not([type=hidden]):not([type=checkbox]), select'), function(el){
+        var v = String(el.value || '').trim(); if(el.tagName === 'SELECT') return false;
+        if(v && v !== '0' && v !== '0.00'){ has = true; return true; } return false;
+      });
+    }
+    if(!has){ var n = document.getElementById('e-notes'); if(n && String(n.value || '').trim()) has = true; }
+    if(has && !confirm('Clear this ' + (typeof DB !== 'undefined' && DB.mode === 'sales' ? 'invoice' : 'bill') + '?\n\nEverything you typed on it will be removed.')) return;
+    if(typeof clearEntry === 'function') clearEntry();
+  };
+
+  /* #27 — the "cheques need attention" summary belongs to Home: leaving Home puts it away */
+  function boot(){
+    if(!(window.M8 && M8.after)) return;
+    M8.after('showPage', function(id){
+      if(id === 'dashboard') return;
+      var b = document.getElementById('m8-rb');
+      if(b && !b.dataset.q) b.classList.remove('on');
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 60); }); else setTimeout(boot, 60);
 })();
 </script>
 </body>
